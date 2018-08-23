@@ -1,0 +1,44 @@
+   .left{
+      width:300px;
+      float:left;
+    }
+    .right{
+      margin-left:350px;
+      padding-left:30px;
+      box-shadow:0 0 3px #888;
+    }
+    .profile{
+      width:250px;
+      height:250px;
+      margin:0px;
+    }
+    img{
+      border:0px;
+    }
+    .name{
+      font-weight:bold;
+      font-size:1.6em;
+      margin-top:25px;
+      clear:both;
+    }
+   .alternative-name{
+      font-style:italic;
+      font-size:1.2em;
+    }
+    .heading{
+      font-weight:bold;
+      font-size:1.3em;
+    }
+    .wrapper{
+      float:left;
+      height:100%;
+    }
+    body, input, textarea, select, button, .normal {
+      font-family: "Open Sans", "lucida grande", "Segoe UI", arial, verdana, "lucida sans unicode", tahoma, sans-serif;
+      font-size: 14px;
+      font-weight: normal;
+    }
+    ul, ol {
+      line-height: 1.5em;
+    }
+

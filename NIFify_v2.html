@@ -1,0 +1,479 @@
+
+<head>
+
+<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">-->
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/font-awesome.css">
+<link rel="stylesheet" href="css/annotator.css">
+<link rel="stylesheet" href="css/fileinput.min.css">
+<link rel="stylesheet" href="css/bootstrap-dialog.min.css">
+<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>-->
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/fileinput.min.js"></script>
+<script type="text/javascript" src="js/bootstrap-dialog.min.js"></script> <!-- https://nakupanda.github.io/bootstrap3-dialog/ -->
+<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+
+<link rel="stylesheet" type="text/css" href="css/select2.css">
+<script type="text/javascript" src="js/select2.js"></script>
+
+
+<meta charset="utf-8" />
+ <script src="js/annotationv2.js"></script>
+ <script src="js/dict.js"></script>
+ <script type="text/javascript" src="js/encoder.js"></script>
+</head>
+
+<body>
+    
+    <!-- https://www.bootply.com/98314#-->
+    <nav class="navbar navbar-default" role="navigation" style="margin-bottom:0px!important;">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+            <a class="navbar-brand" href="#"><div><img src="img/favicon.png"> NIFify tool</div></a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right tabs" style="margin-top: 11px!important;">
+                <li id="docli" class="tab-link current" data-tab="doc">Document Annotation</li>
+                <li id="aceli" class="tab-link" data-tab="ace">ACE Format</li>
+                <li id="aceli" class="tab-link" data-tab="MSNBC">MSNBC Format</li>
+                <li class="tab-link" data-tab="help">Help</li>
+                <!--<li class="nav-item"><a href="#help" data-toggle="tab">Help</a></li>-->
+            </ul>
+       </div>
+    </nav>
+    
+   <!-------------   Single-Document Annotation ----------->
+   <div id="doc" class="tab-content current">
+    <div class="row padd1">
+        <div class="col-lg-12">
+            <div class="input-group control-group">
+                <input type="text" style="width:100%!important;" id="taxonomyInput"/>
+                <div class="input-group-btn"> 
+                    <button id="removeTaxonomy" class="btn btn-secondary" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>
+                </div>
+            </div>
+             
+        </div>
+        <div class="col-lg-12">
+           
+           <input id="inIdDoc" type="search" style="margin-top:5px!important;" class="form-control form-group" placeholder="Enter the document' URI " />
+
+        </div>
+        <div class="col-lg-12">
+           <textarea class="form-control" id="inDoc" rows="3" style="min-height:300px;" placeholder="Enter the document in plain text"></textarea>
+        </div>
+        <br>
+        <div class='bothside'>
+           <div style='float: left;'>
+              <button id="btn_1_split" type="button" class="btn btn-primary margin_left"> <i class="fa fa-bars fa-lg"></i>  Split in sentences</button>
+              <button id="btn_2_acept_sent" type="button" class="btn btn-primary margin_buttons"> <i class="fa fa-flash fa-lg"></i> New Document</button>
+              <!--<button disabled="true" id="btn_3_annotation" type="button" class="btn btn-primary margin_buttons"> <i class="fa fa-hand-pointer-o fa-lg"></i> Annotate Entity</button>-->
+              
+           </div>
+           <div style='float: right;'>
+              <button id="btn_4_annotation" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Make automatic annotations according the Dictionary stored."> <i class="fa fa-magic fa-lg"></i></button>
+              <button id="btn_update" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Update the annotations in the NIF and viewer panels."> <i class="fa fa-refresh fa-lg"></i></button>
+              <button id="btn_upload" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Upload a NIF file"> <i class="fa fa-upload fa-lg"></i></button>
+              <button id="btn_download" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Download this generated NIF-file"> <i class="fa fa-download fa-lg"></i></button>
+              <button id="btn_review" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Enumerate the annotations and download a list of links of the annotations"> <i class="fa fa-eye fa-lg"></i></button>
+              <button id="btn_inputNIF" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Update the NIF scope with an input NIF"> <i class="fa fa-hand-lizard-o fa-lg"></i></button>
+              <button id="btn_hideNIF" type="button" class="btn btn-primary margin_right" data-toggle="tooltip" title="Show/Hide the NIF content"> <i class="fa fa-code fa-lg"></i></button>
+           </div>
+        </div>
+
+        
+    </div>
+    <br>
+    <div id="divShow" class="row  padd1">  <!-- hide-->
+        <div id="DisplayBlockOLD" class="col-lg-12 borde-left">
+            <!--<div class="row">
+                <div id="sentencesDoc" class="col-lg-12 noselect" style="min-height:100px;"> 
+                    -- EMPTY -- 
+                </div>
+            </div>-->
+            
+            
+            
+         <!--
+            <div class="row parent_div_show">
+            <div style="class="col-lg-12">   
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="input-group control-group">
+			<input type="text" style="width:100%!important;height:35px;" id="taxonomyInput"/>
+			<div class="input-group-btn"> 
+			    <button id="modifyIdDoc" class="btn btn-secondary" type="button"><i class="glyphicon glyphicon-edit"></i> Modify</button>
+			</div>
+		    </div>
+                    <textarea class="form-control"  rows="3" style="min-height:100px;">dddddddddd</textarea>
+                        <button id="btn_3_annotation" type="button" class="btn btn-primary margin_buttons btn_annotation"> <i class="fa fa-hand-pointer-o fa-lg"></i> Annotate Entity</button>
+                </div>
+                <div id="sentencesDoc" class="col-lg-6 noselect" style="min-height:100px;">
+                    -- EMPTY -- 
+                </div>
+            </div>
+            </div>
+            </div>
+         </div>   -->
+            
+            
+            
+            <div id="DisplayBlock" class="col-lg-12 borde-left">
+            </div>
+            <!--<div class="row">
+                <div id="sentencesInfo" class="col-lg-12 borde_fino" style="min-height:200px; margin-top:20px; margin-left:20px;width:300px;"> 
+                    <div class="row"> <div class="col-lg-12 itemInfo">  <h3>Content summary</h3> </div>  </div>
+                    <div class="row"> <div class="col-lg-12 itemInfo">  <b>Number Of Sentences</b>: <span id="info_numbersentences">0</span> </div>  </div>
+                    <div class="row"> <div class="col-lg-12 itemInfo">  <b>Number Of Annotations</b>: <span id="info_numberannotations">0</span> </div>  </div>
+                    <div class="row"> <div class="col-lg-12 itemInfo">  <b>Number Of Characters</b>: <span id="info_numbercaracters">0</span> </div>  </div>
+                </div>
+            </div>-->
+            
+        
+        <div class="col-lg-5 borde-left">
+           <!--<textarea class="form-control" id="outTextarea" rows="30"></textarea>-->
+           <div class="row">
+                <div id="nifdoc" class="col-lg-12 hide" style="overflow-y: scroll; min-height:500px;"> 
+                    -- EMPTY --
+                </div>
+            </div>
+        </div>
+    </div>
+   </div>
+   </div>
+   
+   
+   <!-- ace Format -->
+   <div id="ace" class="tab-content">
+       <div class="row padd1">
+           <div class="col-lg-12">
+               <input id="ace_inIdDoc" type="search" style="margin-top:5px!important;" class="form-control form-group" placeholder="Enter the document' URI " />
+           </div>
+           <div class="col-lg-12">
+               <textarea class="form-control" id="ace_inDoc_raw" rows="3" style="min-height:300px;" placeholder="Enter the document in plain text"></textarea>
+            </div>
+            <div class="col-lg-12">
+               <textarea class="form-control" id="ace_inDoc_struct" rows="3" style="min-height:300px;" placeholder="Enter the annotation of the document. 
+Example:
+
+<ReferenceProblem>
+	<ReferenceFileName>
+		20000715_AFP_ARB.0072.eng
+	</ReferenceFileName>
+<ReferenceInstance>
+	<SurfaceForm>
+		Jerusalem
+	</SurfaceForm>
+	<Offset>
+		2
+	</Offset>
+	<Length>
+		9
+	</Length>
+	<ChosenAnnotation>
+		http://en.wikipedia.org/wiki/Jerusalem
+	</ChosenAnnotation>
+<NumAnnotators>
+		1
+	</NumAnnotators>
+	<AnnotatorId>
+		MajorityVoteOf5Turkers
+	</AnnotatorId>
+	<Annotation>
+		Jerusalem
+	</Annotation>
+</ReferenceInstance>
+...
+"></textarea>
+            </div>
+            <!--<br>-->
+            <div class='bothside'>
+                <div style='float: left;'>
+                    <!--<button id="btn_1_split" type="button" class="btn btn-primary margin_left"> <i class="fa fa-bars fa-lg"></i>  Split in sentences</button>
+                    <button id="btn_2_acept_sent" type="button" class="btn btn-primary margin_buttons"> <i class="fa fa-flash fa-lg"></i> New Document</button>-->
+                </div>
+                <div style='float: right;'>
+              
+                    <!--<button id="btn_inputNIF" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Update the NIF scope with an input NIF"> <i class="fa fa-hand-lizard-o fa-lg"></i></button>-->
+                    <button id="btn_ace2nif" type="button" class="btn btn-primary margin_right" data-toggle="tooltip" title="Taking the information in ACE format to the NIF format"> <i class="fa fa-fire fa-lg"></i>Convert to NIF</button>
+                </div>
+            </div>
+       </div>
+   </div> 
+
+
+
+
+
+
+
+  <!-- MSNBC Format -->
+   <div id="MSNBC" class="tab-content">
+       <div class="row padd1">
+           <div class="col-lg-12">
+               <input id="msnbc_inIdDoc" type="search" style="margin-top:5px!important;" class="form-control form-group" placeholder="Enter the document' URI " />
+           </div>
+           <div class="col-lg-12">
+               <textarea class="form-control" id="msnbc_inDoc_raw" rows="3" style="min-height:300px;" placeholder="Enter the document in plain text"></textarea>
+            </div>
+            <div class="col-lg-12">
+               <textarea class="form-control" id="msnbc_inDoc_struct" rows="3" style="min-height:300px;" placeholder="Enter the annotation of the document. 
+Example:
+
+<ReferenceProblem>
+  <ReferenceFileName>
+    20000715_AFP_ARB.0072.eng
+  </ReferenceFileName>
+<ReferenceInstance>
+  <SurfaceForm>
+    Jerusalem
+  </SurfaceForm>
+  <Offset>
+    2
+  </Offset>
+  <Length>
+    9
+  </Length>
+  <ChosenAnnotation>
+    http://en.wikipedia.org/wiki/Jerusalem
+  </ChosenAnnotation>
+<NumAnnotators>
+    1
+  </NumAnnotators>
+  <AnnotatorId>
+    MajorityVoteOf5Turkers
+  </AnnotatorId>
+  <Annotation>
+    Jerusalem
+  </Annotation>
+</ReferenceInstance>
+...
+"></textarea>
+            </div>
+            <!--<br>-->
+            <div class='bothside'>
+                <div style='float: left;'>
+                    <!--<button id="btn_1_split" type="button" class="btn btn-primary margin_left"> <i class="fa fa-bars fa-lg"></i>  Split in sentences</button>
+                    <button id="btn_2_acept_sent" type="button" class="btn btn-primary margin_buttons"> <i class="fa fa-flash fa-lg"></i> New Document</button>-->
+                </div>
+                <div style='float: right;'>
+              
+                    <!--<button id="btn_inputNIF" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Update the NIF scope with an input NIF"> <i class="fa fa-hand-lizard-o fa-lg"></i></button>-->
+                    <button id="btn_msnbc2nif" type="button" class="btn btn-primary margin_right" data-toggle="tooltip" title="Taking the information in ACE format to the NIF format"> <i class="fa fa-fire fa-lg"></i>Convert to NIF</button>
+                </div>
+            </div>
+       </div>
+   </div> 
+
+
+
+
+   
+   
+   
+   <!----- Multidocument Review 
+   <div id="multidocs" class="tab-content">
+   preba
+   </div> ---->
+   
+   
+   
+   <!----- Help ---->
+   <div id="help" class="tab-content">
+   
+   <h1>How does this tool work?</h1>
+   
+   <p>Textual entities have been of great interest to researchers in Computer Science. Several large-scale projects are a valuable source of real-world entities (eg, <a href="https://www.wikipedia.org/">Wikipedia</a>, <a href="http://wiki.dbpedia.org/">DBpedia</a>, <a href="https://www.wikidata.org/wiki/Wikidata:Main_Page">Wikidata</a>, <a href="http://babelnet.org/">BabelNet</a>) and the association of entities to these knowledge bases constitutes a process of de-empathy, which has gained the attention of the community. There are several formats to these documents and annotations, but all of them, the NIF (see <a href="http://persistence.uni-leipzig.org/nlp2rdf/">http://persistence.uni-leipzig.org/nlp2rdf/</a>) format is mostly adopted.</p>
+   
+   <p>The NIF format is based on triple RDF, for each document, you can annotate its entities by specifying the position within the text for each sentence separately, the knowledge base entry, type of entity, and other related information. We develop this tool that allows us to create a single document annotations, and review a collection of more than one document. In this page we explain how works this tool. 
+   <br>
+   <h3>1. Single Document Annotation </h3>
+   The following image shows an example of the six sections in this tools. The first section is optional and allow us to enter the type of entities that we will use in the annotation process. By default, we propose to use the NERD types (see <a href="http://nerd.eurecom.fr/ontology">http://nerd.eurecom.fr/ontology</a>), including an aditional ambiguous type. You can either select one of the NERD types, or write your own types. 
+   <br><br>
+   <img style="align:center;" src="img/help_1.png">
+   <br><br><br>
+   
+   The second section is concerning with the URL of the source of the current document. This URL will be part of the identifier in every triple in the NIF document. Section three is a <i>Text Area</i>, in where we have two ways of input, either a raw text or a NIF document to submit a modification. If you want to enter a raw text, you must use the buttons <i>Split Sentences</i>, <i>Accept Sentences</i>, and <i>Annotate Entity</i>. The <i>Split Sentences</i> button divide the sentences in the text separating them with a <i>new line</i> character, but it is optional because you can separate them manually. Once you have the sentences correctly separated you must click <i>Accept Sentences</i> to initialize the annotation process. Thus, you can select an entity in the Text Area and they perform the <i>Annotate Entity</i> to fill all their data and to update. On the other hand, you can copy/paste a NIF document in the Text Area and perform the button &nbsp;<i class="fa fa-hand-lizard-o fa-lg"></i>&nbsp; to load it, as well as upload &nbsp;<i class="fa fa-upload fa-lg"></i>&nbsp; a nif file or download &nbsp;<i class="fa fa-download fa-lg"> </i>&nbsp; the current nif document.
+   
+   The section four shows the entities annotated in a friendly manner. By click them you can delete and modify each annotation. The sections five and six are for output  only showing informtion about the annotations and the NIF document respectively.
+   
+   
+
+   </div>
+
+    <br><br><br>
+    
+    <div id="myModal" tabindex="-1" class="modal fade">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+           <div class="modal-header">
+              <h4 id="myModal-title" class="modal-title">Add Annotation</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+              </button>
+              <div id="myModal-title-desc"></div>
+           </div>
+           <div id="myModal-body" class="modal-body form-group">
+               <!-- https://itsolutionstuff.com/post/simple-add-remove-input-fields-dynamically-using-jquery-with-bootstrapexample.html -->
+               <label for="modalSelectURI" class="col-form-label">List of URIs:</label>
+               <div class="input-group control-group after-add-more">
+                   <input id="modalSelectURI" number="1" type="text" name="addmore[]" class="form-control" placeholder="Link of the selected entity mention">
+                   <div class="input-group-btn"> 
+                       <button class="btn btn-success add-more" type="button"><i class="glyphicon glyphicon-plus"></i> Add</button>
+                   </div>
+               </div>
+               <!--
+               <div class="copy hide">
+                  <div class="control-group input-group" style="margin-top:10px">
+                      <input type="text" name="addmore[]" class="form-control" placeholder="Enter Name Here">
+                      <div class="input-group-btn"> 
+                          <button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>
+                      </div>
+                  </div>
+               </div> 
+               
+               
+               <label for="modalSelectURI" class="col-form-label">URI:</label>
+                   <input type="text" class="form-control espacioAbajo" id="modalSelectURI_" placeholder="Link of the selected entity mention"> -->
+               <br>
+               <label for="modalSelectTaxonomy" class="col-form-label">Taxonomy:</label>
+               <select id="modalSelectTaxonomy" class="form-control">
+				   <option>Mustard</option>
+				   <option>Ketchup</option>
+				   <option>Relish</option>
+			   </select>
+
+           </div>
+           <div class="modal-footer">
+              <p style="text-align: left;"><input type="checkbox" id="cbox_overlaps" value="first_checkbox"> Allow Overlaps</p>
+              <!--<button id="btn_annotate_this_doc" type="button" class="btn btn-warning">Annotate int this doc</button>
+              <button id="btn_annotate_all_doc" type="button" class="btn btn-warning">Annotate in all docs</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button id="btn_annotate" type="button" class="btn btn-primary">Annotate!</button>-->
+              <div class='bothside'>
+                  <div style='float: left;'>
+                      <button id="btn_annotate_this_doc" type="button" class="btn btn-warning">Annotate int this doc</button>
+                      <button id="btn_annotate_all_doc" type="button" class="btn btn-warning">Annotate in all docs</button>
+                  </div>
+                  <div style='float: right;'>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                      <button id="btn_annotate" type="button" class="btn btn-primary">Annotate!</button>
+                  </div>
+              </div>
+           </div>
+         </div>
+       </div>
+    </div>
+
+
+   <div id="modalUpload" tabindex="-1" class="modal fade">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+           <div class="modal-header">
+              <h4 id="modalUpload-title" class="modal-title">Upload NIF file</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+              </button>
+           </div>
+           <!--<form action="/" method="post" onsubmit="return upload();">-->
+           <div id="modalUpload-body" class="modal-body form-group">
+
+                    <!--<form action="upload" method="post">
+					  <fieldset>
+						<legend>Upload photo</legend>
+						<input type="file" name="fileNif" id="fileNif">
+						<input type="submit" value="Upload">
+					  </fieldset>
+					</form>-->
+
+				  <!--  <input type="file" id="files" name="file" /> Read bytes: 
+					<span class="readBytesButtons">
+					  <button data-startbyte="0" data-endbyte="4">1-5</button>
+					  <button data-startbyte="5" data-endbyte="14">6-15</button>
+					  <button data-startbyte="6" data-endbyte="7">7-8</button>
+					  
+					</span>
+                    <button id="reaaad">entire file</button>
+					<div id="byte_range"></div>
+					<div id="byte_content"></div>-->
+
+                <div class="file-loading">
+                    <input id="input-b9" name="input-b9" type="file"'>
+				</div>
+                <div id="kartik-file-errors"></div>
+
+           </div>
+           <div class="modal-footer">
+              <!--<button type="button" class="btn btn-primary">Annotate!</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              https://getbootstrap.com/docs/4.0/components/modal/ -->
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button id="modalUpload_upload" type="button" data-dismiss="modal" class="btn btn-primary">Upload</button>
+           </div>
+           <!--<input type="submit" value="Submit">
+           </form>-->
+         </div>
+       </div>
+    </div>
+
+    
+    
+    
+    <div id="modalModifyAnnotation" tabindex="-1" class="modal fade">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+           <div class="modal-header">
+              <h4 id="modalModifyAnnotation-title" class="modal-title">Modify Annotation</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+              </button>
+              <div id="modalModifyAnnotation-title-desc"></div>
+           </div>
+           <div id="modalModifyAnnotation-body" class="modal-body form-group">
+               <label for="modalModifyAnnotationLabel" class="col-form-label">Surface Form:</label>
+                   <input type="text" class="form-control espacioAbajo" id="modalModifyAnnotationLabel" placeholder="New surface form">
+               <!--
+               <label for="modalModifyAnnotationSelectURI" class="col-form-label">URI:</label>
+                   <input type="text" class="form-control espacioAbajo" id="modalModifyAnnotationSelectURI" placeholder="Link of the selected entity mention"> -->
+               
+               <label for="modalModifyAnnotationSelectURI" class="col-form-label">List of URIs:</label>
+               <div class="input-group control-group after-add-more-modification">
+                   <input id="modalModifyAnnotationSelectURI" number="1" type="text" name="addmoremod[]" class="form-control" placeholder="Link of the selected entity mention">
+                   <div class="input-group-btn"> 
+                       <button class="btn btn-success add-more-modification" type="button"><i class="glyphicon glyphicon-plus"></i> Add</button>
+                   </div>
+               </div>
+               <br>
+               <label for="modalModifyAnnotationSelectTaxonomy" class="col-form-label">Taxonomy:</label>
+               <select id="modalModifyAnnotationSelectTaxonomy" class="form-control">
+                   <option>Mustard</option>
+                   <option>Ketchup</option>
+                   <option>Relish</option>
+               </select>
+
+           </div>
+           <div class="modal-footer">
+              <!--<button type="button" class="btn btn-primary">Annotate!</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              https://getbootstrap.com/docs/4.0/components/modal/ -->
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button id="btn_delete_ann" ide="-1" type="button" class="btn btn-secondary" data-dismiss="modal">Delete</button>
+              <!--<a id="a_link" type="button" href="http://www.google.com/" target="_blank">  <button type="button" class="btn btn-secondary">Link</button></a>-->
+              <button id="btn_modify" ide="-1" surfaceform="text" type="button" data-dismiss="modal" class="btn btn-primary">Modify</button>
+           </div>
+         </div>
+       </div>
+    </div>
+
+
+</body>
+<!--
+https://www.html5rocks.com/en/tutorials/file/dndfiles/
+-->
