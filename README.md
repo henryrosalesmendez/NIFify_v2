@@ -7,7 +7,7 @@ Textual entities have been of great interest to researchers in Computer Science.
 
 The NIF format is based on triple RDF, for each document, you can annotate its entities by specifying the position within the text for each sentence separately, the knowledge base entry, type of entity, and other related information. We develop this tool that allows us to create a single document annotations, and review a collection of more than one document. This code is runing in [https://users.dcc.uchile.cl/~hrosales/NIFify_v2.html](https://users.dcc.uchile.cl/~hrosales/NIFify_v2.html).
 
-This new version handles with more than one document in the same time and allow us some other annotation functionalities.
+This new version handles more than one document in the same time and allow us some other annotation functionalities.
 
 
 Installation
