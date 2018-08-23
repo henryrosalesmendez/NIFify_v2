@@ -1,7 +1,7 @@
 $(document).ready(function() {
     
     D = []; // Documentos    {uri:"http://example.org/Doc1" "inDocCounter":1}
-    A = []; // Arreglo que va a tener las annotaciones, de la forma {"ini":1, "fin":3, "idA":1,  "uri":["http://example.org/enriry1","http://example.org/enriry2"], "tag":"ex:type1", "id_sentence":1  "uridoc":"http://aaaa.doc1"}
+    A = []; // Arreglo que va a tener las annotaciones, de la forma {"ini":1, "fin":3, "idA":1,  "uri":["http://example.org/enriry1","http://example.org/enriry2"], "tag":["ex:type1", ..], "id_sentence":1  "uridoc":"http://aaaa.doc1"}
     Sentences = []; // Lista de oraciones del documento   {text:"..."  uridoc:"http://example.org/Doc1"}
     n = 0; // tamaño del texto
     ///////idSentence2dicc = {}; // tiene por cada oración el uri correspondiente
@@ -269,7 +269,7 @@ $(document).ready(function() {
                                                                  //                   0: {id: 2, text: "nerd:Airline"},
                                                                  //                   1: {id: "ddd", text: "ddd"}
 
-        var taxonomy = []; // el select2 version 4 permite entrar valores, pero esos se toman como string, 
+        /*var taxonomy = []; // el select2 version 4 permite entrar valores, pero esos se toman como string, 
                                      // y los otros iniciales como el numero identificador del string.. así que aqui llevo los id a valores
         $("#modalSelectTaxonomy").empty();
         select = document.getElementById('modalSelectTaxonomy');
@@ -283,11 +283,12 @@ $(document).ready(function() {
             }
             //console.log(listTaxonomy);
   
-        } 
-        //else{alert("no seleccionaron nada en la taxonomia");}
+        } */
+
 
         $("#modalSelectURI").val("");
-        document.getElementById('modalSelectTaxonomy').selectedIndex = -1;
+        $('#taxonomyAnn').val('').trigger("change");
+        //----> document.getElementById('modalSelectTaxonomy').selectedIndex = -1;
         $('#myModal').modal("show");
         $('#myModal').on('shown.bs.modal', function () {
             $("#modalSelectURI").focus();
@@ -333,13 +334,25 @@ $(document).ready(function() {
             temp_annotation["uri"] = list_uri;
             
             
-            if ($("#modalSelectTaxonomy").val()){
+            /*if ($("#modalSelectTaxonomy").val()){
                 //console.log(' $("#modalSelectTaxonomy").text():', $("#modalSelectTaxonomy").text());
                 var listInputTaxonomy = $("#taxonomyInput").select2('data');
                 var tag_text = listInputTaxonomy[$("#modalSelectTaxonomy").val()]["text"];
                 //console.log("******>>>"+tag_text);
                 temp_annotation["tag"] = tag_text;//$("#modalSelectTaxonomy").text();
-            }
+            }*/
+            var list_tag = [];
+            var listInputTaxonomy = $("#taxonomyAnn").select2('data');        
+            if (listInputTaxonomy.length != 0){
+                for (i in listInputTaxonomy){
+                    var v = listInputTaxonomy[i];
+                    list_tag.push(v["text"])
+                }
+                temp_annotation["tag"] = list_tag;
+            } 
+            
+            
+            
         //}
         temp_annotation["idA"] = A.length;
         temp_annotation["uridoc"] = Sentences[temp_annotation["id_sentence"]]["uridoc"];
@@ -393,13 +406,25 @@ $(document).ready(function() {
         temp_annotation["uri"] = list_uri;
         
         
-        if ($("#modalSelectTaxonomy").val()){
+        /*if ($("#modalSelectTaxonomy").val()){
             //console.log(' $("#modalSelectTaxonomy").text():', $("#modalSelectTaxonomy").text());
             var listInputTaxonomy = $("#taxonomyInput").select2('data');
             var tag_text = listInputTaxonomy[$("#modalSelectTaxonomy").val()]["text"];
             //console.log("******>>>"+tag_text);
             temp_annotation["tag"] = tag_text;//$("#modalSelectTaxonomy").text();
-        }
+        }*/
+        
+        var list_tag = [];
+        var listInputTaxonomy = $("#taxonomyAnn").select2('data');        
+        if (listInputTaxonomy.length != 0){
+            for (i in listInputTaxonomy){
+                var v = listInputTaxonomy[i];
+                list_tag.push(v["text"])
+            }
+            temp_annotation["tag"] = list_tag;
+        }         
+            
+        
         temp_annotation["idA"] = A.length;
         temp_annotation["uridoc"] = Sentences[temp_annotation["id_sentence"]]["uridoc"];
         A.push(temp_annotation);
@@ -443,6 +468,7 @@ $(document).ready(function() {
                       "id_sentence": ids,
                       "uridoc":temp_annotation["uridoc"],
                       //"uridoc": Sentences[ids]["uridoc"],
+                      "tag": temp_annotation["tag"],
                       "label":t,
                       "idA": A.length
                   });
@@ -486,13 +512,24 @@ $(document).ready(function() {
         temp_annotation["uri"] = list_uri;
         
         
-        if ($("#modalSelectTaxonomy").val()){
+        /*if ($("#modalSelectTaxonomy").val()){
             //console.log(' $("#modalSelectTaxonomy").text():', $("#modalSelectTaxonomy").text());
             var listInputTaxonomy = $("#taxonomyInput").select2('data');
             var tag_text = listInputTaxonomy[$("#modalSelectTaxonomy").val()]["text"];
             //console.log("******>>>"+tag_text);
             temp_annotation["tag"] = tag_text;//$("#modalSelectTaxonomy").text();
-        }
+        }*/
+        
+        var list_tag = [];
+        var listInputTaxonomy = $("#taxonomyAnn").select2('data');        
+        if (listInputTaxonomy.length != 0){
+            for (i in listInputTaxonomy){
+                var v = listInputTaxonomy[i];
+                list_tag.push(v["text"])
+            }
+            temp_annotation["tag"] = list_tag;
+        } 
+        
         temp_annotation["idA"] = A.length;
         temp_annotation["uridoc"] = Sentences[temp_annotation["id_sentence"]]["uridoc"];
         A.push(temp_annotation);
@@ -536,6 +573,7 @@ $(document).ready(function() {
                           "uri":list_uri, 
                           "id_sentence": ids,
                           "uridoc":doc["uri"],
+                          "tag": temp_annotation["tag"],
                           //"uridoc": Sentences[ids]["uridoc"],
                           "label":t,
                           "idA": A.length
@@ -1039,12 +1077,23 @@ $(document).ready(function() {
                                      //"        nif:Context "+sent_uri+" ;\n"+//"        nif:sentence "+sent_uri+" ;\n"+
                                      "        nif:referenceContext "+sent_uri+" ;\n"+//"        nif:sentence "+sent_uri+" ;\n"+
                                      //"        nif:referenceContext <"+urldoc+"#char=0,"+ndoc+"> ;\n"+
-                                     "        nif:Context <"+urldoc+"#char=0,"+ndoc+"> ;\n"+
+                                     "        nif:context <"+urldoc+"#char=0,"+ndoc+"> ;\n"+
                                      "        nif:anchorOf \"\"\""+label+"\"\"\"^^xsd:string ;\n"+
                                      "        nif:beginIndex \""+ini_t+"\"^^xsd:nonNegativeInteger ;\n"+
                                      "        nif:endIndex \""+fin_t+"\"^^xsd:nonNegativeInteger ;\n";
                      if ("tag" in ann){
-                         nifAnnotation = nifAnnotation + "        itsrdf:taClassRef "+ann["tag"]+" ;\n";
+                         if (ann["tag"].length>0){
+                             var temp_tag = "";
+                             for (tt in ann["tag"]){
+                                 if (temp_tag == ""){
+                                     temp_tag = ann["tag"][tt];
+                                 }
+                                 else{
+                                     temp_tag = temp_tag + ", " + ann["tag"][tt];
+                                }
+                             }
+                             nifAnnotation = nifAnnotation + "        itsrdf:taClassRef "+temp_tag+" ;\n";
+                         }
                      }
                      for (k in ann["uri"]){
                          var a_ = ann["uri"][k];
@@ -1111,7 +1160,7 @@ $(document).ready(function() {
 
    ///---------- select types (Select2) --------------------
 
-   $("#taxonomyInput").select2({
+   /*$("#taxonomyInput").select2({
     createSearchChoice:function(term, data) { 
         if ($(data).filter(function() { 
             return this.text.localeCompare(term)===0; 
@@ -1142,7 +1191,70 @@ $(document).ready(function() {
 		{id: 18, text: 'mnt:FigurativeR'},
 		{id: 19,text: 'tax:Ambiguous'},
     ]
+    });*/
+   
+   
+   ListTaxonomy = [        
+        {id: 0, text: 'mnt:FullMentionPN'},
+		{id: 1, text: 'mnt:ShortMentionPN'},
+		{id: 2, text: 'mnt:ExtendedMentionPN'},
+		{id: 3, text: 'mnt:AliasPN'},
+        {id: 4, text: 'mnt:NumericTemporalPN'},
+        {id: 5, text: 'mnt:DescriptivePN'},
+        {id: 6, text: 'mnt:PronounPN'},
+		{id: 7, text: 'mnt:SingularNounPoS'},
+		{id: 8, text: 'mnt:PluralNounPoS'},
+		{id: 9, text: 'mnt:AdjectivePoS'},
+		{id: 10, text: 'mnt:VerbPoS'},
+		{id: 11, text: 'mnt:AntecedentR'},
+		{id: 12, text: 'mnt:CoreferenceR'},
+		{id: 13, text: 'mnt:Non-Overlapping'},
+		{id: 14, text: 'mnt:MaximalOverlap'},
+		{id: 15, text: 'mnt:MinimalOverlap'},
+		{id: 16, text: 'mnt:IntermediateOverlap'},
+		{id: 17, text: 'mnt:LiteralR'},
+		{id: 18, text: 'mnt:FigurativeR'},
+		{id: 19,text: 'tax:Ambiguous'},
+    ];
+    
+    tax2id = {
+        'mnt:FullMentionPN'     :0,
+        'mnt:ShortMentionPN'    :1,
+        'mnt:ExtendedMentionPN' :2,
+        'mnt:AliasPN'           :3,
+        'mnt:NumericTemporalPN' :4,
+        'mnt:DescriptivePN'     :5,
+        'mnt:PronounPN'         :6,
+        'mnt:SingularNounPoS'   :7,
+        'mnt:PluralNounPoS'     :8,
+        'mnt:AdjectivePoS'      :9,
+        'mnt:VerbPoS'           :10,
+        'mnt:AntecedentR'       :11,
+        'mnt:CoreferenceR'      :12,
+        'mnt:Non-Overlapping'   :13,
+        'mnt:MaximalOverlap'    :14,
+        'mnt:MinimalOverlap'    :15,
+        'mnt:IntermediateOverlap':16,
+        'mnt:LiteralR'          :17,
+        'mnt:FigurativeR'       :18,
+        'tax:Ambiguous'         :19,
+    }
+   
+   
+   $(".taxonomyInputClass").select2({
+    createSearchChoice:function(term, data) { 
+        if ($(data).filter(function() { 
+            return this.text.localeCompare(term)===0; 
+        }).length===0) 
+        {return {id:term, text:term};} 
+    },
+    multiple: true,
+    //data: [{id: 0, text: 'nerd:Organization'},{id: 1, text: 'dbpo:Company'},{id: 2, text: 'task'}]
+    data:ListTaxonomy
     });
+   
+   
+   
 
     //---- right buttons
     $("#btn_update").click(function(){
@@ -1516,13 +1628,23 @@ $(document).ready(function() {
                                 console.log("--->> Error, there musts be a nif:taClassRef triple (end)");
                                 continue;
                             }
-                            var tag = r_text.substring(18,fin_taClassRef);
-                            tag = tag.trim();
-                            //console.log("tag:",tag);
+                            var tag_temp = r_text.substring(18,fin_taClassRef);
+                            //tag_temp = tag.trim();
+                            tag_temp = tag_temp.split(",");
+                            var tag = [];
+                            for (i in tag_temp){
+                                var t = tag_temp[i];
+                                //console.log(t);
+                                tag.push(t.trim())
+                            }
                             ann["tag"] = tag;
+                            
+                            //console.log("tag:",tag);
+                            // ----- esto comentado lo que hace es incluir en el taxonomyIput principal solo Ambiguos.. esto deberia generaliarse y ahcerse para que todos los tag escogidos se pongan ahi
+                            /*
                             if (tag == "tax:Ambiguous"){
                                 $("#taxonomyInput").select2("val",19); // fijo, hay que ponerlo dinamico
-                            }
+                            }*/
                         }
                         ann["idA"] = A.length;
                         ann["uridoc"] = Sentences[id_s_t]["uridoc"];
@@ -1919,7 +2041,7 @@ $(document).ready(function() {
 
 
        
-        $("#modalModifyAnnotationSelectTaxonomy").empty();
+        /*$("#modalModifyAnnotationSelectTaxonomy").empty();
         var listInputTaxonomy = $("#taxonomyInput").select2('data');
         select = document.getElementById('modalModifyAnnotationSelectTaxonomy');
         
@@ -1938,7 +2060,7 @@ $(document).ready(function() {
                 option.text = v["text"];
                 select.add(option);
             }
-        }  
+        }*/  
 
         //$("#modalModifyAnnotationSelectURI").val(ann["uri"]);
         remove_input_uris();
@@ -1958,9 +2080,43 @@ $(document).ready(function() {
         }
         $("#modalModifyAnnotationSelectURI").attr("number",ann["uri"].length+1);
         
+         
+        
+        if ("tag" in ann){
+            console.log("----A-----");
+            var ids = []; //[{id: 21, text: "newTax"} .. ]
+            for (tt in ann["tag"]){
+                var ttag = ann["tag"][tt];
+                console.log("--> "+ttag);
+                
+                if (tax2id[ttag] != undefined){
+                    ids.push({"id":tax2id[ttag], "text":ttag});
+                    console.log("=>");
+                }
+                else{
+                    console.log("....");
+                    var ll = Object.keys(tax2id).length;
+                    var newOption = new Option(ttag, ll, true, true);
+                    console.log(newOption)
+                    $('#taxonomyMod').append(newOption);
+                    $('#taxonomyMod').trigger('change');
+                    //$("#taxonomyInput").select2('data', {id: ll, text: ttag});  
+                    ids.push({"id":ll, "text":ttag});
+                    tax2id[ttag] = ll; 
+                    console.log(tax2id);
+                }
+                
+            }
+            //$("#taxonomyInput").val(ids).change();
+            $("#taxonomyMod").select2('data',ids);
+        }
+        else{
+            $('#taxonomyMod').val('').trigger("change");
+        }
+        
         
         //--
-        if ("tag" in ann){
+        /*if ("tag" in ann){
             var listInputTaxonomy = $("#taxonomyInput").select2('data');
             for (k in listInputTaxonomy){
                 var l = listInputTaxonomy[k];
@@ -1972,7 +2128,7 @@ $(document).ready(function() {
         }
         else{
             document.getElementById('modalModifyAnnotationSelectTaxonomy').selectedIndex = -1;
-        }
+        }*/
         //$("#a_link").attr("href",ann["uri"]);
         $("#btn_delete_ann").attr("ide",ide);
 
@@ -2094,7 +2250,7 @@ $(document).ready(function() {
  
             //console.log("in_uri:",in_uri);
             //warning_alert($("#modalSelectTaxonomy").val());
-            var tax_val = $("#modalModifyAnnotationSelectTaxonomy").val();
+            /*var tax_val = $("#modalModifyAnnotationSelectTaxonomy").val();
             if (tax_val){
                 if (parseInt(tax_val)!=1000){ // if it's not "-none-"
                     var listInputTaxonomy = $("#taxonomyInput").select2('data');
@@ -2107,7 +2263,18 @@ $(document).ready(function() {
                 else{
                     delete A[ide]["tag"];
                 }
-            }
+            }*/
+            var list_tag = [];
+            var listInputTaxonomy = $("#taxonomyMod").select2('data');        
+            if (listInputTaxonomy.length != 0){
+                for (i in listInputTaxonomy){
+                    var v = listInputTaxonomy[i];
+                    list_tag.push(v["text"])
+                }
+                A[ide]["tag"] = list_tag;
+                console.log("actualizado");
+            } 
+            
             
             //surface form
             var ann_label = $("#modalModifyAnnotationLabel").val();
