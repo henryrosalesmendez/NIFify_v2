@@ -1,11 +1,13 @@
  
 
-# NIFify
+# NIFify version 2
 
 
 Textual entities have been of great interest to researchers in Computer Science. Several large-scale projects are a valuable source of real-world entities suach as [Wikipedia](https://www.wikipedia.org/), [DBpedia](http://wiki.dbpedia.org/), [Wikidata](https://www.wikidata.org/wiki/Wikidata:Main_Page) and [BabelNet](http://babelnet.org/); and the association of entities to these knowledge bases constitutes a process of de-empathy, which has gained the attention of the community. There are several formats to these documents and annotations, but all of them, the [NIF](http://persistence.uni-leipzig.org/nlp2rdf/) format is mostly adopted.
 
 The NIF format is based on triple RDF, for each document, you can annotate its entities by specifying the position within the text for each sentence separately, the knowledge base entry, type of entity, and other related information. We develop this tool that allows us to create a single document annotations, and review a collection of more than one document. This code is runing in [https://users.dcc.uchile.cl/~hrosales/NIFify_v2.html](https://users.dcc.uchile.cl/~hrosales/NIFify_v2.html).
+
+This new version handles with more than one document in the same time and allow us some other annotation functionalities.
 
 
 Installation
