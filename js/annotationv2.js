@@ -1200,7 +1200,7 @@ $(document).ready(function() {
 		{id: 2, text: 'mnt:ExtendedMentionPN'},
 		{id: 3, text: 'mnt:AliasPN'},
         {id: 4, text: 'mnt:NumericTemporalPN'},
-        {id: 5, text: 'mnt:DescriptivePN'},
+        {id: 5, text: 'mnt:CommonFormPN'},
         {id: 6, text: 'mnt:Pro-formPN'},
 		{id: 7, text: 'mnt:SingularNounPoS'},
 		{id: 8, text: 'mnt:PluralNounPoS'},
