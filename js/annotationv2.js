@@ -1223,20 +1223,20 @@ $(document).ready(function() {
         'mnt:ExtendedMentionPN' :2,
         'mnt:AliasPN'           :3,
         'mnt:NumericTemporalPN' :4,
-        'mnt:DescriptivePN'     :5,
-        'mnt:PronounPN'         :6,
+        'mnt:CommonFormPN'     :5,
+        'mnt:Pro-formPN'         :6,
         'mnt:SingularNounPoS'   :7,
         'mnt:PluralNounPoS'     :8,
         'mnt:AdjectivePoS'      :9,
         'mnt:VerbPoS'           :10,
-        'mnt:AntecedentR'       :11,
-        'mnt:CoreferenceR'      :12,
+        'mnt:AntecedentRf'       :11,
+        'mnt:CoreferenceRf'      :12,
         'mnt:Non-Overlapping'   :13,
         'mnt:MaximalOverlap'    :14,
         'mnt:MinimalOverlap'    :15,
         'mnt:IntermediateOverlap':16,
-        'mnt:LiteralR'          :17,
-        'mnt:FigurativeR'       :18,
+        'mnt:LiteralRh'          :17,
+        'mnt:FigurativeRh'       :18,
         'tax:Ambiguous'         :19,
     }
    
@@ -2084,6 +2084,7 @@ $(document).ready(function() {
         
         if ("tag" in ann){
             console.log("----A-----");
+            $('#taxonomyMod').val('').trigger("change");
             var ids = []; //[{id: 21, text: "newTax"} .. ]
             for (tt in ann["tag"]){
                 var ttag = ann["tag"][tt];
@@ -2111,6 +2112,7 @@ $(document).ready(function() {
             $("#taxonomyMod").select2('data',ids);
         }
         else{
+            console.log("Nothing!!");
             $('#taxonomyMod').val('').trigger("change");
         }
         
