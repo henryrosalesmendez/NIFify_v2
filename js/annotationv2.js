@@ -958,7 +958,7 @@ $(document).ready(function() {
 
                      var st = "";
                      if ("tag" in ann){
-                         if (ann["tag"] == "tax:Ambiguous"){
+                         if (ann["tag"].indexOf("tax:Ambiguous")>-1){
                              st = 'style="background-color: #5cb85c;"';
                          }
                      }
@@ -2544,7 +2544,7 @@ $(document).ready(function() {
                         if (ide && ide!=""){
                             var a = A[ide];
                             $(this).html("("+ide+")"+$(this).html());
-                            Text = Text + "---------------------------------------\n";
+                            Text = Text + "------------------------["+A[ide]["label"]+"]\n";
                             Text = Text + "(" + ide + ")  ";
                             var first = true;
                             for (j in a["uri"]){
@@ -2562,6 +2562,29 @@ $(document).ready(function() {
                                 }
                                 first = false;
                             }
+                            
+                            
+                            //---
+                            Text = Text + ".... "
+                            var first = true;
+                            for (j in a["tag"]){
+                                var t = a["tag"][j];
+                                if (first){
+                                    var len = ide.length;
+                                    var prefix_s = "";
+                                    for (var k = len; k <4; k++) {
+                                        prefix_s = prefix_s + " ";
+                                    }
+                                    Text = Text +prefix_s+t+"\n";
+                                }
+                                else {
+                                    Text = Text +"        "+t+"\n";
+                                }
+                                first = false;
+                            }
+                            //---
+                            
+                            
                         }
                     });
 
