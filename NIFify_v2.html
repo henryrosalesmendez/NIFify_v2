@@ -3,10 +3,12 @@
 
 <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">-->
 <link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/boostrap.4.3.chunck.css">
 <link rel="stylesheet" href="css/font-awesome.css">
 <link rel="stylesheet" href="css/annotator.css">
 <link rel="stylesheet" href="css/fileinput.min.css">
 <link rel="stylesheet" href="css/bootstrap-dialog.min.css">
+
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script type="text/javascript" src="js/fileinput.min.js"></script>
@@ -21,6 +23,7 @@
  <script src="js/annotationv2.js"></script>
  <script src="js/dict.js"></script>
  <script type="text/javascript" src="js/encoder.js"></script>
+ <script type="text/javascript" src="js/popper.min.js"></script>
 </head>
 
 <body>
@@ -88,6 +91,49 @@
 
         
     </div>
+    <!--
+    <div class="control-group input-group taIdentRefContainer" style="margin-top:10px">
+        <input id="annotation_0" mentiontype="- Select Type -" value="https://en.wikipedia.org/wiki/Belt" type="text" name="addmore[]" class="form-control taIdentRef" placeholder="Enter Name Here">
+        <div class="input-group-btn">.
+        
+ <button id="btn_type_annotation_0" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    - Select Type -
+  </button>
+  <div class="dropdown-menu">
+    <a class="dropdown-item" mainid="annotation_0" href="#">- Select Type -</a>
+    <a class="dropdown-item" mainid="annotation_0" href="#"><i class="glyphicon glyphicon-user"></i> PERSON</a>
+    <a class="dropdown-item" mainid="annotation_0" href="#"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>
+    <a class="dropdown-item" mainid="annotation_0" href="#"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" mainid="annotation_0" href="#"><i class="glyphicon glyphicon-tag"></i> MISC</a>
+  </div>
+
+            <button class="btn btn-info link" type="button" onclick="window.open('https://en.wikipedia.org/wiki/Belt','_blank')"><i class="glyphicon glyphicon-link"></i>Link</button>
+            <button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>
+        </div>
+    </div>
+    
+    <div class="input-group control-group after-add-more" >
+                   <input id="modalSelectURI" mentiontype="- Select Type -" number="2" type="text" name="addmore[]" class="form-control" placeholder="Link of the selected entity mention">
+                   <div class="input-group-btn">
+                   <button id="btn_type_modalSelectURI" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        - Select Type -
+                   </button>
+                   <div class="dropdown-menu">
+                       <a class="dropdown-item" mainid="modalSelectURI" href="#">- Select Type -</a>
+                       <a class="dropdown-item" mainid="modalSelectURI" href="#"><i class="glyphicon glyphicon-user"></i> PERSON</a>
+                       <a class="dropdown-item" mainid="modalSelectURI" href="#"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>
+                       <a class="dropdown-item" mainid="modalSelectURI" href="#"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>
+                       <div class="dropdown-divider"></div>
+                       <a class="dropdown-item" mainid="modalSelectURI" href="#"><i class="glyphicon glyphicon-tag"></i> MISC</a>
+                   </div>
+                   
+                   
+                       <button class="btn btn-success add-more" type="button"><i class="glyphicon glyphicon-plus"></i> Add</button>
+                   </div>
+
+               </div>
+    <!-- -->
     <br>
     <div id="divShow" class="row  padd1">  <!-- hide-->
         <div id="DisplayBlockOLD" class="col-lg-12 borde-left">
@@ -322,9 +368,23 @@ Example:
                <!-- https://itsolutionstuff.com/post/simple-add-remove-input-fields-dynamically-using-jquery-with-bootstrapexample.html -->
                <label for="modalSelectURI" class="col-form-label">List of URIs:</label>
                <div class="input-group control-group after-add-more">
-                   <input id="modalSelectURI" number="1" type="text" name="addmore[]" class="form-control" placeholder="Link of the selected entity mention">
+                   <input id="modalSelectURI" mentiontype="- Select Type -" number="1" type="text" name="addmore[]" class="form-control taIdentRefRoot" placeholder="Link of the selected entity mention">
+                   <!-- taIdentRef-->
                    <div class="input-group-btn"> 
-                       <button class="btn btn-success add-more" type="button"><i class="glyphicon glyphicon-plus"></i> Add</button>
+                        <button id="btn_type_modalSelectURI" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                - Select Type -
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" onclick="dropdown_action('modalSelectURI','- Select Type -');" href="#">- Select Type -</a>
+                            <a class="dropdown-item" onclick="dropdown_action('modalSelectURI','PERSON');" href="#"><i class="glyphicon glyphicon-user"></i> PERSON</a>
+                            <a class="dropdown-item" onclick="dropdown_action('modalSelectURI','ORG');" href="#"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>
+                            <a class="dropdown-item" onclick="dropdown_action('modalSelectURI','PLACE');" href="#"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" onclick="dropdown_action('modalSelectURI','MISC');" href="#"><i class="glyphicon glyphicon-tag"></i> MISC</a>
+                        </div>
+                   
+                   
+                        <button class="btn btn-success add-more" type="button"><i class="glyphicon glyphicon-plus"></i> Add</button>
                    </div>
                </div>
                <!--
@@ -447,10 +507,33 @@ Example:
                
                <label for="modalModifyAnnotationSelectURI" class="col-form-label">List of URIs:</label>
                <div class="input-group control-group after-add-more-modification">
-                   <input id="modalModifyAnnotationSelectURI" number="1" type="text" name="addmoremod[]" class="form-control" placeholder="Link of the selected entity mention">
+                   <!--<input id="modalModifyAnnotationSelectURI" number="1" type="text" name="addmoremod[]" class="form-control" placeholder="Link of the selected entity mention">
                    <div class="input-group-btn"> 
                        <button class="btn btn-success add-more-modification" type="button"><i class="glyphicon glyphicon-plus"></i> Add</button>
                    </div>
+                   -->
+                   
+                   <!-- -->
+                   <input id="modalModifyAnnotationSelectURI" mentiontype="- Select Type -" number="1" type="text" name="addmore[]" class="form-control taIdentRefRoot" placeholder="Link of the selected entity mention">
+                   <!-- -->
+                   <div class="input-group-btn"> 
+                        <button id="btn_type_modalModifyAnnotationSelectURI" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                - Select Type -
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" onclick="dropdown_action('modalModifyAnnotationSelectURI','- Select Type -');" href="#">- Select Type -</a>
+                            <a class="dropdown-item" onclick="dropdown_action('modalModifyAnnotationSelectURI','PERSON');" href="#"><i class="glyphicon glyphicon-user"></i> PERSON</a>
+                            <a class="dropdown-item" onclick="dropdown_action('modalModifyAnnotationSelectURI','ORG');" href="#"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>
+                            <a class="dropdown-item" onclick="dropdown_action('modalModifyAnnotationSelectURI','PLACE');" href="#"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" onclick="dropdown_action('modalModifyAnnotationSelectURI','MISC');" href="#"><i class="glyphicon glyphicon-tag"></i> MISC</a>
+                        </div>
+                   
+                   
+                        <button class="btn btn-success add-more-modification" type="button"><i class="glyphicon glyphicon-plus"></i> Add</button>
+                   </div>
+                   <!-- -->
+                   
                </div>
                <br>
                <label for="taxonomyMod" class="col-form-label">Taxonomy:</label>

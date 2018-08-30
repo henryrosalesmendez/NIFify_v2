@@ -8,6 +8,7 @@ $(document).ready(function() {
     temp_annotation = {};
     inDocCounter = 1;
     dicc_uri2inDocCounter = {}
+    link2type = {}; // va a guardar el tipo de mención de cada enlace ej, {"https://en.wikipedia.org/wiki/Michael_Jackson":"mnt:Person"}
 
     warning_alert = function(text){
         BootstrapDialog.show({
@@ -201,7 +202,7 @@ $(document).ready(function() {
         return false;
     }
 
-    // Cuando doy click en el boton de annotar
+    // Cuando doy click en el boton de annotar -- preparando la modal para  mostrar
     //////$("#btn_3_annotation").click(function(){
     //$(".btn_annotation").click(function(){
     $(document).on('click', '.btn_annotation', function () {
@@ -284,6 +285,9 @@ $(document).ready(function() {
             //console.log(listTaxonomy);
   
         } */
+        
+        $("#btn_type_modalSelectURI").html("- Select Type -");
+        $("#modalSelectURI").attr("mentiontype","- Select Type -");
 
 
         $("#modalSelectURI").val("");
@@ -319,12 +323,31 @@ $(document).ready(function() {
                     list_uri.push(text);
                 }
                 
+                // -- added
+                console.log("---------------------------------\n",text);
+                if (link2type[text] == undefined){
+                    var typeMention = $(this).attr("mentiontype");
+                    console.log("typeMention -->",typeMention)
+                    if (typeMention != '- Select Type -'){
+                        link2type[text] = w2type[typeMention];
+                        console.log(text,"----->",typeMention);
+                    }
+                }
             });
 
+            // OJOOOO
             var in_uri = $("#modalSelectURI").val();
             if (in_uri){
                 list_uri.push(in_uri);
+                var typeMention = $("#modalSelectURI").attr("mentiontype");
+                console.log("PPPPPPPRRRRRRRIIIIIIIIIMMMMMMEEEEERRRRRAAAA:",typeMention)
+                if (typeMention != '- Select Type -'){
+                    link2type[in_uri] = w2type[typeMention];
+                    console.log("in_uri:",in_uri,"   w2type[typeMention]:",w2type[typeMention],"    typeMention:",typeMention);
+                }
             }
+            
+            
                
             if (list_uri.length == 0){
                 warning_alert("Debe de entrar una URI");
@@ -901,8 +924,46 @@ $(document).ready(function() {
         }*/
         return dicc_uri2inDocCounter[uridoc];
     }
+    
+    
+    // como cada anotacion puede tener mas de un enlace entonces aqui devuelvo el tipo del enlace, dando preferencia a [PERSON, ORG, PLACE] sobre MISC, si no hay enlace devuelvo undefined
+    typeOfAnn = function(list_links){
+        var ttemp = undefined;
+        if (list_links.length == 0) return undefined;
+        for (k in list_links){
+            var l = list_links[k];
+            var tt = link2type[l];
+            if (tt != undefined){
+                if (tt == "mnt:Person" || tt == "mnt:Organisation" || tt == "mnt:Place"){
+                    return tt;
+                }
+                else {ttemp = "mnt:Miscellany";}
+            }
+        }
+        return ttemp;
+    }
 
     // actualizo las anotaciones de las oraciones y actualizo el div de visualización
+    type2icon = {
+        "mnt:Person": "glyphicon-user",
+        "mnt:Organisation" : "glyphicon-briefcase",
+        "mnt:Place": "glyphicon-map-marker",
+        "mnt:Miscellany" : "glyphicon-tag"        
+    }
+    w2type = {
+        "PERSON":"mnt:Person",
+        "ORG":"mnt:Organisation",
+        "PLACE":"mnt:Place",
+        "MISC":"mnt:Miscellany"
+    };
+    
+    type2w = {
+        "mnt:Person":"PERSON",
+        "mnt:Organisation":"ORG",
+        "mnt:Place":"PLACE",
+        "mnt:Miscellany":"MISC"
+    };
+    
     updateAnnotatedSentHTML = function(idd){
          //console.log("updateAnnotatedSentHTML..");
          var doc = D[idd];
@@ -968,7 +1029,15 @@ $(document).ready(function() {
                          }
                          ann["overlap"] = false;
                      }
-                     httpAnnotation = '<span ide="'+ann["idA"]+'"  class="blueLabel classlabelAnnotation"  data-toggle="tooltip" title="'+ann["uri"].join()+'" '+st+'>'+label+'</span>';
+                     //--
+                     var mentionType = "";
+                     var ttype = typeOfAnn(ann["uri"]); // como cada anotacion puede tener mas de un enlace entonces aqui devuelvo el tipo del enlace, dando preferencia a [PERSON, ORG, PLACE] sobre MISC, si no hay enlace devuelvo undefined
+                     console.log(ttype);
+                     if ( ttype != undefined){
+                       mentionType = '<i class="glyphicon '+type2icon[ttype]+'"></i>&nbsp;';  
+                     }
+                     //--
+                     httpAnnotation = '<span ide="'+ann["idA"]+'"  class="blueLabel classlabelAnnotation"  data-toggle="tooltip" title="'+ann["uri"].join()+'" '+st+'>'+mentionType+label+'</span>';
                      textOut = textOut + sent.substring(pos,ini) + httpAnnotation;
                      pos = fin;
                  }  
@@ -2065,12 +2134,36 @@ $(document).ready(function() {
         //$("#modalModifyAnnotationSelectURI").val(ann["uri"]);
         remove_input_uris();
         $("#modalModifyAnnotationSelectURI").val("");
+        $("#modalModifyAnnotationSelectURI").attr("mentiontype","- Select Type -");
+        $("#btn_type_modalModifyAnnotationSelectURI").html("- Select Type -");
         for (k in ann["uri"]){
             var text = ann["uri"][k];
+            
+            var text_type = "- Select Type -";
+            var mtype = "- Select Type -";
+            var ttyp = link2type[text];            
+            if (ttyp != undefined){
+                mtype = type2w[ttyp];
+                if (mtype != undefined){
+                    text_type = '<i class="glyphicon '+type2icon[ttyp]+'"></i>'+mtype;
+                    console.log("\n////////////////////\n text:",text,"    ttyp: ",ttyp,"    mtype:",mtype);
+                }
+                
+            }
+
             var html ='<div class="control-group input-group taIdentRefContainer" style="margin-top:10px">'+
-                      '<input id="annotation_'+k+'" value="'+text+'" type="text" name="addmore[]" class="form-control taIdentRef" placeholder="Enter Name Here">'+
-                      '<div class="input-group-btn"> '+//'<button class="btn btn-info link" type="button"><i class="glyphicon glyphicon-link"></i> <a href="'+text+'" target="_blank">Link</a></button>'+
-                      '<button class="btn btn-info link" type="button" onclick="window.open(\''+text+'\',\'_blank\')"><i class="glyphicon glyphicon-link"></i>Link</button>'+
+                      '<input id="annotation_'+k+'" mentiontype="'+mtype+'" value="'+text+'" type="text" name="addmore[]" class="form-control taIdentRef" placeholder="Link of the selected entity mention">'+
+                      '<div class="input-group-btn"> '+
+                          '<button id="btn_type_annotation_'+k+'" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-    haspopup="true" aria-expanded="false">'+ text_type+
+                          '</button>'+
+                          '<div class="dropdown-menu">'+
+                          '    <a onclick="dropdown_action(\'annotation_'+k+'\',\'- Select Type -\');" class="dropdown-item"  href="#">- Select Type -</a>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+k+'\',\'PERSON\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-user"></i> PERSON</a>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+k+'\',\'ORG\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+k+'\',\'PLACE\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>'+
+                          '    <div class="dropdown-divider"></div>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+k+'\',\'MISC\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-tag"></i> MISC</a>'+
+                          '</div>'+
                           '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
                       '</div>'+
                    '</div>';
@@ -2182,14 +2275,40 @@ $(document).ready(function() {
     
     $(".add-more-modification").click(function(){ 
           ///var html = $(".copy").html();
-          ///console.log(html);
+          console.log("--------> AQUIIIIIIIIIIIII");
           var id = $("#modalModifyAnnotationSelectURI").attr("number");
-          var html ='<div class="control-group input-group taIdentRefContainer" style="margin-top:10px">'+
+           var mtype = $("#modalModifyAnnotationSelectURI").attr("mentiontype");
+          var text_type = "- Select Type -";
+          if (mtype != text_type){
+              var ttyp = w2type[mtype];
+              if  ( ttyp != undefined){
+                  text_type = '<i class="glyphicon '+type2icon[ttyp]+'"></i>'+mtype;
+              }
+          }
+          /*var html ='<div class="control-group input-group taIdentRefContainer" style="margin-top:10px">'+
                       '<input id="annotation_'+id+'" type="text" name="addmore[]" class="form-control taIdentRef" placeholder="Enter Name Here">'+
                       '<div class="input-group-btn"> '+
                           '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
                       '</div>'+
+                   '</div>';*/
+          
+          var html ='<div class="control-group input-group taIdentRefContainer" style="margin-top:10px">'+
+                      '<input id="annotation_'+id+'" mentiontype="'+mtype+'" type="text" name="addmore[]" class="form-control taIdentRef" placeholder="Link of the selected entity mention">'+
+                      '<div class="input-group-btn"> '+
+                          '<button id="btn_type_annotation_'+id+'" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-    haspopup="true" aria-expanded="false">'+ text_type+
+                          '</button>'+
+                          '<div class="dropdown-menu">'+
+                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'- Select Type -\');" class="dropdown-item"  href="#">- Select Type -</a>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'PERSON\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-user"></i> PERSON</a>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'ORG\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'PLACE\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>'+
+                          '    <div class="dropdown-divider"></div>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'MISC\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-tag"></i> MISC</a>'+
+                          '</div>'+
+                          '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
+                      '</div>'+
                    '</div>';
+          
           
           $(".after-add-more-modification").after(html);
 
@@ -2236,12 +2355,29 @@ $(document).ready(function() {
                     list_uri.push(text);
                 }
                 
+                // -- added
+                console.log("---------------------------------\n",text);
+                if (link2type[text] == undefined){
+                    var typeMention = $(this).attr("mentiontype");
+                    if (typeMention != '- Select Type -'){
+                        link2type[text] = w2type[typeMention];
+                        console.log("uri:",text,"   w2type[typeMention]:",w2type[typeMention],"   typeMention:",typeMention);
+                    }
+                }
+                
             });
 
+            /*  OJOOOOOOO */
             var in_uri = $("#modalModifyAnnotationSelectURI").val();
             if (in_uri){
                 list_uri.push(in_uri);
+                var typeMention = $("#modalModifyAnnotationSelectURI").attr("mentiontype");
+                if (typeMention != '- Select Type -' ){
+                    link2type[in_uri] = w2type[typeMention];
+                    console.log("in_uri:",in_uri,"   w2type[typeMention]:",w2type[typeMention],"    typeMention:",typeMention);
+                }
             }
+            
                
             if (list_uri.length == 0){
                 warning_alert("Debe de entrar una URI");
@@ -2345,9 +2481,27 @@ $(document).ready(function() {
           ///var html = $(".copy").html();
           ///console.log(html);
           var id = $("#modalSelectURI").attr("number");
+          var mtype = $("#modalSelectURI").attr("mentiontype");
+          var text_type = "- Select Type -";
+          if (mtype != text_type){
+              var ttyp = w2type[mtype];
+              if  ( ttyp != undefined){
+                  text_type = '<i class="glyphicon '+type2icon[ttyp]+'"></i>'+mtype;
+              }
+          }
           var html ='<div class="control-group input-group taIdentRefContainer" style="margin-top:10px">'+
-                      '<input id="annotation_'+id+'" type="text" name="addmore[]" class="form-control taIdentRef" placeholder="Enter Name Here">'+
+                      '<input id="annotation_'+id+'" mentiontype="'+mtype+'" type="text" name="addmore[]" class="form-control taIdentRef" placeholder="Link of the selected entity mention">'+
                       '<div class="input-group-btn"> '+
+                          '<button id="btn_type_annotation_'+id+'" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-    haspopup="true" aria-expanded="false">'+ text_type+
+                          '</button>'+
+                          '<div class="dropdown-menu">'+
+                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'- Select Type -\');" class="dropdown-item"  href="#">- Select Type -</a>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'PERSON\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-user"></i> PERSON</a>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'ORG\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'PLACE\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>'+
+                          '    <div class="dropdown-divider"></div>'+
+                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'MISC\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-tag"></i> MISC</a>'+
+                          '</div>'+
                           '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
                       '</div>'+
                    '</div>';
@@ -2358,6 +2512,8 @@ $(document).ready(function() {
           $("#annotation_"+id).val(text);
           $("#modalSelectURI").attr("number",parseInt(id)+1);
           $("#modalSelectURI").val("");
+          $("#btn_type_modalSelectURI").html("- Select Type -");
+          $("#modalSelectURI").attr("mentiontype","- Select Type -");
           $("#modalSelectURI").focus();
 
       });
@@ -2984,6 +3140,48 @@ $(document).ready(function() {
             }]
         });
     });*/
+    
+    
+    
+    //---- buttons of types in the modals of annotacion and modification
+    //$(".dropdown-item").click(function(){
+    /*$(".dropdown-item").on('click', function(){
+        
+        var id_parent = $(this).attr("mainid");
+        var html_= $(this).html();
+        $("#btn_type_"+id_parent).html(html_);
+        console.log("HTML:"+html_);
+        if (html_ != "- Select Type -"){
+            $("#"+id_parent).attr("mentiontype",html_.split("i> ")[1]);            
+        }
+        else{
+            $("#"+id_parent).attr("mentiontype","- Select Type -");  
+        }
+        
+    });*/
+    
+    dropdown_action = function(id_parent, mtype){
+        console.log(id_parent, mtype);
+        var html_ = "- Select Type -";
+        if (mtype != html_){
+            var ttyp = w2type[mtype];
+            if  ( ttyp != undefined){
+                html_ = '<i class="glyphicon '+type2icon[ttyp]+'"></i> '+mtype;
+            }
+        }
+          
+        $("#btn_type_"+id_parent).html(html_);
+        console.log("antes");
+        if (mtype != "- Select Type -"){
+            console.log("1",mtype);
+            console.log("--->",$("#"+id_parent).attr("mentiontype"),mtype);
+            $("#"+id_parent).attr("mentiontype",mtype);            
+        }
+        else{
+            console.log("2");
+            $("#"+id_parent).attr("mentiontype","- Select Type -");  
+        }
+    }
 
 });
 
