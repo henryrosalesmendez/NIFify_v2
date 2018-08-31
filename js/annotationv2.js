@@ -1085,6 +1085,25 @@ $(document).ready(function() {
 
     // Construyo las tripletas NIF de las oraciones
     updateAnnotatedSentNIF = function(idd){
+        
+        // -- Added
+        var Totalitem_type = "";
+        var place_mention = "None";
+        var tp = $('#btn_place_types_entities').html();
+        if (tp == '<i class="glyphicon glyphicon-arrow-up"></i>'){
+            place_mention = "Top";
+        }
+        else if (tp == '<i class="glyphicon glyphicon-arrow-down"></i>'){
+            place_mention = "Bottom";
+        }
+        else if (tp == '<i class="glyphicon glyphicon-random"></i>'){
+            place_mention = "Mix";
+        }
+        //alert(place_mention);
+        
+        // --------
+        
+        
         //console.log("updateAnnotatedSentNIF...");
         var doc = D[idd];
         var inDocCounter = doc["inDocCounter"];
@@ -1164,18 +1183,45 @@ $(document).ready(function() {
                              nifAnnotation = nifAnnotation + "        itsrdf:taClassRef "+temp_tag+" ;\n";
                          }
                      }
+                     var item_type = "";
                      for (k in ann["uri"]){
                          var a_ = ann["uri"][k];
                          nifAnnotation = nifAnnotation + "        itsrdf:taIdentRef <"+a_+"> ";
                          if (k == ann["uri"].length-1){ //last
                              nifAnnotation = nifAnnotation + ".\n\n";
                          } else{nifAnnotation = nifAnnotation + ";\n";}
+                         
+                         // entity type --
+                         var tp = link2type[a_];
+                         console.log("0000 tp:",tp,"  aaaa:",a_);
+                         if (tp != undefined){
+                               item_type = item_type + "<https://en.wikipedia.org/wiki/Michael_Jackson> mnt:entityType "+tp+" ." ;
+                         }
+                         // ---
                      }
                      res = res + nifAnnotation;
+                     
+                     console.log("item_type:",item_type);
+                     if (place_mention == "Mix"){
+                         res = res + item_type + "\n\n";
+                     }
+                     else{
+                         Totalitem_type = Totalitem_type + item_type + "\n";
+                    }
+                     
+                     
                  }  
             }
             overall = overall + nsent +1;
         }
+        
+        if (place_mention == "Top"){
+            res = Totalitem_type + "\n" + res;
+        } 
+        else if (place_mention == "Bottom"){
+            res = res + Totalitem_type + "\n";
+        }
+        
         final_res = replaceAll(res,"<","&lt;");
         final_res = replaceAll(final_res,"<","&gt;");
         final_res = replaceAll(final_res,"\n","<br>");
@@ -2362,6 +2408,9 @@ $(document).ready(function() {
                     if (typeMention != '- Select Type -'){
                         link2type[text] = w2type[typeMention];
                         console.log("uri:",text,"   w2type[typeMention]:",w2type[typeMention],"   typeMention:",typeMention);
+                    }
+                    else {
+                        delete link2type[text];
                     }
                 //}
                 
