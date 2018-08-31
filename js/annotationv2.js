@@ -2157,12 +2157,12 @@ $(document).ready(function() {
                           '<button id="btn_type_annotation_'+k+'" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-    haspopup="true" aria-expanded="false">'+ text_type+
                           '</button>'+
                           '<div class="dropdown-menu">'+
-                          '    <a onclick="dropdown_action(\'annotation_'+k+'\',\'- Select Type -\');" class="dropdown-item"  href="#">- Select Type -</a>'+
-                          '    <a onclick="dropdown_action(\'annotation_'+k+'\',\'PERSON\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-user"></i> PERSON</a>'+
-                          '    <a onclick="dropdown_action(\'annotation_'+k+'\',\'ORG\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>'+
-                          '    <a onclick="dropdown_action(\'annotation_'+k+'\',\'PLACE\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>'+
+                          '    <a href="javascript:dropdown_action(\'annotation_'+k+'\',\'- Select Type -\');" class="dropdown-item">- Select Type -</a>'+
+                          '    <a href="javascript:dropdown_action(\'annotation_'+k+'\',\'PERSON\');" class="dropdown-item"><i class="glyphicon glyphicon-user"></i> PERSON</a>'+
+                          '    <a href="javascript:dropdown_action(\'annotation_'+k+'\',\'ORG\');" class="dropdown-item"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>'+
+                          '    <a href="javascript:dropdown_action(\'annotation_'+k+'\',\'PLACE\');" class="dropdown-item"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>'+
                           '    <div class="dropdown-divider"></div>'+
-                          '    <a onclick="dropdown_action(\'annotation_'+k+'\',\'MISC\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-tag"></i> MISC</a>'+
+                          '    <a href="javascript:dropdown_action(\'annotation_'+k+'\',\'MISC\');" class="dropdown-item"><i class="glyphicon glyphicon-tag"></i> MISC</a>'+
                           '</div>'+
                           '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
                       '</div>'+
@@ -2298,12 +2298,12 @@ $(document).ready(function() {
                           '<button id="btn_type_annotation_'+id+'" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-    haspopup="true" aria-expanded="false">'+ text_type+
                           '</button>'+
                           '<div class="dropdown-menu">'+
-                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'- Select Type -\');" class="dropdown-item"  href="#">- Select Type -</a>'+
-                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'PERSON\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-user"></i> PERSON</a>'+
-                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'ORG\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>'+
-                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'PLACE\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>'+
-                          '    <div class="dropdown-divider"></div>'+
-                          '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'MISC\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-tag"></i> MISC</a>'+
+                          '    <a href="javascript:dropdown_action(\'annotation_'+id+'\',\'- Select Type -\');" class="dropdown-item">- Select Type -</a>'+
+                          '    <a href="javascript:dropdown_action(\'annotation_'+id+'\',\'PERSON\');" class="dropdown-item"><i class="glyphicon glyphicon-user"></i> PERSON</a>'+
+                          '    <a href="javascript:dropdown_action(\'annotation_'+id+'\',\'ORG\');" class="dropdown-item"><i class="glyphicon glyphicon-briefcase"></i> ORG</a>'+
+                          '    <a href="javascript:dropdown_action(\'annotation_'+id+'\',\'PLACE\');" class="dropdown-item"><i class="glyphicon glyphicon-map-marker"></i> PLACE</a>'+
+                          '    <div href="javascript:dropdown-divider"></div>'+
+                          '    <a href="javascript:dropdown_action(\'annotation_'+id+'\',\'MISC\');" class="dropdown-item"><i class="glyphicon glyphicon-tag"></i> MISC</a>'+
                           '</div>'+
                           '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
                       '</div>'+
