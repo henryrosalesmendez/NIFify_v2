@@ -2502,6 +2502,7 @@ $(document).ready(function() {
                           '    <div class="dropdown-divider"></div>'+
                           '    <a onclick="dropdown_action(\'annotation_'+id+'\',\'MISC\');" class="dropdown-item"  href="#"><i class="glyphicon glyphicon-tag"></i> MISC</a>'+
                           '</div>'+
+                          
                           '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
                       '</div>'+
                    '</div>';
