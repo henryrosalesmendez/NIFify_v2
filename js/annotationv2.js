@@ -325,14 +325,14 @@ $(document).ready(function() {
                 
                 // -- added
                 console.log("---------------------------------\n",text);
-                if (link2type[text] == undefined){
+                //if (link2type[text] == undefined){
                     var typeMention = $(this).attr("mentiontype");
                     console.log("typeMention -->",typeMention)
                     if (typeMention != '- Select Type -'){
                         link2type[text] = w2type[typeMention];
                         console.log(text,"----->",typeMention);
                     }
-                }
+                //}
             });
 
             // OJOOOO
@@ -2357,13 +2357,13 @@ $(document).ready(function() {
                 
                 // -- added
                 console.log("---------------------------------\n",text);
-                if (link2type[text] == undefined){
+                //if (link2type[text] == undefined){
                     var typeMention = $(this).attr("mentiontype");
                     if (typeMention != '- Select Type -'){
                         link2type[text] = w2type[typeMention];
                         console.log("uri:",text,"   w2type[typeMention]:",w2type[typeMention],"   typeMention:",typeMention);
                     }
-                }
+                //}
                 
             });
 
@@ -3181,7 +3181,27 @@ $(document).ready(function() {
             console.log("2");
             $("#"+id_parent).attr("mentiontype","- Select Type -");  
         }
-    }
+    };
+    
+    dropdown_main = function(tp){
+        var html_ = '<i class="glyphicon glyphicon-minus"></i>';
+        if (tp == "None"){
+            html_ = '<i class="glyphicon glyphicon-minus"></i>';
+        }
+        else if (tp == "Top"){
+            html_ = '<i class="glyphicon glyphicon-arrow-up"></i>';
+        }
+        else if (tp == "Bottom"){
+            html_ = '<i class="glyphicon glyphicon-arrow-down"></i>';
+        }
+        else if (tp == "Mix"){
+            html_ = '<i class="glyphicon glyphicon-random"></i>';
+        }
+        
+        $('#btn_place_types_entities').html(html_);
+        buildNIFCorpora();
+        
+    };
 
 });
 

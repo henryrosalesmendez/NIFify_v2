@@ -79,6 +79,32 @@
               
            </div>
            <div style='float: right;'>
+              
+<!-- 
+              <div class="dropdown">
+  <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">a
+  <span class="caret"></span></button>
+  <ul class="dropdown-menu">
+    <li><a href="#">HTML</a></li>
+    <li><a href="#">CSS</a></li>
+    <li><a href="#">JavaScript</a></li>
+  </ul>
+</div>
+-->
+
+
+              <div class="input-group-btn " style="float:left!important; margin: 0 0 0 5px!important;"> 
+              <button id="btn_place_types_entities" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="glyphicon glyphicon-minus"></i></button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="javascript:dropdown_main('None');"><i class="glyphicon glyphicon-minus"></i> Exclude entity types</a>
+                    <a class="dropdown-item" href="javascript:dropdown_main('Top');"><i class="glyphicon glyphicon-arrow-up"></i> Place on top</a>
+                    <a class="dropdown-item" href="javascript:dropdown_main('Bottom');"><i class="glyphicon glyphicon-arrow-down"></i> Place on bottom</a>
+                    <a class="dropdown-item" href="javascript:dropdown_main('Mix');"><i class="glyphicon glyphicon-random"></i> Mix</a>
+                </div>
+              </div> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+              
               <button id="btn_4_annotation" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Make automatic annotations according the Dictionary stored."> <i class="fa fa-magic fa-lg"></i></button>
               <button id="btn_update" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Update the annotations in the NIF and viewer panels."> <i class="fa fa-refresh fa-lg"></i></button>
               <button id="btn_upload" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Upload a NIF file"> <i class="fa fa-upload fa-lg"></i></button>
@@ -86,6 +112,9 @@
               <button id="btn_review" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Enumerate the annotations and download a list of links of the annotations"> <i class="fa fa-eye fa-lg"></i></button>
               <button id="btn_inputNIF" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Update the NIF scope with an input NIF"> <i class="fa fa-hand-lizard-o fa-lg"></i></button>
               <button id="btn_hideNIF" type="button" class="btn btn-primary margin_right" data-toggle="tooltip" title="Show/Hide the NIF content"> <i class="fa fa-code fa-lg"></i></button>
+              
+              
+              
            </div>
         </div>
 
