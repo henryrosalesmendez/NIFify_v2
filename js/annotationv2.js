@@ -1232,20 +1232,26 @@ $(document).ready(function() {
                          } else{nifAnnotation = nifAnnotation + ";\n";}
                          
                          // entity type --
-                         var tp = link2type[a_];
-                         console.log("0000 tp:",tp,"  aaaa:",a_);
-                         if (tp != undefined){
-                               item_type = item_type + "<"+a_+"> mnt:entityType "+tp+" ." ;
+                         console.log("MMMMMMM-->a_:",a_," WrittedInNif:",WrittedInNif," WrittedInNif.indexOf(a_):",WrittedInNif.indexOf(a_));
+                         if (WrittedInNif.indexOf(a_)==-1){
+                             var tp = link2type[a_];
+                             console.log("0000 tp:",tp,"  aaaa:",a_);
+                             if (tp != undefined){
+                                   item_type = item_type + "<"+a_+"> mnt:entityType "+tp+" ." ;
+                             }
+                             
+                             WrittedInNif.push(a_);
                          }
+                         
                          // ---
                      }
                      res = res + nifAnnotation;
                      
                      console.log("item_type:",item_type);
-                     if (place_mention == "Mix"){
+                     if (place_mention == "Mix" && item_type!=""){
                          res = res + item_type + "\n\n";
                      }
-                     else{
+                     else if (item_type!=""){
                          Totalitem_type = Totalitem_type + item_type + "\n";
                     }
                      
@@ -1255,13 +1261,15 @@ $(document).ready(function() {
             overall = overall + nsent +1;
         }
         
-        if (place_mention == "Top"){
-            res = Totalitem_type + "\n" + res;
-        } 
-        else if (place_mention == "Bottom"){
-            res = res + Totalitem_type + "\n";
-        }
         
+        if (Totalitem_type!=""){
+            if (place_mention == "Top"){
+                res = Totalitem_type + "\n" + res;
+            } 
+            else if (place_mention == "Bottom"){
+                res = res + Totalitem_type + "\n";
+            }
+        }
         final_res = replaceAll(res,"<","&lt;");
         final_res = replaceAll(final_res,"<","&gt;");
         final_res = replaceAll(final_res,"\n","<br>");
@@ -1280,7 +1288,10 @@ $(document).ready(function() {
     
 
     //crea el nif de todo, documento, sentencias y sus anotaciones
+    WrittedInNif = []; // esta variable es para ir guardando los links que voy escribiendo
+    // en el fichero y asi no los repito
     buildNIFCorpora = function(){
+        WrittedInNif = [];
         $(".parent_div_show").remove();
         //CleanAnnotationDocument();
         nif = "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"+
