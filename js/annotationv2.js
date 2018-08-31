@@ -2485,6 +2485,8 @@ $(document).ready(function() {
           $("#annotation_"+id).val(text);
           $("#modalModifyAnnotationSelectURI").attr("number",parseInt(id)+1);
           $("#modalModifyAnnotationSelectURI").val("");
+          $("#modalModifyAnnotationSelectURI").attr("mentiontype","- Select Type -");
+          $("#btn_type_modalModifyAnnotationSelectURI").html("- Select Type -");
           $("#modalModifyAnnotationSelectURI").focus();
 
       });
