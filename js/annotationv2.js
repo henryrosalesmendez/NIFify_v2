@@ -414,11 +414,25 @@ $(document).ready(function() {
                 list_uri.push(text);
             }
             
+            var typeMention = $(this).attr("mentiontype");
+            console.log("typeMention -->",typeMention)
+            if (typeMention != '- Select Type -'){
+                link2type[text] = w2type[typeMention];
+                console.log(text,"----->",typeMention);
+            }
+            
         });
 
         var in_uri = $("#modalSelectURI").val();
         if (in_uri){
             list_uri.push(in_uri);
+            
+            var typeMention = $("#modalSelectURI").attr("mentiontype");
+            console.log("PPPPPPPRRRRRRRIIIIIIIIIMMMMMMEEEEERRRRRAAAA:",typeMention)
+            if (typeMention != '- Select Type -'){
+                link2type[in_uri] = w2type[typeMention];
+                console.log("in_uri:",in_uri,"   w2type[typeMention]:",w2type[typeMention],"    typeMention:",typeMention);
+            }
         }
            
         if (list_uri.length == 0){
@@ -439,12 +453,16 @@ $(document).ready(function() {
         
         var list_tag = [];
         var listInputTaxonomy = $("#taxonomyAnn").select2('data');        
+        console.log("#####listInputTaxonomy-->",listInputTaxonomy);
+        console.log("#####temp_annotation:::",temp_annotation);
         if (listInputTaxonomy.length != 0){
+            console.log("## entre");
             for (i in listInputTaxonomy){
                 var v = listInputTaxonomy[i];
                 list_tag.push(v["text"])
             }
             temp_annotation["tag"] = list_tag;
+            console.log("#### tag:",list_tag);
         }         
             
         
@@ -491,10 +509,13 @@ $(document).ready(function() {
                       "id_sentence": ids,
                       "uridoc":temp_annotation["uridoc"],
                       //"uridoc": Sentences[ids]["uridoc"],
-                      "tag": temp_annotation["tag"],
                       "label":t,
                       "idA": A.length
                   });
+                  
+                  if ("tag" in temp_annotation){ 
+                      A["tag"] = temp_annotation["tag"];                      
+                  }
               }
 
             }
@@ -520,11 +541,25 @@ $(document).ready(function() {
                 list_uri.push(text);
             }
             
+            var typeMention = $(this).attr("mentiontype");
+            console.log("typeMention -->",typeMention)
+            if (typeMention != '- Select Type -'){
+                link2type[text] = w2type[typeMention];
+                console.log(text,"----->",typeMention);
+            }
+            
         });
 
         var in_uri = $("#modalSelectURI").val();
         if (in_uri){
             list_uri.push(in_uri);
+            
+            var typeMention = $("#modalSelectURI").attr("mentiontype");
+            console.log("PPPPPPPRRRRRRRIIIIIIIIIMMMMMMEEEEERRRRRAAAA:",typeMention)
+            if (typeMention != '- Select Type -'){
+                link2type[in_uri] = w2type[typeMention];
+                console.log("in_uri:",in_uri,"   w2type[typeMention]:",w2type[typeMention],"    typeMention:",typeMention);
+            }
         }
            
         if (list_uri.length == 0){
@@ -596,11 +631,15 @@ $(document).ready(function() {
                           "uri":list_uri, 
                           "id_sentence": ids,
                           "uridoc":doc["uri"],
-                          "tag": temp_annotation["tag"],
+                          //"tag": temp_annotation["tag"],
                           //"uridoc": Sentences[ids]["uridoc"],
                           "label":t,
                           "idA": A.length
                       });
+                      
+                      if ("tag" in temp_annotation){ 
+                          A["tag"] = temp_annotation["tag"];                      
+                      }
                   }
 
                 }
@@ -1019,6 +1058,7 @@ $(document).ready(function() {
 
                      var st = "";
                      if ("tag" in ann){
+                         console.log("ann:::::",ann);
                          if (ann["tag"].indexOf("tax:Ambiguous")>-1){
                              st = 'style="background-color: #5cb85c;"';
                          }
