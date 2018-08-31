@@ -1235,7 +1235,7 @@ $(document).ready(function() {
                          var tp = link2type[a_];
                          console.log("0000 tp:",tp,"  aaaa:",a_);
                          if (tp != undefined){
-                               item_type = item_type + "<https://en.wikipedia.org/wiki/Michael_Jackson> mnt:entityType "+tp+" ." ;
+                               item_type = item_type + "<"+a_+"> mnt:entityType "+tp+" ." ;
                          }
                          // ---
                      }
@@ -1581,7 +1581,23 @@ $(document).ready(function() {
 
 
     ///----
-    
+    trim_1 = function(txt){
+        var ini = 0;
+        var fin = txt.length-1;
+        
+        while ((txt[ini] == " " || txt[ini] == "<" || txt[ini] == ">") && ini!=txt.lenth){
+            ini = ini +1;
+            //console.log("avoiding ini:",txt[ini-1]);
+        }
+        
+        while ((txt[fin] == " " || txt[fin] == "<" || txt[fin] == ">" || txt[fin] == "." || txt[fin] == "\n") && fin!=0){
+            fin = fin -1;
+            //console.log("avoiding fin:",txt[fin+1]);
+        }
+        
+        //console.log(ini,fin);
+        return txt.substr(ini,fin-ini+1);
+    }
     
     $("#btn_inputNIF").click(function(){   // que no necesite star ordenado el fichero
         //$(".parent_div_show").remove();
@@ -1605,6 +1621,7 @@ $(document).ready(function() {
         D = [];
         inDocCounter = 1;
         for (i in L){
+            //console.log(i);
             var l_raw = L[i];
             var l = l_raw.trim();
             if (l.length == 0){
@@ -1618,7 +1635,20 @@ $(document).ready(function() {
             else { //end of the chunk
                 chunk = chunk + l;
                 var n_chunk = chunk.length;
-                if (chunk.indexOf("nif:sourceUrl")!=-1){ // Document
+                if (chunk.indexOf("mnt:entityType")!=-1){ // entity type
+                    var trp = chunk.split("mnt:entityType");
+                    console.log("trp:",trp,"   trp.length:",trp.length);
+                    if (trp.length == 2){
+                        var s = trim_1(trp[0]);
+                        console.log("s:",s);
+                        
+                        var o = trim_1(trp[1]);
+                        console.log("o:",o);
+                        link2type[s] = o;
+                    }
+                    
+                }
+                else if (chunk.indexOf("nif:sourceUrl")!=-1){ // Document
                     var u_text = chunk.substring(p_ref, n_chunk);
                     var i_number = u_text.indexOf("<");
                     var p_number = u_text.indexOf("#");
