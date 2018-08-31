@@ -1125,9 +1125,9 @@ $(document).ready(function() {
 
     // Construyo las tripletas NIF de las oraciones
     updateAnnotatedSentNIF = function(idd){
-        
+        /*
         // -- Added
-        var Totalitem_type = "";
+        //var Totalitem_type = "";
         var place_mention = "None";
         var tp = $('#btn_place_types_entities').html();
         if (tp == '<i class="glyphicon glyphicon-arrow-up"></i>'){
@@ -1138,7 +1138,7 @@ $(document).ready(function() {
         }
         else if (tp == '<i class="glyphicon glyphicon-random"></i>'){
             place_mention = "Mix";
-        }
+        }*/
         //alert(place_mention);
         
         // --------
@@ -1245,10 +1245,10 @@ $(document).ready(function() {
                      }
                      res = res + nifAnnotation;
                      if (place_mention == "Mix" && item_type!=""){
-                         res = res + item_type + "\n\n";
+                         res = res + item_type + "\n";
                      }
                      else if (item_type!=""){
-                         Totalitem_type = Totalitem_type + item_type + "\n";
+                         Totalitem_type = Totalitem_type + item_type;
                     }
                      
                      
@@ -1258,14 +1258,14 @@ $(document).ready(function() {
         }
         
         
-        if (Totalitem_type!=""){
+        /*if (Totalitem_type!=""){
             if (place_mention == "Top"){
                 res = Totalitem_type + "\n" + res;
             } 
             else if (place_mention == "Bottom"){
                 res = res + Totalitem_type + "\n";
             }
-        }
+        }*/
         final_res = replaceAll(res,"<","&lt;");
         final_res = replaceAll(final_res,"<","&gt;");
         final_res = replaceAll(final_res,"\n","<br>");
@@ -1282,29 +1282,73 @@ $(document).ready(function() {
         return updateAnnotatedSentNIF(idd);
     }
     
+    
+    
 
     //crea el nif de todo, documento, sentencias y sus anotaciones
     WrittedInNif = []; // esta variable es para ir guardando los links que voy escribiendo
     // en el fichero y asi no los repito
+    Totalitem_type = ""; // Esta variable es para guardar las annotaciones de los enlces mnt:entityType, y ver si los pongo a inicio, final etc
+    place_mention = ""; // Esta me dice si poner estas entityType al inicio, medio o final
     buildNIFCorpora = function(){
         WrittedInNif = [];
+        Totalitem_type = "";
+        // -- Added
+        //var Totalitem_type = "";
+        place_mention = "None";
+        var tp = $('#btn_place_types_entities').html();
+        if (tp == '<i class="glyphicon glyphicon-arrow-up"></i>'){
+            place_mention = "Top";
+        }
+        else if (tp == '<i class="glyphicon glyphicon-arrow-down"></i>'){
+            place_mention = "Bottom";
+        }
+        else if (tp == '<i class="glyphicon glyphicon-random"></i>'){
+            place_mention = "Mix";
+        }
+        
         $(".parent_div_show").remove();
         //CleanAnnotationDocument();
-        nif = "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"+
+        nif_head = "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"+
                  "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"+
                  "@prefix owl: <http://www.w3.org/2002/07/owl#> .\n"+
                  "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n"+
                  "@prefix nif: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .\n"+
                  "@prefix itsrdf: <http://www.w3.org/2005/11/its/rdf#> .\n"+
                  "@prefix dbo: <http://dbpedia.org/ontology/> .\n\n";
-        nif = replaceAll(nif,"<","&lt;");
-        nif = replaceAll(nif,"<","&gt;");
-        nif = replaceAll(nif,"\n","<br>");
-        nif = replaceAll(nif," ","&nbsp;");
+
+        
+        nif_head = replaceAll(nif_head,"<","&lt;");
+        nif_head = replaceAll(nif_head,"<","&gt;");
+        nif_head = replaceAll(nif_head,"\n","<br>");
+        nif_head = replaceAll(nif_head," ","&nbsp;");
+        
+        nif = "";
         for (d in D){
             nif = nif + buildContext(d);
             nif = nif + buildNIFSentences(d);
         }
+        
+        if (Totalitem_type!=""){
+            Totalitem_type = replaceAll(Totalitem_type,"<","&lt;");
+            Totalitem_type = replaceAll(Totalitem_type,"<","&gt;");
+            Totalitem_type = replaceAll(Totalitem_type,"\n","<br>");
+            Totalitem_type = replaceAll(Totalitem_type," ","&nbsp;");
+            
+            if (place_mention == "Bottom"){
+                nif = nif_head + nif + Totalitem_type;
+            }
+            else if(place_mention == "Top"){
+                nif = nif_head + Totalitem_type +"<br>" + nif;
+            }
+            else if(place_mention == "None" || place_mention == "Mix"){
+                 nif = nif_head + nif;
+            }
+        }
+        else{
+            nif = nif_head + nif;
+        }
+        
         //$("#nifdoc").text(nif);
         document.getElementById('nifdoc').innerHTML = nif;
 
