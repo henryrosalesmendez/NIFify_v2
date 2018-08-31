@@ -1232,12 +1232,10 @@ $(document).ready(function() {
                          } else{nifAnnotation = nifAnnotation + ";\n";}
                          
                          // entity type --
-                         console.log("MMMMMMM-->a_:",a_," WrittedInNif:",WrittedInNif," WrittedInNif.indexOf(a_):",WrittedInNif.indexOf(a_));
                          if (WrittedInNif.indexOf(a_)==-1){
                              var tp = link2type[a_];
-                             console.log("0000 tp:",tp,"  aaaa:",a_);
                              if (tp != undefined){
-                                   item_type = item_type + "<"+a_+"> mnt:entityType "+tp+" ." ;
+                                   item_type = item_type + "<"+a_+"> mnt:entityType "+tp+" .\n" ;
                              }
                              
                              WrittedInNif.push(a_);
@@ -1246,8 +1244,6 @@ $(document).ready(function() {
                          // ---
                      }
                      res = res + nifAnnotation;
-                     
-                     console.log("item_type:",item_type);
                      if (place_mention == "Mix" && item_type!=""){
                          res = res + item_type + "\n\n";
                      }
@@ -2291,6 +2287,7 @@ $(document).ready(function() {
                           '    <div class="dropdown-divider"></div>'+
                           '    <a href="javascript:dropdown_action(\'annotation_'+k+'\',\'MISC\');" class="dropdown-item"><i class="glyphicon glyphicon-tag"></i> MISC</a>'+
                           '</div>'+
+                          '<button class="btn btn-info link" type="button" onclick="window.open(\''+text+'\',\'_blank\')"><i class="glyphicon glyphicon-link"></i>Link</button>'+
                           '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
                       '</div>'+
                    '</div>';
@@ -2418,7 +2415,7 @@ $(document).ready(function() {
                           '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
                       '</div>'+
                    '</div>';*/
-          
+          var text = $("#modalModifyAnnotationSelectURI").val();
           var html ='<div class="control-group input-group taIdentRefContainer" style="margin-top:10px">'+
                       '<input id="annotation_'+id+'" mentiontype="'+mtype+'" type="text" name="addmore[]" class="form-control taIdentRef" placeholder="Link of the selected entity mention">'+
                       '<div class="input-group-btn"> '+
@@ -2432,6 +2429,7 @@ $(document).ready(function() {
                           '    <div href="javascript:dropdown-divider"></div>'+
                           '    <a href="javascript:dropdown_action(\'annotation_'+id+'\',\'MISC\');" class="dropdown-item"><i class="glyphicon glyphicon-tag"></i> MISC</a>'+
                           '</div>'+
+                          '<button class="btn btn-info link" type="button" onclick="window.open(\''+text+'\',\'_blank\')"><i class="glyphicon glyphicon-link"></i>Link</button>'+
                           '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
                       '</div>'+
                    '</div>';
@@ -2439,7 +2437,7 @@ $(document).ready(function() {
           
           $(".after-add-more-modification").after(html);
 
-          var text = $("#modalModifyAnnotationSelectURI").val();
+          
           $("#annotation_"+id).val(text);
           $("#modalModifyAnnotationSelectURI").attr("number",parseInt(id)+1);
           $("#modalModifyAnnotationSelectURI").val("");
