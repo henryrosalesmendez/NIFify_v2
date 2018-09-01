@@ -2880,16 +2880,22 @@ $(document).ready(function() {
                             var first = true;
                             for (j in a["uri"]){
                                 var t = a["uri"][j];
+                                var l_ = "";
+                                var t_ = link2type[t];
+                                console.log("t_ --->>> ",t_);
+                                if (t_!=undefined){
+                                    l_ = " ["+type2w[t_]+"]";
+                                }                                
                                 if (first){
                                     var len = ide.length;
                                     var prefix_s = "";
                                     for (var k = len; k <4; k++) {
                                         prefix_s = prefix_s + " ";
                                     }
-                                    Text = Text +prefix_s+t+"\n";
+                                    Text = Text +prefix_s+t+l_+"\n";
                                 }
                                 else {
-                                    Text = Text +"        "+t+"\n";
+                                    Text = Text +"        "+t+l_+"\n";
                                 }
                                 first = false;
                             }
