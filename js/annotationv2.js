@@ -1226,13 +1226,31 @@ $(document).ready(function() {
                      var item_type = "";
                      for (k in ann["uri"]){
                          var a_ = ann["uri"][k];
-                         nifAnnotation = nifAnnotation + "        itsrdf:taIdentRef <"+a_+"> ";
+                         var a_w = "<" + a_;
+                         
+                         //--
+                         if (a_.indexOf("mnt:entityType")!=-1){
+                             var ttt = "mnt:Miscellany";
+                             if (a_.indexOf("mnt:Person")!=-1){
+                                 ttt = "mnt:Person";
+                             } 
+                             else if (a_.indexOf("mnt:Organisation")!=-1){
+                                 ttt = "mnt:Organisation";
+                             }
+                             else if (a_.indexOf("mnt:Place")!=-1){
+                                 ttt = "mnt:Place";
+                             }
+                             a_w = "[mnt:entityType "+ttt+"] ;\n        itsrdf:taIdentRef <https://en.wikipedia.org/wiki/NotInLexico"
+                         }
+                         //--
+                         
+                         nifAnnotation = nifAnnotation + "        itsrdf:taIdentRef "+a_w+"> ";
                          if (k == ann["uri"].length-1){ //last
                              nifAnnotation = nifAnnotation + ".\n\n";
                          } else{nifAnnotation = nifAnnotation + ";\n";}
                          
                          // entity type --
-                         if (WrittedInNif.indexOf(a_)==-1){
+                         if (a_.indexOf("mnt:entityType")==-1 && WrittedInNif.indexOf(a_)==-1){
                              var tp = link2type[a_];
                              if (tp != undefined){
                                    item_type = item_type + "<"+a_+"> mnt:entityType "+tp+" .\n" ;
