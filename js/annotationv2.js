@@ -3403,6 +3403,99 @@ $(document).ready(function() {
         buildNIFCorpora();
         
     };
+    
+    
+    
+    
+    // -------------------
+    // Stressing the pronouns in the text
+    
+    SingularPronouns = ['his', 'who', 'yourself', 'my', 'your', 'himself', 'everything', 'mine', 'myself', 'me' ,'each', 'yours', 'it', 'itself', 'whose', 'another', 'her', 'which', 'this', 'him', 'you', 'that', 'nobody', 'hers', 'someone', 'whom', 'either', 'its', 'what', 'herself'];
+    PluralPronouns = ['who', 'fewer', 'your', 'yours', 'few', 'themselves', 'their', 'they', 'several', 'theirs', 'others', 'these', 'whose', 'yourselves', 'those', 'many', 'which', 'whoever', 'you', 'that', 'them', 'whomever', 'both', 'us', 'whichever', 'ourselves', 'whom', 'we', 'our', 'what'];
+    
+    
+    $("#btn_stress_pronouns").click(function(){
+      BootstrapDialog.show({
+            title: 'Automatic Annotations',
+            message: 'Are you sure you want to add the annotations related to the pronouns?',
+            buttons: [{
+                cssClass: 'btn-primary',
+                label: 'Yes',
+                action: function(dialog) {
+                    stress_function();
+                    dialog.close();
+                }
+            }, {
+                label: 'No',
+                action: function(dialog) {
+                    dialog.close();
+                }
+            }]
+        });
+    });
+    
+    
+    
+    stress_function = function(){
+        var both = SingularPronouns.concat(PluralPronouns);
+        for (d in D){
+            doc = D[d];
+            _inDocCounter = doc["inDocCounter"];
+            var text = $("#inDoc"+_inDocCounter).val();
+            //console.log(text)
+            
+            for(i in both){
+                var t = both[i];
+                var plurality = "mnt:SingularNounPoS";
+                if (PluralPronouns.indexOf(t) != -1){
+                    plurality = "mnt:PluralNounPoS";
+                }
+                
+                //var t = d["label"];
+                var t_len = t.length;
+                var txt = text;
+                var p = txt.indexOf(t);
+                var overall = 0;
+                while (p!=-1){
+                    var ini = overall + p;
+                    var fin = overall + p + t_len;
+                    //var posInA = notAnnotatedYet(ini,fin);
+                    if (!existsOverlapping({"ini":ini, "fin":fin, "uridoc":doc["uri"]})){
+                    //if (posInA == -1){ 
+                        if ( (p==0 || txt[p-1] in punctuationsSign) && (p+t_len==txt.length || txt[p+t_len] in punctuationsSign) ){
+                            var ids = sent2id(ini,_inDocCounter);
+                            A.push({
+                                "ini":ini, 
+                                "fin":fin, 
+                                "uri":["https://en.wikipedia.org/wiki/NotInLexico"], 
+                                "id_sentence": ids,
+                                "tag": ["mnt:Pro-formPN", plurality, "mnt:CoreferenceRf", "mnt:Non-Overlapping", "mnt:LiteralRh","tax:Ambiguous"],
+                                "uridoc":doc["uri"],
+                                //"uridoc": Sentences[ids]["uridoc"],
+                                "label":t
+                            });
+                        }
+
+                    }
+                    else{ // I will add the missing annotations
+                        /*var U = A[posInA]["uri"];
+                        for (t in U){
+                            u = U[t];
+                            if ($.inArray(u,U) == -1){
+                                A[posInA]["uri"].push(u);
+                            }
+                        }*/
+                    }
+                    overall = fin;
+                    var temp_txt = txt.substr(p + t_len,txt.lenth);
+                    txt = temp_txt;
+                    p = txt.indexOf(t);
+                }
+            }
+        }
+        restar_idA_in_Annotations();
+        buildNIFCorpora(); 
+    };
 
 });
 
