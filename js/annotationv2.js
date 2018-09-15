@@ -9,6 +9,7 @@ $(document).ready(function() {
     inDocCounter = 1;
     dicc_uri2inDocCounter = {}
     link2type = {}; // va a guardar el tipo de mención de cada enlace ej, {"https://en.wikipedia.org/wiki/Michael_Jackson":"mnt:Person"}
+    _filter = []; // List Of Filter that you want apply
 
     warning_alert = function(text){
         BootstrapDialog.show({
@@ -1037,9 +1038,23 @@ $(document).ready(function() {
              if (SentencesAnnotations.length != 0){
                  var pos = 0;
                  for (j in SentencesAnnotations){
+                     
                      var index = parseInt(j);
                      //console.log(SentencesAnnotations.length);
                      ann = SentencesAnnotations[j];
+                     
+                     if (_filter.length != 0){
+                         var commonValues = _filter.filter(function(value) { 
+                            return ann["tag"].indexOf(value) > -1;
+                         });
+                         console.log("...>>");
+                         console.log(commonValues);
+                         console.log(commonValues.length);
+                         console.log(_filter);
+                         console.log(ann["tag"]);
+                         if (commonValues.length == 0){continue;}
+                     }
+                     
                      //console.log("-->",ann);
                      var ini = ann["ini"] - overall;
                      var fin = ann["fin"] - overall;
@@ -1309,6 +1324,7 @@ $(document).ready(function() {
     Totalitem_type = ""; // Esta variable es para guardar las annotaciones de los enlces mnt:entityType, y ver si los pongo a inicio, final etc
     place_mention = ""; // Esta me dice si poner estas entityType al inicio, medio o final
     buildNIFCorpora = function(){
+        //$.blockUI();
         WrittedInNif = [];
         Totalitem_type = "";
         // -- Added
@@ -1379,6 +1395,7 @@ $(document).ready(function() {
             }
             $(this).css('height', h);
         });
+        //$.unblockUI();
     };
 
 
@@ -2740,7 +2757,7 @@ $(document).ready(function() {
     $("#removeTaxonomy").click(function(){
       BootstrapDialog.show({
             title: 'Erasing all the Tags',
-            message: 'Are you sure you want to delete all the tags in the annotations?',
+            message: 'Are you sure that you want to delete all the tags in the annotations? This process is irreversible.',
             buttons: [{
                 cssClass: 'btn-primary',
                 label: 'Yes',
@@ -3496,8 +3513,100 @@ $(document).ready(function() {
         restar_idA_in_Annotations();
         buildNIFCorpora(); 
     };
+    
+    
+    
+    
+    
+    
+    
+    /// ---- filtering tags
+    $("#filterTaxonomy").click(function(){
+        var state = $("#filterTaxonomy").attr("state");
+        
+        var newstate = "Off";
+        if (state == "Off"){
+            newstate = "On";
+            $("#iconfilter").addClass("text-primary");
+            
+            BootstrapDialog.show({
+                title: 'Applying filters',
+                message: 'Are you sure that you want to apply the filter? In that way, only the annotations that match with them will be displayed in the visualization area and in the NIF format.',
+                buttons: [{
+                    cssClass: 'btn-primary',
+                    label: 'Yes',
+                    action: function(dialog) {
+                        apply_filter();
+                        dialog.close();
+                    }
+                }, {
+                    label: 'No',
+                    action: function(dialog) {
+                        dialog.close();
+                    }
+                }]
+            });
+            
+            
+        }
+        else {
+            newstate = "Off";
+            $("#iconfilter").removeClass("text-primary");
+            
+            
+            BootstrapDialog.show({
+                title: 'Removing filters',
+                message: 'Are you sure that you want to remove the filter? In that way, all the annotations will be displayed in the visualization area and in the NIF format.',
+                buttons: [{
+                    cssClass: 'btn-primary',
+                    label: 'Yes',
+                    action: function(dialog) {
+                        remove_filter();
+                        dialog.close();
+                    }
+                }, {
+                    label: 'No',
+                    action: function(dialog) {
+                        dialog.close();
+                    }
+                }]
+            });
+            
+            
+            
+        }
+        $("#filterTaxonomy").attr("state",newstate);
+    });
+    
+    
+    apply_filter = function(){
+        //_filter = ["mnt:LiteralRh"];
+        _filter = [];
+        var listInputTaxonomy = $("#taxonomyInput").select2('data'); //devuelve algo asi [{…}, {…}]
+                                                                 //                   0: {id: 2, text: "nerd:Airline"},
+                                                                 //                   1: {id: "ddd", text: "ddd"}
+        for (i in listInputTaxonomy){
+            t = listInputTaxonomy[i];
+            _filter.push(t["text"]);            
+        }
+        buildNIFCorpora();
+    }
+    
+    
+    remove_filter = function(){
+        _filter = [];
+        buildNIFCorpora();
+    }
+    
+    $("#cleanTaxonomy").click(function(){
+        $('#taxonomyInput').val('').trigger("change");
+    });
+    
+    
 
 });
+
+
 
 
 

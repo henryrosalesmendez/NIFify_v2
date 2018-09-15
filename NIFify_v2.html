@@ -18,7 +18,6 @@
 <link rel="stylesheet" type="text/css" href="css/select2.css">
 <script type="text/javascript" src="js/select2.js"></script>
 
-
 <meta charset="utf-8" />
  <script src="js/annotationv2.js"></script>
  <script src="js/dict.js"></script>
@@ -56,7 +55,9 @@
             <div class="input-group control-group">
                 <input type="text" style="width:100%!important;" id="taxonomyInput" class="taxonomyInputClass"/>
                 <div class="input-group-btn"> 
-                    <button id="removeTaxonomy" class="btn btn-secondary" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>
+                    <button id="filterTaxonomy" state="Off" class="btn btn-secondary" type="button"><i id="iconfilter" class="glyphicon glyphicon-filter"></i> Filter</button>
+                    <button id="cleanTaxonomy" class="btn btn-secondary" type="button"><i class="glyphicon glyphicon-erase"></i> Clear</button>
+                    <button id="removeTaxonomy" class="btn btn-secondary" type="button"><i class="glyphicon glyphicon-remove" style="color:red;"></i> Remove All</button>
                 </div>
             </div>
              
