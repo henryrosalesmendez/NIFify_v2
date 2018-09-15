@@ -1208,6 +1208,18 @@ $(document).ready(function() {
                  for (j in SentencesAnnotations){
                      //console.log(SentencesAnnotations.length);
                      ann = SentencesAnnotations[j];
+                     
+                     if (_filter.length != 0){
+                         var commonValues = _filter.filter(function(value) { 
+                            return ann["tag"].indexOf(value) > -1;
+                         });
+                         console.log("...>>");
+                         console.log(commonValues);
+                         console.log(commonValues.length);
+                         console.log(_filter);
+                         console.log(ann["tag"]);
+                         if (commonValues.length == 0){continue;}
+                     }
                      //console.log("-->",ann);
                      ini = ann["ini"] - overall;
                      fin = ann["fin"] - overall;
