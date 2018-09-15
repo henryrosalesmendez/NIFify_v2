@@ -3535,12 +3535,7 @@ $(document).ready(function() {
     /// ---- filtering tags
     $("#filterTaxonomy").click(function(){
         var state = $("#filterTaxonomy").attr("state");
-        
-        var newstate = "Off";
         if (state == "Off"){
-            newstate = "On";
-            $("#iconfilter").addClass("text-primary");
-            
             BootstrapDialog.show({
                 title: 'Applying filters',
                 message: 'Are you sure that you want to apply the filter? In that way, only the annotations that match with them will be displayed in the visualization area and in the NIF format.',
@@ -3558,14 +3553,8 @@ $(document).ready(function() {
                     }
                 }]
             });
-            
-            
         }
         else {
-            newstate = "Off";
-            $("#iconfilter").removeClass("text-primary");
-            
-            
             BootstrapDialog.show({
                 title: 'Removing filters',
                 message: 'Are you sure that you want to remove the filter? In that way, all the annotations will be displayed in the visualization area and in the NIF format.',
@@ -3583,15 +3572,15 @@ $(document).ready(function() {
                     }
                 }]
             });
-            
-            
-            
         }
-        $("#filterTaxonomy").attr("state",newstate);
+        
     });
     
     
     apply_filter = function(){
+        var newstate = "On";
+        $("#iconfilter").addClass("text-primary");
+        $("#filterTaxonomy").attr("state",newstate);
         //_filter = ["mnt:LiteralRh"];
         _filter = [];
         var listInputTaxonomy = $("#taxonomyInput").select2('data'); //devuelve algo asi [{…}, {…}]
@@ -3606,6 +3595,10 @@ $(document).ready(function() {
     
     
     remove_filter = function(){
+        var newstate = "Off";
+        $("#filterTaxonomy").attr("state",newstate);
+        $("#iconfilter").removeClass("text-primary");
+        
         _filter = [];
         buildNIFCorpora();
     }
