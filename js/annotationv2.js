@@ -1043,7 +1043,7 @@ $(document).ready(function() {
                      //console.log(SentencesAnnotations.length);
                      ann = SentencesAnnotations[j];
                      
-                     if (_filter.length != 0){
+                     if (_filter.length != 0 && ann["tag"]!=undefined && ann["tag"].length!=0){
                          var commonValues = _filter.filter(function(value) { 
                             return ann["tag"].indexOf(value) > -1;
                          });
@@ -1209,7 +1209,7 @@ $(document).ready(function() {
                      //console.log(SentencesAnnotations.length);
                      ann = SentencesAnnotations[j];
                      
-                     if (_filter.length != 0){
+                     if (_filter.length != 0 && ann["tag"]!=undefined && ann["tag"].length!=0){
                          var commonValues = _filter.filter(function(value) { 
                             return ann["tag"].indexOf(value) > -1;
                          });
