@@ -2823,10 +2823,10 @@ $(document).ready(function() {
     
     
     // find if there is annotated the mention started by "ini" until  "fin"
-    notAnnotatedYet = function(ini,fin){
+    notAnnotatedYet = function(ini,fin,udoc){
       for (k in A){
           var ann = A[k];
-          if (ann["ini"] == ini && ann["fin"] == fin){
+          if (ann["ini"] == ini && ann["fin"] == fin && ann["uridoc"]==udoc){
               return k; // it's already annotated
           }
       }
@@ -3608,16 +3608,112 @@ $(document).ready(function() {
     });
     
     
+    
+    //--------------------
+    // Boton para resaltar numeros
+    $("#btn_stress_numbers").click(function(){
+        BootstrapDialog.show({
+            title: 'Stressing number in the text',
+            message: 'Are you sure that you want to automatically annotate the numbers?',
+            buttons: [{
+                cssClass: 'btn-primary',
+                label: 'Yes',
+                action: function(dialog) {
+                    adding_tags_numbers();
+                    dialog.close();
+                }
+            }, {
+                label: 'No',
+                action: function(dialog) {
+                    dialog.close();
+                }
+            }]
+        });
+    });
+    
+    //dado un texto y una posicion identifica el largo del númeero que empieza en esa posicion en el texto
+    // y devuelve posición inicial y final, y el numero en si
+    pos_and_number = function(s,p){
+        var i = 0;
+        var label = "";
+        while (i+p<s.length && (
+            s[i+p] == "0" || s[i+p] == "1" || s[i+p] == "2" || s[i+p] == "3" || s[i+p] == "4" ||
+            s[i+p] == "5" || s[i+p] == "6" || s[i+p] == "7" || s[i+p] == "8" || s[i+p] == "9" || s[i+p] == ","
+        )  ){
+            label = label + s[i+p];
+            i = i + 1;            
+        }
+        
+        return {"ini":p, "fin":i+p, "label":label};
+    }
+    
+    //https://developer.mozilla.org/es/docs/Web/JavaScript/Guide/Regular_Expressions
+    adding_tags_numbers = function(){
+        /*
+        var regex = /\s[1234567890]*\s/g;
+        var par = "Esto es 1 una 2 623 prueba";
+        var myArray = par.search(regex);
+        //var myArray = regex.search ( "Esto es 1 una 2 623 prueba");
+        console.log(myArray);
+        //console.log ( "El valor de lastIndex es" + regex.lastIndex);
+        */
+        
+        var re = /\s([0-9]+[,]?[0-9])+\s/g ;  // /\d+\s/g;
+        for (d in D){
+            doc = D[d];
+            _inDocCounter = doc["inDocCounter"];
+            var text = $("#inDoc"+_inDocCounter).val();
+            
+            
+            while ((match = re.exec(text)) != null) {
+                console.log(match.index);
+                var pos = match.index +1;
+                var p_n = pos_and_number(text,pos);
+                var ids = sent2id(pos,_inDocCounter);
+                var plurality = "mnt:PluralNounPoS";
+                if (p_n["label"] == "1"){plurality = "mnt:SingularNounPoS";}
+                console.log(doc["uri"]);
+                var notYet = notAnnotatedYet(p_n["ini"],p_n["fin"],doc["uri"]);
+                console.log("notYet");
+                console.log(notYet);
+                if (notYet == -1){
+                    A.push({
+                        "ini":p_n["ini"],//ini, 
+                        "fin":p_n["fin"],//fin, 
+                        "uri":["https://en.wikipedia.org/wiki/"+p_n["label"]],//NotInLexico"], 
+                        "id_sentence": ids,
+                        "tag": ["mnt:NumericTemporalPN", plurality, "mnt:AntecedentRf", "mnt:Non-Overlapping", "mnt:LiteralRh","tax:Ambiguous"],
+                        "uridoc":doc["uri"],
+                        //"uridoc": Sentences[ids]["uridoc"],
+                        "label":p_n["label"]
+                    });
+                }
+                
+            }
+        }
+        restar_idA_in_Annotations();
+        buildNIFCorpora(); 
+        //remove_input_uris();
+    }
+    
+    
 
 });
 
 
+/*
 
+var paragraph = 'The quick brown fox jumped over the lazy dog. If the dog barked, was it really lazy?';
 
+// any character that is not a word character or whitespace
+var regex = /[^\w\s]/g;
 
+console.log(paragraph.search(regex));
+// expected output: 44
 
+console.log(paragraph[paragraph.search(regex)]);
 
-
+*/
 
 
 
