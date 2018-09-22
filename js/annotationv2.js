@@ -405,6 +405,29 @@ $(document).ready(function() {
         var text = $("#inDoc"+_inDocCounter).val();
         return text;
     }
+    
+    
+    changeAntecedentCorr = function(temp_tags,flag){
+        if (temp_tags == undefined){return [];}
+        var tags = [];
+        for (h in temp_tags){
+            t = temp_tags[h];
+            if (t == "mnt:AntecedentRf" && flag == false){
+                tags.push("mnt:CoreferenceRf");
+            }
+            else if (t == "mnt:CoreferenceRf" && flag == true){
+                tags.push("mnt:AntecedentRf");
+            }
+            else{
+                tags.push(t);
+            }
+        }
+        console.log("--->");
+        console.log(flag);
+        console.log(temp_tags);
+        console.log(tags);
+        return tags;
+    }
 
 
     $("#btn_annotate_this_doc").click(function(){ 
@@ -469,7 +492,7 @@ $(document).ready(function() {
         
         temp_annotation["idA"] = A.length;
         temp_annotation["uridoc"] = Sentences[temp_annotation["id_sentence"]]["uridoc"];
-        A.push(temp_annotation);
+        //A.push(temp_annotation);
         $('#myModal').modal("hide");
 
 
@@ -482,6 +505,7 @@ $(document).ready(function() {
         var txt = id2text(_inDocCounter)
         var p = txt.indexOf(t);
         var overall = 0;
+        var first_in_doc = true;
         while (p!=-1){
             var ini = overall + p;
             var fin = overall + p + t_len;
@@ -503,20 +527,37 @@ $(document).ready(function() {
             //if (posInA == -1){ 
               if ( (p==0 || txt[p-1] in punctuationsSign) && (p+t_len==txt.length || txt[p+t_len] in punctuationsSign) ){
                   var ids = sent2id(ini,_inDocCounter);
-                  A.push({
-                      "ini":ini, 
-                      "fin":fin, 
-                      "uri":list_uri, 
-                      "id_sentence": ids,
-                      "uridoc":temp_annotation["uridoc"],
-                      //"uridoc": Sentences[ids]["uridoc"],
-                      "label":t,
-                      "idA": A.length
-                  });
+                  
                   
                   if ("tag" in temp_annotation){ 
-                      A["tag"] = temp_annotation["tag"];                      
+                     var tags = changeAntecedentCorr(temp_annotation["tag"],first_in_doc);
+                     A.push({
+                            "ini":ini, 
+                            "fin":fin, 
+                            "uri":list_uri, 
+                            "id_sentence": ids,
+                            "uridoc":temp_annotation["uridoc"],
+                            //"uridoc": Sentences[ids]["uridoc"],
+                            "tag": tags,
+                            "label":t,
+                            "idA": A.length
+                        });                     
+                  }else{
+                      A.push({
+                            "ini":ini, 
+                            "fin":fin, 
+                            "uri":list_uri, 
+                            "id_sentence": ids,
+                            "uridoc":temp_annotation["uridoc"],
+                            //"uridoc": Sentences[ids]["uridoc"],
+                            "label":t,
+                            "idA": A.length
+                        });
+                      
                   }
+                  first_in_doc = false;
+                  console.log("))))))))))))");
+                  console.log(first_in_doc);
               }
 
             }
@@ -531,6 +572,9 @@ $(document).ready(function() {
         buildNIFCorpora();
         remove_input_uris();
     });
+    
+    
+    
 
 
 
@@ -591,7 +635,7 @@ $(document).ready(function() {
         
         temp_annotation["idA"] = A.length;
         temp_annotation["uridoc"] = Sentences[temp_annotation["id_sentence"]]["uridoc"];
-        A.push(temp_annotation);
+        //A.push(temp_annotation);
         $('#myModal').modal("hide");
 
 
@@ -600,7 +644,9 @@ $(document).ready(function() {
         var allow_overlaps = $("#cbox_overlaps").prop("checked");
         var t = temp_annotation["label"];
         var t_len = t.length;
+        var first_in_doc = true;
         for (d in D){
+            first_in_doc = true;
             doc = D[d];
             _inDocCounter = doc["inDocCounter"];
             var txt = id2text(_inDocCounter)
@@ -626,21 +672,36 @@ $(document).ready(function() {
                 //if (posInA == -1){ 
                   if ( (p==0 || txt[p-1] in punctuationsSign) && (p+t_len==txt.length || txt[p+t_len] in punctuationsSign) ){
                       var ids = sent2id(ini,_inDocCounter);
-                      A.push({
-                          "ini":ini, 
-                          "fin":fin, 
-                          "uri":list_uri, 
-                          "id_sentence": ids,
-                          "uridoc":doc["uri"],
-                          //"tag": temp_annotation["tag"],
-                          //"uridoc": Sentences[ids]["uridoc"],
-                          "label":t,
-                          "idA": A.length
-                      });
                       
-                      if ("tag" in temp_annotation){ 
-                          A["tag"] = temp_annotation["tag"];                      
+                      
+                      if ("tag" in temp_annotation){
+                          var tags = changeAntecedentCorr(temp_annotation["tag"],first_in_doc);
+                          A.push({
+                                "ini":ini, 
+                                "fin":fin, 
+                                "uri":list_uri, 
+                                "id_sentence": ids,
+                                "uridoc":doc["uri"],
+                                "tag": tags,
+                                //"uridoc": Sentences[ids]["uridoc"],
+                                "label":t,
+                                "idA": A.length
+                            });
                       }
+                      else{
+                          A.push({
+                                "ini":ini, 
+                                "fin":fin, 
+                                "uri":list_uri, 
+                                "id_sentence": ids,
+                                "uridoc":doc["uri"],
+                                //"tag": temp_annotation["tag"],
+                                //"uridoc": Sentences[ids]["uridoc"],
+                                "label":t,
+                                "idA": A.length
+                            });
+                      }
+                      first_in_doc = false;
                   }
 
                 }
