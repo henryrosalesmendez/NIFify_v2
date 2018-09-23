@@ -3758,6 +3758,100 @@ $(document).ready(function() {
     }
     
     
+    //--------------------
+    //--- Summary button
+    
+    $("#btn_summary").click(function(){
+        $("#sry_table").empty();
+        
+        var html_table = '<thead>'+
+            '<tr>'+
+                '<th scope="col">#</th>'+
+                '<th scope="col">Attribute</th>'+
+                '<th scope="col">Total</th>'+
+                '<th scope="col">Avg. by doc</th>'+
+            '</tr>'+
+        '</thead>'+
+        '<tbody>'+
+            '<tr>'+
+                '<th scope="row">1</th>'+
+                '<td>Documentos</td>'+
+                '<td id="sry_doc">0</td>'+
+                '<td>-</td>'+
+            '</tr>'+
+            '<tr>'+
+                '<th scope="row">2</th>'+
+                '<td>Sentencias</td>'+
+                '<td id="sry_sent">0</td>'+
+                '<td id="sry_sent_avg">0</td>'+
+            '</tr>'+
+            '<tr>'+
+                '<th scope="row">3</th>'+
+                '<td>Annotaciones</td>'+
+                '<td id="sry_ann">0</td>'+
+                '<td id="sry_ann_avg">0</td>'+
+            '</tr>'+
+        '</tbody>';
+            
+        
+        $("#sry_table").html(html_table);
+        // calculando cantidad de categorias
+        var H = {};
+        for (i in A){
+            var ann = A[i];
+            var tags = ann["tag"];
+            for (j in tags){
+                var tt = tags[j];                
+                if (tt in H){
+                    H[tt] =  H[tt] + 1;
+                }
+                else{
+                    H[tt] = 1;
+                }
+            }         
+        }
+        
+        
+        var T = {};
+        for (l in link2type){
+            var tt = link2type[l];           
+            if (tt in T){
+                T[tt] =  T[tt] + 1;
+            }
+            else{
+                T[tt] = 1;
+            }
+                    
+        }
+        
+        $("#sry_doc").html(D.length);
+        $("#sry_sent").html(Sentences.length);
+        $("#sry_sent_avg").html(Sentences.length/D.length);
+        $("#sry_ann").html(A.length);
+        $("#sry_ann_avg").html(A.length/D.length);
+        
+        
+        var pos = 4;
+        for (i in H){
+            var h = H[i];
+            $("#sry_table").append('<tr><th scope="row" class="text-primary">'+pos.toString()+'</th><td class="text-primary">'+i+'</td><td class="text-primary">'+h+'</td><td class="text-primary" >-</td></tr>');
+            pos = pos + 1;
+        }
+        
+        for (i in T){
+            var h = T[i];
+            $("#sry_table").append('<tr><th scope="row" class="text-success">'+pos.toString()+'</th><td class="text-success">'+i+'</td><td class="text-success">'+h+'</td><td class="text-success">-</td></tr>');
+            pos = pos + 1;
+        }
+        
+        //$("#sry_table").append('<tr><th scope="row">1</th><td>Documentos</td><td>0</td><td>-</td></tr>');
+        
+        
+        
+        $('#modalSummary').modal("show");
+    });
+    
+    
 
 });
 
