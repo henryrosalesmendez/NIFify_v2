@@ -1,24 +1,25 @@
 
 <head>
-
+<meta charset="utf-8" />
 <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">-->
-<link rel="stylesheet" href="css/bootstrap.min.css">
-<link rel="stylesheet" href="css/boostrap.4.3.chunck.css">
-<link rel="stylesheet" href="css/font-awesome.css">
-<link rel="stylesheet" href="css/annotator.css">
-<link rel="stylesheet" href="css/fileinput.min.css">
-<link rel="stylesheet" href="css/bootstrap-dialog.min.css">
+<link rel="stylesheet" href="css/bootstrap.min.css"></link>
+<link rel="stylesheet" href="css/boostrap.4.3.chunck.css"></link>
+<link rel="stylesheet" href="css/font-awesome.css"></link>
+<link rel="stylesheet" href="css/annotator.css"></link>
+<link rel="stylesheet" href="css/fileinput.min.css"></link>
+<link rel="stylesheet" href="css/bootstrap-dialog.min.css"></link>
 
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script type="text/javascript" src="js/fileinput.min.js"></script>
 <script type="text/javascript" src="js/bootstrap-dialog.min.js"></script> <!-- https://nakupanda.github.io/bootstrap3-dialog/ -->
-<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico"></link>
 
-<link rel="stylesheet" type="text/css" href="css/select2.css">
+<link rel="stylesheet" type="text/css" href="css/select2.css"></link>
 <script type="text/javascript" src="js/select2.js"></script>
+<script type="text/javascript" src="js/jquery.blockUI.js"></script>
 
-<meta charset="utf-8" />
+
  <script src="js/annotationv2.js"></script>
  <script src="js/dict.js"></script>
  <script type="text/javascript" src="js/encoder.js"></script>
@@ -41,7 +42,8 @@
             <ul class="nav navbar-nav navbar-right tabs" style="margin-top: 11px!important;">
                 <li id="docli" class="tab-link current" data-tab="doc">Document Annotation</li>
                 <li id="aceli" class="tab-link" data-tab="ace">ACE Format</li>
-                <li id="aceli" class="tab-link" data-tab="MSNBC">MSNBC Format</li>
+                <li id="msnbcli" class="tab-link" data-tab="MSNBC">MSNBC Format</li>
+                <li id="elsystemsli" class="tab-link" data-tab="elsystems">State-of-the-art Systems</li>
                 <li class="tab-link" data-tab="help">Help</li>
                 <!--<li class="nav-item"><a href="#help" data-toggle="tab">Help</a></li>-->
             </ul>
@@ -352,10 +354,42 @@ Example:
    
    
    
-   <!----- Multidocument Review 
-   <div id="multidocs" class="tab-content">
-   preba
-   </div> ---->
+   <!----- EL Systems ---->
+   <div id="elsystems" class="tab-content">
+       <div class="row padd1">
+           <div class="col-lg-12">
+             <textarea class="form-control" id="sys_inDoc" rows="3" style="min-height:300px;" placeholder="Enter the text for the annotation processt"></textarea>
+           </div>
+       </div>
+       <div class="row padd1"> 
+           <div class="col-lg-12">
+                <div class='bothside'>
+                    <div style='float: left;'>
+                        <select class="" id="sys_selector">
+                            <!--<option value="0">Babelfys</option>
+                            <option value="1">Babelfyr</option>
+                            <option value="2">DBpedia Spotlight</option> -->
+                        </select>
+                        <input placeholder="URI of the document" style="width:100%!important;height:35px;padding: 5px;"  id="sys_urldoc_input" type="text">
+                        <button id="sys_annotate_sentence" type="button" class="btn btn-success"> <i class="fa fa-hand-pointer-o fa-lg"></i> Annotate Sent.</button> 
+                        <button id="sys_annotate_document" type="button" class="btn btn-success"> <i class="fa fa-hand-pointer-o fa-lg"></i> Annotate Doc.</button> 
+                        
+                    </div>
+                    <div style='float: right;'>
+                        <button id="sys_split_sentence" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Split the text in sentences"> <i class="fa fa-bars fa-lg"></i></button>
+                        <!--<button id="bbb" type="button" class="btn btn-primary margin_right" data-toggle="tooltip" title="Show/Hide the NIF content"> <i class="fa fa-code fa-lg"></i></button>-->
+                    </div>
+                </div>
+           </div>     
+       </div> 
+       <div class="row padd1"> 
+            <br>
+            <div id="sys_DisplayBlock" class="col-lg-12"></div>
+       </div>
+   </div> 
+   
+   
+   
    
    
    

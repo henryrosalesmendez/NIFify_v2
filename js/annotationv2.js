@@ -57,10 +57,9 @@ $(document).ready(function() {
     }
 
 
-
-    $("#btn_1_split").click(function(){
- 
-         var text = $("#inDoc").val();
+    
+    splitBySentences = function(input_text){
+        var text = input_text;
          //var res = replaceAll(text,/\s\s+/i, ' ');
          //#res = replaceAll(res,/\.[^0123456789]/i, "\.\n");
          var res = "";
@@ -119,9 +118,13 @@ $(document).ready(function() {
              }
              anterior = text[i];
          }
-         $("#inDoc").val(res);
-         ///////$(this).prop( "disabled", true ); //Disable
-         ///////$("#btn_2_acept_sent").prop( "disabled", false ); //Enable
+         return res;
+    }
+
+    $("#btn_1_split").click(function(){
+        var inText = $("#inDoc").val();
+        var _res = splitBySentences(inText); 
+        $("#inDoc").val(_res);
     });
 
     $("#btn_2_acept_sent").click(function(){
@@ -389,15 +392,15 @@ $(document).ready(function() {
 
 
 
-    uridoc2id = function(uridoc){
-        for (d in D){
-            doc = D[d];
+    uridoc2id = function(A,uridoc){
+        for (d in A){
+            doc = A[d];
             if (doc["uri"] == uridoc){
                 var _inDocCounter = doc["inDocCounter"];
                 return _inDocCounter;
             }
         }
-        return "";
+        return -1;
     }
 
 
@@ -501,7 +504,7 @@ $(document).ready(function() {
         var allow_overlaps = $("#cbox_overlaps").prop("checked");
         var t = temp_annotation["label"];
         var t_len = t.length;
-        _inDocCounter = uridoc2id(temp_annotation["uridoc"]);
+        _inDocCounter = uridoc2id(D,temp_annotation["uridoc"]);
         var txt = id2text(_inDocCounter)
         var p = txt.indexOf(t);
         var overall = 0;
@@ -1108,11 +1111,11 @@ $(document).ready(function() {
                          var commonValues = _filter.filter(function(value) { 
                             return ann["tag"].indexOf(value) > -1;
                          });
-                         console.log("...>>");
-                         console.log(commonValues);
-                         console.log(commonValues.length);
-                         console.log(_filter);
-                         console.log(ann["tag"]);
+                         //console.log("...>>");
+                         //console.log(commonValues);
+                         //console.log(commonValues.length);
+                         //console.log(_filter);
+                         //console.log(ann["tag"]);
                          if (commonValues.length == 0){continue;}
                      }
                      
@@ -1397,7 +1400,6 @@ $(document).ready(function() {
     Totalitem_type = ""; // Esta variable es para guardar las annotaciones de los enlces mnt:entityType, y ver si los pongo a inicio, final etc
     place_mention = ""; // Esta me dice si poner estas entityType al inicio, medio o final
     buildNIFCorpora = function(){
-        //$.blockUI();
         WrittedInNif = [];
         Totalitem_type = "";
         // -- Added
@@ -1468,7 +1470,6 @@ $(document).ready(function() {
             }
             $(this).css('height', h);
         });
-        //$.unblockUI();
     };
 
 
@@ -3852,31 +3853,666 @@ $(document).ready(function() {
     });
     
     
+    
+    
+    ///---------------------------------------------------
+    // EL systems 
+    //MI_APIKEY = "c6d8a1d1-d912-42f8-80da-ccf1l49721t5";
+    MI_APIKEY = "c6d8a1d1-d912-42f8-80da-ccf1l49721t5";
+    sysA = [];
+    sysSentences = [];
+    sysD = [];
+    /*
+    D = []; // Documentos    {uri:"http://example.org/Doc1" "inDocCounter":1}
+    A = []; // Arreglo que va a tener las annotaciones, de la forma {"ini":1, "fin":3, "idA":1,  "uri":["http://example.org/enriry1","http://example.org/enriry2"], "tag":["ex:type1", ..], "id_sentence":1  "uridoc":"http://aaaa.doc1"}
+    Sentences = []; // Lista de oraciones del documento   {text:"..."  uridoc:"http://example.org/Doc1"}
+    */
+    
+    systems = {
+        0: {
+            "name":"Babelfy_only_named_entities",
+            "id":0,
+            "type":"POST",
+            "url":"https://babelfy.io/v1/disambiguate",
+            "text":"",
+            "lang":"EN",
+            "key":"c6d8a6d4-c919-42f8-80da-ccf124975145"
+        },
+        1: {
+            "name":"Babelfy_with_concepts",
+            "id":1,
+            "lang":"EN",
+            "type":"POST"
+        },
+        2: {
+            "name":"DBpedia Spotlight",
+            "id":2,
+            "lang":"EN",
+            "type":"POST"
+        },
+        3: {
+            "name":"AIDA",
+            "id":3,
+            "lang":"EN",
+            "type":"POST"
+        },
+        4: {
+            "name":"FREME NER",
+            "id":4,
+            "lang":"EN",
+            "type":"POST"
+        },
+        5: {
+            "name":"FRED",
+            "id":5,
+            "lang":"EN",
+            "type":"POST"
+        },
+        6: {
+            "name":"Tagme2",
+            "id":6,
+            "lang":"EN",
+            "type":"POST"
+        },
+        7: {
+            "name":"FOX",
+            "id":7,
+            "lang":"EN",
+            "type":"POST",
+            "model":""
+        },
+        8: {
+            "name":"StanfordEN-FOX",
+            "id":8,
+            "lang":"EN",
+            "type":"POST",
+            "model":"org.aksw.fox.tools.ner.en.StanfordEN"
+        },
+        9: {
+            "name":"BalieEN-FOX",
+            "id":9,
+            "lang":"EN",
+            "type":"POST",
+            "model":"org.aksw.fox.tools.ner.en.BalieEN"
+        },
+        10: {
+            "name":"OpenNLPEN-FOX",
+            "id":10,
+            "lang":"EN",
+            "type":"POST",
+            "model":"org.aksw.fox.tools.ner.en.OpenNLPEN"
+        },
+        11: {
+            "name":"IllinoisExtendedEN-FOX",
+            "id":11,
+            "lang":"EN",
+            "type":"POST",
+            "model":"org.aksw.fox.tools.ner.en.IllinoisExtendedEN"
+        },
+        12: {
+            "name":"Nerd-combined",
+            "id":12,
+            "lang":"EN",
+            "type":"POST",
+            "model":"combined"
+        },
+        
+    }
+    
+    //initializing
+    for (s_i in systems){
+        s = systems[s_i];
+        $("#sys_selector").append($('<option>', {
+            value: s["id"],
+            text: s["name"]
+        }));
+    }
+    
+    /*
+    $("#sys_annotate").click(function(){
+        var ido = $("#sys_selector").val();
 
+        //console.log(["values:",systems[ido]]);
+        var text = $("#sys_inDoc").val();
+
+        if (text == undefined || text == ""){
+            warning_alert("You should specify some text as input!");
+            return false;
+        }
+        
+        
+        systems[ido]["text"] = text;
+        $.ajax({
+            //data:params,
+            data:{"values":systems[ido]},
+            url: 'elsystems.php',
+            type: 'POST',
+            dataType: "html",
+            beforeSend: function(){},
+            success: function(response){
+                show_results(response);
+            },
+            error: function(response){console.log(["Error:",response]);}
+        });
+    });
+    */
+    
+    //RR = [];
+    current_iddoc = 0;
+    sincronism_ajax = function(pSent,ido_system){
+        if (pSent == sysSentences.length){
+            // end of the recurtion
+            //show_results_sentences();
+            add_annotations_to_display(current_iddoc);
+            $.unblockUI();
+        }
+        else{
+            systems[ido_system]["text"] = sysSentences[pSent]["text"];
+            $.ajax({
+                //data:params,
+                data:{"values":systems[ido_system]},
+                url: 'elsystems.php',
+                type: 'POST',
+                dataType: "html",
+                beforeSend: function(){},
+                success: function(response){
+                    console.log(["HUBO RESPONSE:",response]);
+                    var name_doc = $("#sys_urldoc_input").val();
+                    var _json_response = JSON.parse(response);
+                    var _json_sorted = getSortedAnnotations(_json_response);
+                    console.log(["_json_response:",_json_response]);
+                    console.log(["_json_sorted:",_json_sorted]);
+                    
+                    for (r in _json_sorted){
+                        var ann = _json_sorted[r];
+                        sysA.push({
+                            "uridoc": name_doc,
+                            "id_sentence":pSent,
+                            "idA" : sysA.length,
+                            "ini": ann["ini"],
+                            "fin": ann["fin"],
+                            "uri": ann["uri"],
+                        });
+                    }
+                    console.log(["pSent+1:",pSent+1,"   ido_system:",ido_system]);
+                    sincronism_ajax(pSent+1,ido_system);
+                    //RR.push(response.substr(13,response.length - 15 ));
+                },
+                error: function(response){
+                    warning_alert("There were errors in the system API");
+                    $.unblockUI();
+                    return false;
+                }
+            }); 
+        }        
+    }
+    
+    
+    sysEvaluationBySentence = false;
+    $("#sys_annotate_sentence").click(function(){
+        sysEvaluationBySentence = true;
+        sys_annotate();
+    });
+    
+    
+    $("#sys_annotate_document").click(function(){
+        sysEvaluationBySentence = false;
+        sys_annotate();
+    });
+    
+    sys_annotate = function(){
+        var ido = $("#sys_selector").val();
+
+        //console.log(["values:",systems[ido]]);
+        var text = $("#sys_inDoc").val();
+
+        if (text == undefined || text == ""){
+            warning_alert("You should specify some text as input!");
+            return false;
+        }
+        
+        // is the name of the document entered?
+        var name_doc = $("#sys_urldoc_input").val();
+        if (name_doc == "" || name_doc == undefined){
+            warning_alert("You should specify the URI of this document.");
+            return false;
+        }
+        
+        console.log('uridoc2id(sysD,name_doc):',uridoc2id(sysD,name_doc) );
+        if (uridoc2id(sysD,name_doc) != -1){
+            warning_alert("You must specify a new name for this document, different from the ones that have already been added.");
+            return false;
+        }
+        
+        if (sysEvaluationBySentence == true){
+            $.blockUI({ message: null });
+            var name_doc = $("#sys_urldoc_input").val();
+            var iddoc = sysD.length;
+            sysD.push({
+                "uri":name_doc,
+                "inDocCounter": iddoc,
+            });
+            
+            var ini_Sent = sysSentences.length;
+            var S = text.split("\n");
+            for (i in S){
+                var sent = S[i];
+                if (sent == ""){continue;}                
+                
+                var id_sentence = sysSentences.length;
+                sysSentences.push({
+                    "text":  sent,
+                    "uridoc": name_doc,
+                });
+            }
+            current_iddoc = iddoc;
+            sincronism_ajax(ini_Sent,ido);
+            //show_results('{"response":['+RR.join(",")+']}');            
+        }
+        else { // by document
+            systems[ido]["text"] = text;
+            $.blockUI({ message: null });
+            $.ajax({
+                //data:params,
+                data:{"values":systems[ido]},
+                url: 'elsystems.php',
+                type: 'POST',
+                dataType: "html",
+                beforeSend: function(){},
+                success: function(response){
+                    show_results(response);
+                    $.unblockUI();
+                },
+                error: function(response){
+                    warning_alert("There were errors in the system API");
+                    $.unblockUI();
+                }
+            }); 
+        }
+        /*response = '{"response":[{"ini":0,"fin":11,"DBpediaURL":"http://dbpedia.org/resource/Barack_Obama","WikipediaURL":"https://en.wikipedia.org/wiki/Barack_Obama","BabelNetURL":"http://babelnet.org/rdf/s03330021n"},{"ini":7,"fin":11,"DBpediaURL":"http://dbpedia.org/resource/Barack_Obama","WikipediaURL":"https://en.wikipedia.org/wiki/Barack_Obama","BabelNetURL":"http://babelnet.org/rdf/s03330021n"},{"ini":17,"fin":28,"DBpediaURL":"http://dbpedia.org/resource/Donald_Trump","WikipediaURL":"https://en.wikipedia.org/wiki/Donald_Trump","BabelNetURL":"http://babelnet.org/rdf/s03259764n"},{"ini":37,"fin":48,"DBpediaURL":"http://dbpedia.org/resource/Brand_New_Sin","WikipediaURL":"https://en.wikipedia.org/wiki/Brand_New_Sin","BabelNetURL":"http://babelnet.org/rdf/s01725291n"},{"ini":37,"fin":59,"DBpediaURL":"http://dbpedia.org/resource/United_States","WikipediaURL":"https://en.wikipedia.org/wiki/United_States","BabelNetURL":"http://babelnet.org/rdf/s00003341n"}]}';
+        show_results(response);
+        //Barack Obama and Donald Trump in the United State of America.
+        */
+    };
+    
+    
+    /*// type of response
+    [
+    {
+      "ini": 0,
+      "fin": 5,
+      "babelSynsetID": "bn:00216507n",
+      "DBpediaURL": "http://dbpedia.org/resource/Barack_(brandy)",
+      "BabelNetURL": "http://babelnet.org/rdf/s00216507n"
+    },
+    {
+      "ini": 5,
+      "fin": 11,
+      "babelSynsetID": "bn:03330021n",
+      "DBpediaURL": "http://dbpedia.org/resource/Barack_Obama",
+      "BabelNetURL": "http://babelnet.org/rdf/s03330021n"
+    }*/
+    show_results = function(resp){
+        //alert(resp);
+        console.log(resp);
+        var json_response = JSON.parse(resp);
+        if ("error" in json_response){
+            var json_response = JSON.parse(resp);
+            warning_alert("API error: " + json_response["error"]);
+            return false;
+        }
+        
+        var text = $("#sys_inDoc").val();
+        var json_sorted = getSortedAnnotations(json_response);
+        console.log(["json_sorted:",json_sorted]);
+        var name_doc = $("#sys_urldoc_input").val();
+        
+        // Adding this document to the environment
+        var iddoc = sysD.length;
+        sysD.push({
+            "uri":name_doc,
+            "inDocCounter": iddoc,
+        });
+        
+        
+        //if (sysEvaluationBySentence == false){
+            var id_sentence = sysSentences.length;
+            sysSentences.push({
+                "text":  text,
+                "uridoc": name_doc,
+            });
+        //}
+        //else{
+            
+        //}
+        
+        for (r in json_sorted){
+            var ann = json_sorted[r];
+            sysA.push({
+                "uridoc": name_doc,
+                "id_sentence":id_sentence,
+                "idA" : sysA.length,
+                "ini": ann["ini"],
+                "fin": ann["fin"],
+                "uri": ann["uri"],
+            });
+        }
+        
+        add_annotations_to_display(iddoc);
+    }
+    
+    
+    
+    /*show_results_sentences = funcion(){
+        // the input is in RR
+        alert("here in show_results_sentences");
+        console.log(["RR:",RR]);
+    }*/
+    
+    
+    wrapp_in_box = function(_html,_iddoc){
+        var _ido = $("#sys_selector").val();
+        var ttype_ann = "by Sentences";
+        if (sysEvaluationBySentence == false){
+            ttype_ann = "by Document";
+        }
+        var labels_html = '<span class="label label-info">#'+_iddoc+'</span>&nbsp;' +
+            '<span class="label label-info">Type of annotation: '+ttype_ann+'</span>&nbsp;' +
+            '<span class="label label-info">Annotator: '+systems[_ido]["name"]+'</span>';
+        return ''+
+        '<div id="sys_doc'+_iddoc+'" class="col-lg-12 row parent_div_show drop-shadow" style="margin-left:5px!important;">  '+      
+            '<div class="row">'+
+                //--
+                '<div id= "sys_labels'+_iddoc+'"class="col-lg-12">'+labels_html+'<br>'+
+                '</div>'+
+                //--
+                '<div class="col-lg-12">'+
+                    '<div class="input-group control-group">'+
+                        '<input class="sys_urldoc" iddoc="'+_iddoc+'" style="width:100%!important;height:35px;padding: 5px;" value="'+sysD[_iddoc]["uri"]+'" id="sys_urldoc'+_iddoc+'" type="text">'+
+                        '<div class="input-group-btn">'+
+                            '<button id="sys_modifyIdDoc'+_iddoc+'" class="btn btn-secondary sys_modifyIdDoc" type="button" iddoc="'+_iddoc+'"><i class="glyphicon glyphicon-edit"></i> Modify</button>'+
+                        '</div>'+
+                    '</div>'+
+                '</div>'+
+                '<div class="col-lg-12">'+ _html +
+                    //'<div class="div_parent">'+
+                    //    '<div class="right-wrapper">'+
+                    //        '<div class="right">'+
+                    //            '<div style="width: 100%;padding-left:10px;">dsdfsdfsf<br>&nbsp;</div>'+
+                    //        '</div>'+
+                    //    '</div>'+
+                    //    '<div class="left div_line"> &nbsp;1'+ 
+                    //        '<a href="javascript:delete_sentence(0)"><i style="color:red!important;" class="fa fa-trash"></i></a>'+
+                    //    '</div>'+
+                    //'</div>'+
+                '</div>'+
+            '</div>'+
+        '</div>'
+    }
+    
+    add_annotations_to_display = function(iddoc){
+        
+        var ini = 0;
+        var fin = 0;
+        var overall = 0;
+        //var pos = 0;
+        
+        console.log(["iddoc:",iddoc]);
+        var inDocCounter = sysD[iddoc]["inDocCounter"];
+        var urldoc = sysD[iddoc]["uri"];
+      
+        //var text = $("#sys_inDoc").val();
+        //var ntext = text.length;
+        var textOut = "";
+        var overall = 0;
+        var pos = 0;
+        
+        //var lasUriDoc = "";
+        for (i_s in sysSentences){
+            if (sysSentences[i_s]["uridoc"] != urldoc){
+                continue;
+            }
+            sent = sysSentences[i_s]["text"];
+            console.log("SSSEENNNTTT::",sysSentences[i_s]["text"]);
+            var temp_i = parseInt(i_s);
+
+            
+            textOut = textOut + '<div class="div_parent"><div class="right-wrapper"><div class="right"><div style="width: 100%;padding:10px;">';
+            
+            for (index in sysA){
+                
+                var ann = sysA[index];
+                console.log(['ann["id_sentence"]:',ann["id_sentence"],"   i_s:",i_s]);
+                if (ann["id_sentence"]!=i_s){ //ann["uridoc"] != urldoc 
+                    continue;
+                }
+                
+                ini = ann["ini"];
+                fin = ann["fin"]+1;
+                
+                
+                
+                var indexpp = parseInt(index) +1 ;
+                if (indexpp < sysA.length){ // si no es el ultimo, y además, hay overlapping
+                    
+                    var ann2 = sysA[indexpp];
+                    if (ann["fin"]>ann2["ini"] && ann["id_sentence"] == ann2["id_sentence"]){
+                        fin = ann2["ini"];
+                        ann["overlap"] = true;
+                        ann2["overlap"] = true;
+                        //console.log("OPTT");
+                    }
+                }
+                
+                var st = "";
+                if ("overlap" in ann){
+                    if (ann["overlap"] == true){
+                        st = 'style="background-color: #88783a;"';
+                    }
+                    else{
+                        st = 'style="background-color: #337ab7;"';
+                    }
+                    ann["overlap"] = false;
+                }
+                
+                //var label = text.substr(ini,fin-ini);
+                var label = sent.substring(ini,fin);
+                console.log("------------------");
+                console.log(["index:",index,"  ini:",ini,"   fin:",fin, "   pos:",pos]);
+                console.log(["label:",label]);
+                var httpAnnotation = '<span idesys="'+index+'" class="sysLabel" data-toggle="tooltip" title="'+ann["uri"].join()+'" '+st+'>'+label+'</span>';
+                //textOut = textOut + text.substring(pos,ini) + httpAnnotation;
+                textOut = textOut + sent.substring(pos,ini) + httpAnnotation;
+                pos = fin;
+                
+                //standarizing 
+                sysA[index]["ini_no_overall"] = ann["ini"];
+                sysA[index]["fin_no_overall"] = ann["fin"];
+                
+                sysA[index]["ini"] = ann["ini"] + overall;
+                sysA[index]["fin"] = ann["fin"] + overall;
+            }
+            // the remain 
+            console.log(["pos:",pos]);
+            textOut = textOut + sent.substr(pos)+"<br>&nbsp;";
+            pos = 0;
+
+            var temp_i_plus_1 = temp_i +1;
+            textOut = textOut + '</div></div></div>'+ 
+            '<div class="left div_line"> &nbsp;'+temp_i_plus_1.toString()+
+            //" <a href='javascript:delete_sentence("+temp_i.toString()+")'><i style='color:red!important;' class='fa fa-trash'></i></a>"+
+            '</div></div>';
+            overall = overall+sent.length+1;
+        } //-- aquiii
+        
+        //$("#sys_DisplayBlock").html(wrapp_in_box(textOut));
+        $("#sys_DisplayBlock").append(wrapp_in_box(textOut,iddoc));
+        $("#sys_urldoc_input").val("");
+    }
+    
+    
+    // obtengo la lista de anotaciones de una oración especificada en forma ordenada
+    getSortedAnnotations = function(json_response){
+        sysA_temp = [];
+        
+        // first, translate he json
+        for (k in json_response["response"]){
+            var ann = json_response["response"][k];
+            //console.log(["ann:",ann]);
+            //console.log(["-->",'babelSynsetID' in ann]);
+            var ta = {
+                "ini": parseInt(ann["ini"]),
+                "fin": parseInt(ann["fin"]),
+                "uri": []
+            };
+            if ('WikipediaURL' in ann){
+                ta["uri"].push(ann["WikipediaURL"]);
+            }
+            if ('DBpediaURL' in ann){
+                ta["uri"].push(ann["DBpediaURL"]);
+            }
+            if ('BabelNetURL' in ann){
+                ta["uri"].push(ann["BabelNetURL"]);
+            }
+            if ('YAGOid' in ann){
+                ta["uri"].push(ann["YAGOid"]);
+            }
+            sysA_temp.push(ta);
+        }
+        
+        
+        // sorting
+        var SortedList = []; // Lista ordenada de las annotaciones según la posicion inicial de cada una
+        var temp = [];
+        for (k in sysA_temp){
+            var ann = sysA_temp[k];
+            //console.log("------ ");
+            //console.log(ann);
+            //console.log("id_sentence:",ann["id_sentence"],"  ids:",ids);
+            //insertar la annotación en su posición, que quede ordenado el arreglo por la posición inicial
+            //supongo que ya SortedList esta ordenado               
+            var inserted = false;
+            for (j in SortedList){ // voy poniendo "e" en "temp" hasta que le toque a "ann"
+                var index_j = parseInt(j);
+                e = SortedList[j];
+                if (ann["ini"]==e["ini"] && !inserted){ // ordeno segun "fin"
+                    if (ann["fin"]==e["fin"]){
+                        warning_alert("This entity has already added.");
+                        return 0; 
+                    }
+                    if (SortedList.length-1 == index_j){// en caso de que "e" sea el último
+                        inserted = true;
+                        if (ann["fin"]<e["fin"]){
+                            temp.push(ann);
+                            temp.push(e);
+                        }
+                        else{
+                            temp.push(e);
+                            temp.push(ann);
+                        }
+                        inserted = true;
+                    }
+                    else{
+                        var e2 = SortedList[index_j+1];
+                        if (ann["fin"]<e2["fin"]){
+                            temp.push(ann);
+                            temp.push(e);
+                            inserted = true;
+                        }
+                        else{
+                            temp.push(e);
+                        }
+                    }
+                } else if (ann["ini"]<e["ini"] && !inserted){  // inserto primero ann, y después e
+                    inserted = true;
+                    temp.push(ann);
+                    temp.push(e);
+                } 
+                else{
+                    temp.push(e);
+                }
+            }
+            if (!inserted){
+                temp.push(ann);
+            }
+            SortedList = temp;
+            temp = [];
+
+        }
+        return SortedList;
+    };
+    
+    
+    
+    // click in the annotations of the systems
+    $('body').on('click', 'span.sysLabel' , function(){
+        var ide = $(this).attr("idesys");
+        $("#sry_table").empty();
+        
+        var html_table = '<thead>'+
+            '<tr>'+
+                '<th scope="col">#</th>'+
+                '<th scope="col">link</th>'+
+                '<th scope="col">action</th>'+
+            '</tr>'+
+        '</thead>'+
+        '<tbody>'+
+        '</tbody>';
+            
+        
+        $("#sry_table").html(html_table);
+       
+        
+        
+        var pos = 1;
+        for (o in sysA[ide]["uri"]){
+            var ll = sysA[ide]["uri"][o];
+            //there are some KB (e.g., YAGO) without link
+            var llink = '<td><button class="btn btn-info link" type="button" onclick="window.open(\''+ll+'\',\'_blank\')"><i class="glyphicon glyphicon-link"></i>Link</button></td>';
+            if (ll.indexOf("YAGO:")==0){
+                llink = "<td></td>";
+            }
+            $("#sry_table").append('<tr><th scope="row">'+pos.toString()+'</th><td>'+ll+'</td>'+llink+'</tr>');
+            pos = pos + 1;
+        }
+        $('#modalSummary').modal("show");
+        
+    });
+    
+    
+    $("#sys_split_sentence").click(function(){
+        var inText = $("#sys_inDoc").val();
+        var _res = splitBySentences(inText); 
+        $("#sys_inDoc").val(_res);
+    });
+    
+    $(document).on('change', '.sys_urldoc', function () {
+        var iddoc = $(this).attr("iddoc");
+        $("#sys_modifyIdDoc"+iddoc).addClass("redHighlited");
+    });
+    
+    $(document).on('click', '.sys_modifyIdDoc', function () {
+        var iddoc = $(this).attr("iddoc");        
+        var new_uri_doc = $("#sys_urldoc"+iddoc).val();
+        
+        // is the name of the document entered?
+        if (new_uri_doc == "" || new_uri_doc == undefined){
+            warning_alert("You should specify the URI of this document.");
+            return false;
+        }
+        
+        if (uridoc2id(sysD,new_uri_doc) != -1){
+            warning_alert("You must specify a new name for this document, different from the ones that have already been added.");
+            return false;
+        }
+        
+        $("#sys_modifyIdDoc"+iddoc).removeClass("redHighlited");
+        sysD[iddoc]["uri"] = new_uri_doc;
+        warning_alert("The URI was successfully changed!");
+        
+    });
+    
 });
-
-
-/*
-
-var paragraph = 'The quick brown fox jumped over the lazy dog. If the dog barked, was it really lazy?';
-
-// any character that is not a word character or whitespace
-var regex = /[^\w\s]/g;
-
-console.log(paragraph.search(regex));
-// expected output: 44
-
-console.log(paragraph[paragraph.search(regex)]);
-
-*/
-
-
-
-
-
-
-
-
 
 
 

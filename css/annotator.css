@@ -61,6 +61,20 @@ textarea{
     cursor:pointer;
 }
 
+.sysLabel {
+    display: inline;
+    padding: .2em .6em .3em;
+    line-height: 1;
+    background-color: #337ab7;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25em;
+
+    cursor:pointer;
+}
+
 .bothside{
    width:60%;
    display:inline;
@@ -199,4 +213,8 @@ ul.tabs li.current{
     -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3),0 0 40px rgba(0, 0, 0, 0.1) inset;
     -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
     box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+}
+
+.redHighlited {
+    color: red;
 }
