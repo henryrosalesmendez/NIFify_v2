@@ -11,7 +11,7 @@ function is_ajax() {
   return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 }
 
-function db2wiki($uriDBpedia, $lang):string{
+function db2wiki($uriDBpedia, $lang){
     try {
         $line = explode("/", $uriDBpedia);
         return "https://".$lang.".wikipedia.org/wiki/".$line[sizeof($line)-1];
@@ -138,7 +138,7 @@ function Babelfy_only_named_entities_response($data){
 
 
 //equal to the previous function, but, taking into account the second search starting in the end of the first.
-function get_between($tt, $t1, $t2):string{
+function get_between($tt, $t1, $t2){
 
     $start = strpos($tt, $t1);
     $nt1 = strlen($t1);
@@ -458,7 +458,7 @@ function FRED_response($data){
 }
 
 
-function words2wiki($words, $lang):string{
+function words2wiki($words, $lang){
     $name = implode("_", explode(" ",ucwords($words)));
     return "https://en.wikipedia.org/wiki/".$name;
 }
