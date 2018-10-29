@@ -814,19 +814,31 @@ $(document).ready(function() {
            /////$("#inDoc"+inDocCounter).val(text);
            //$("#inDoc"+inDocCounter).html(text);
            
+           
+           var labels_html = '<span class="label label-info">#'+inDocCounter+'</span>';
+           
            var _html = '<div class="row parent_div_show drop-shadow">'+
         '<div style="class="col-lg-12">'+
-            '<div id="doc'+inDocCounter+'" class="row">'+
+            '<div id="doc'+inDocCounter+'" class="row">'+                
                 '<div class="col-lg-6">'+
-                    '<div class="input-group control-group">'+
-                        '<input type="text" style="width:100%!important;height:35px;padding: 5px;" value="'+urldoc+'" id="urldoc"'+inDocCounter+'/>'+
-                        '<div class="input-group-btn"> '+
-                            '<button id="modifyIdDoc" class="btn btn-secondary" type="button"><i class="glyphicon glyphicon-edit"></i> Modify</button>'+
+                    '<div class="row">'+
+                    //--
+                        '<div id= "_labels'+inDocCounter+'" class="col-lg-12">'+labels_html+'<br>'+
                         '</div>'+
+                    //--
+                        '<div class="col-lg-12">'+
+                            '<div class="input-group control-group">'+
+                                '<input type="text" style="width:100%!important;height:35px;padding: 5px;" value="'+urldoc+'" id="urldoc"'+inDocCounter+'/>'+
+                                '<div class="input-group-btn"> '+
+                                    '<button id="modifyIdDoc" class="btn btn-secondary" type="button"><i class="glyphicon glyphicon-edit"></i> Modify</button>'+
+                                '</div>'+
+                            '</div>'+
+                            '<textarea class="form-control textareaclass" onkeyup="onkeyup_check(event)" idc="'+inDocCounter+'" id="inDoc'+inDocCounter+'" rows="3" style="min-height:100px;height:100%;" placeholder="Enter the document in plain text" readonly>'+text+'</textarea>'+
+                            '<button id="btn_3_annotation'+inDocCounter+'" inDocCounter="'+inDocCounter+'" type="button" class="btn btn-primary margin_buttons btn_annotation"> <i class="fa fa-hand-pointer-o fa-lg"></i> Annotate Entity</button>'+
+                            '<button id="btn_deldoc'+inDocCounter+'" onclick="deletedoc('+inDocCounter+')" inDocCounter="'+inDocCounter+'" type="button" class="btn btn-primary margin_buttons btn_deldoc"> <i class="fa fa-remove fa-lg"></i> Delete Doc</button>'+
+                        '</div>'+
+                    //
                     '</div>'+
-                    '<textarea class="form-control textareaclass" onkeyup="onkeyup_check(event)" idc="'+inDocCounter+'" id="inDoc'+inDocCounter+'" rows="3" style="min-height:100px;height:100%;" placeholder="Enter the document in plain text" readonly>'+text+'</textarea>'+
-                    '<button id="btn_3_annotation'+inDocCounter+'" inDocCounter="'+inDocCounter+'" type="button" class="btn btn-primary margin_buttons btn_annotation"> <i class="fa fa-hand-pointer-o fa-lg"></i> Annotate Entity</button>'+
-                    '<button id="btn_deldoc'+inDocCounter+'" onclick="deletedoc('+inDocCounter+')" inDocCounter="'+inDocCounter+'" type="button" class="btn btn-primary margin_buttons btn_deldoc"> <i class="fa fa-remove fa-lg"></i> Delete Doc</button>'+
                 '</div>'+
                 '<div id="sentencesDoc'+inDocCounter+'" class="col-lg-6 noselect" style="min-height:100px;"> '+
                     '-- EMPTY -- '+
