@@ -295,6 +295,7 @@ $(document).ready(function() {
 
 
         $("#modalSelectURI").val("");
+        $("#commentAnn").val("");
         $('#taxonomyAnn').val('').trigger("change");
         //----> document.getElementById('modalSelectTaxonomy').selectedIndex = -1;
         $('#myModal').modal("show");
@@ -331,10 +332,10 @@ $(document).ready(function() {
                 console.log("---------------------------------\n",text);
                 //if (link2type[text] == undefined){
                     var typeMention = $(this).attr("mentiontype");
-                    console.log("typeMention -->",typeMention)
+                    //console.log("typeMention -->",typeMention)
                     if (typeMention != '- Select Type -'){
                         link2type[text] = w2type[typeMention];
-                        console.log(text,"----->",typeMention);
+                        //console.log(text,"----->",typeMention);
                     }
                 //}
             });
@@ -344,10 +345,9 @@ $(document).ready(function() {
             if (in_uri){
                 list_uri.push(in_uri);
                 var typeMention = $("#modalSelectURI").attr("mentiontype");
-                console.log("PPPPPPPRRRRRRRIIIIIIIIIMMMMMMEEEEERRRRRAAAA:",typeMention)
                 if (typeMention != '- Select Type -'){
                     link2type[in_uri] = w2type[typeMention];
-                    console.log("in_uri:",in_uri,"   w2type[typeMention]:",w2type[typeMention],"    typeMention:",typeMention);
+                    //console.log("in_uri:",in_uri,"   w2type[typeMention]:",w2type[typeMention],"    typeMention:",typeMention);
                 }
             }
             
@@ -376,8 +376,13 @@ $(document).ready(function() {
                     list_tag.push(v["text"])
                 }
                 temp_annotation["tag"] = list_tag;
-            } 
+            }
             
+            // comment
+            var comment = $("#commentAnn").val();
+            if (comment != undefined && comment.length>0){
+                temp_annotation["comment"] = comment;
+            }            
             
             
         //}
@@ -490,7 +495,13 @@ $(document).ready(function() {
             }
             temp_annotation["tag"] = list_tag;
             console.log("#### tag:",list_tag);
-        }         
+        }
+        
+        
+        var comment = $("#commentAnn").val();
+        if (comment != undefined && comment.length>0){
+            temp_annotation["comment"] = comment;
+        }  
             
         
         temp_annotation["idA"] = A.length;
@@ -532,32 +543,27 @@ $(document).ready(function() {
                   var ids = sent2id(ini,_inDocCounter);
                   
                   
-                  if ("tag" in temp_annotation){ 
+                  var new_ann = {
+                            "ini":ini, 
+                            "fin":fin, 
+                            "uri":list_uri, 
+                            "id_sentence": ids,
+                            "uridoc":temp_annotation["uridoc"],
+                            "label":t,
+                            "idA": A.length
+                        };
+                  
+                  if ("tag" in temp_annotation && temp_annotation["tag"]!=undefined){ 
                      var tags = changeAntecedentCorr(temp_annotation["tag"],first_in_doc);
-                     A.push({
-                            "ini":ini, 
-                            "fin":fin, 
-                            "uri":list_uri, 
-                            "id_sentence": ids,
-                            "uridoc":temp_annotation["uridoc"],
-                            //"uridoc": Sentences[ids]["uridoc"],
-                            "tag": tags,
-                            "label":t,
-                            "idA": A.length
-                        });                     
-                  }else{
-                      A.push({
-                            "ini":ini, 
-                            "fin":fin, 
-                            "uri":list_uri, 
-                            "id_sentence": ids,
-                            "uridoc":temp_annotation["uridoc"],
-                            //"uridoc": Sentences[ids]["uridoc"],
-                            "label":t,
-                            "idA": A.length
-                        });
-                      
+                     new_ann["tag"] = tags;
                   }
+                  
+                  if ("comment" in temp_annotation && temp_annotation["comment"]!=undefined){
+                      new_ann["comment"] = temp_annotation["comment"];
+                  }
+                  
+                  A.push(new_ann);
+                  
                   first_in_doc = false;
                   console.log("))))))))))))");
                   console.log(first_in_doc);
@@ -634,7 +640,12 @@ $(document).ready(function() {
                 list_tag.push(v["text"])
             }
             temp_annotation["tag"] = list_tag;
-        } 
+        }
+        
+        var comment = $("#commentAnn").val();
+        if (comment != undefined && comment.length>0){
+            temp_annotation["comment"] = comment;
+        }  
         
         temp_annotation["idA"] = A.length;
         temp_annotation["uridoc"] = Sentences[temp_annotation["id_sentence"]]["uridoc"];
@@ -662,13 +673,13 @@ $(document).ready(function() {
                 var goahead = false;
                 if (allow_overlaps){
                     goahead = !ItIsRepetition({"ini":ini, "fin":fin, "uridoc":doc["uri"]});
-                    console.log("1");
-                    console.log(goahead);
+                    //console.log("1");
+                    //console.log(goahead);
                 }
                 else{
                     goahead = !existsOverlapping({"ini":ini, "fin":fin, "uridoc":doc["uri"]});
-                    console.log("2");
-                    console.log(goahead);
+                    //console.log("2");
+                    //console.log(goahead);
                 }
 
                 if (goahead){
@@ -676,34 +687,27 @@ $(document).ready(function() {
                   if ( (p==0 || txt[p-1] in punctuationsSign) && (p+t_len==txt.length || txt[p+t_len] in punctuationsSign) ){
                       var ids = sent2id(ini,_inDocCounter);
                       
+                      var new_ann = {
+                                "ini":ini, 
+                                "fin":fin, 
+                                "uri":list_uri, 
+                                "id_sentence": ids,
+                                "uridoc":doc["uri"],
+                                //"uridoc": Sentences[ids]["uridoc"],
+                                "label":t,
+                                "idA": A.length
+                            }
                       
-                      if ("tag" in temp_annotation){
+                      if ("tag" in temp_annotation && temp_annotation["tag"]!=undefined){
                           var tags = changeAntecedentCorr(temp_annotation["tag"],first_in_doc);
-                          A.push({
-                                "ini":ini, 
-                                "fin":fin, 
-                                "uri":list_uri, 
-                                "id_sentence": ids,
-                                "uridoc":doc["uri"],
-                                "tag": tags,
-                                //"uridoc": Sentences[ids]["uridoc"],
-                                "label":t,
-                                "idA": A.length
-                            });
+                          new_ann["tag"] = tags;
                       }
-                      else{
-                          A.push({
-                                "ini":ini, 
-                                "fin":fin, 
-                                "uri":list_uri, 
-                                "id_sentence": ids,
-                                "uridoc":doc["uri"],
-                                //"tag": temp_annotation["tag"],
-                                //"uridoc": Sentences[ids]["uridoc"],
-                                "label":t,
-                                "idA": A.length
-                            });
+                      
+                      if ("comment" in temp_annotation && temp_annotation["comment"]!=undefined){
+                          new_ann["comment"] = temp_annotation["comment"];
                       }
+
+                      A.push(new_ann);
                       first_in_doc = false;
                   }
 
@@ -1304,6 +1308,11 @@ $(document).ready(function() {
                      fin = ann["fin"] - overall;
                      label = sent.substring(ini, fin);
                      
+                     var annotation_comment = "";
+                     if ("comment" in ann && ann["comment"].length!=0){
+                         annotation_comment = "        rdfs:comment \"\"\""+ann["comment"]+"\"\"\"^^xsd:string ;\n";
+                     }
+                     
                      ini_t = ini.toString();
                      fin_t = fin.toString();
                      nifAnnotation = "<"+urldoc+"#char="+ini_t+","+fin_t+">\n" + 
@@ -1314,7 +1323,8 @@ $(document).ready(function() {
                                      "        nif:context <"+urldoc+"#char=0,"+ndoc+"> ;\n"+
                                      "        nif:anchorOf \"\"\""+label+"\"\"\"^^xsd:string ;\n"+
                                      "        nif:beginIndex \""+ini_t+"\"^^xsd:nonNegativeInteger ;\n"+
-                                     "        nif:endIndex \""+fin_t+"\"^^xsd:nonNegativeInteger ;\n";
+                                     "        nif:endIndex \""+fin_t+"\"^^xsd:nonNegativeInteger ;\n"+
+                                     annotation_comment;
                      if ("tag" in ann){
                          if (ann["tag"].length>0){
                              var temp_tag = "";
@@ -1776,7 +1786,7 @@ $(document).ready(function() {
         return txt.substr(ini,fin-ini+1);
     }
     
-    $("#btn_inputNIF").click(function(){   // que no necesite star ordenado el fichero
+    $("#btn_inputNIF").click(function(){   // que no necesite estar ordenado el fichero
         //$(".parent_div_show").remove();
         CleanAnnotationDocument();
         var text = undefined;
@@ -1979,10 +1989,9 @@ $(document).ready(function() {
                                   "uri": list_uri
                         };
 
-
-                        //itsrdf:taClassRef nerd:AdministrativeRegion ;
+                        //tags
+                        //e.g., itsrdf:taClassRef nerd:AdministrativeRegion ;
                         var p_taClassRef = chunk.indexOf("itsrdf:taClassRef");
-                        //console.log("p_taClassRef",p_taClassRef);
                         if (p_taClassRef != -1){
                             var r_text = chunk.substring(p_taClassRef, n_chunk);
                             var fin_taClassRef = r_text.indexOf(';');
@@ -2000,14 +2009,28 @@ $(document).ready(function() {
                                 tag.push(t.trim())
                             }
                             ann["tag"] = tag;
-                            
-                            //console.log("tag:",tag);
-                            // ----- esto comentado lo que hace es incluir en el taxonomyIput principal solo Ambiguos.. esto deberia generaliarse y ahcerse para que todos los tag escogidos se pongan ahi
-                            /*
-                            if (tag == "tax:Ambiguous"){
-                                $("#taxonomyInput").select2("val",19); // fijo, hay que ponerlo dinamico
-                            }*/
                         }
+                        
+                        //comment
+                        var comment = undefined;
+                        var p_comment = chunk.indexOf("rdfs:comment");
+                        var r_text = chunk.substring(p_comment, n_chunk);
+                        if (p_comment != -1){
+                            var fin3_comment = r_text.indexOf('"""^^xsd:string');
+                            if (fin3_comment == -1){
+                                var fin1_comment = r_text.indexOf('"^^xsd:string');
+                                if (fin1_comment != -1){
+                                    comment = r_text.substring(14,fin1_comment);
+                                    ann["comment"] = comment;
+                                }
+                            }
+                            else {
+                                comment = r_text.substring(16,fin3_comment);
+                                ann["comment"] = comment;
+                            }
+                            
+                        }
+                        
                         ann["idA"] = A.length;
                         ann["uridoc"] = Sentences[id_s_t]["uridoc"];
                         A.push(ann);
@@ -2503,21 +2526,16 @@ $(document).ready(function() {
             $('#taxonomyMod').val('').trigger("change");
         }
         
-        
-        //--
-        /*if ("tag" in ann){
-            var listInputTaxonomy = $("#taxonomyInput").select2('data');
-            for (k in listInputTaxonomy){
-                var l = listInputTaxonomy[k];
-                if (ann["tag"] == l["text"]){
-                    $("#modalModifyAnnotationSelectTaxonomy").val(k);
-                    break;
-                }
-            }
+        //---
+        if ("comment" in ann){
+            $("#commentMod").val(ann["comment"]);
         }
         else{
-            document.getElementById('modalModifyAnnotationSelectTaxonomy').selectedIndex = -1;
-        }*/
+            $("#commentMod").val("");
+        }
+        
+        
+
         //$("#a_link").attr("href",ann["uri"]);
         $("#btn_delete_ann").attr("ide",ide);
 
@@ -2568,10 +2586,8 @@ $(document).ready(function() {
     
     
     $(".add-more-modification").click(function(){ 
-          ///var html = $(".copy").html();
-          console.log("--------> AQUIIIIIIIIIIIII");
           var id = $("#modalModifyAnnotationSelectURI").attr("number");
-           var mtype = $("#modalModifyAnnotationSelectURI").attr("mentiontype");
+          var mtype = $("#modalModifyAnnotationSelectURI").attr("mentiontype");
           var text_type = "- Select Type -";
           if (mtype != text_type){
               var ttyp = w2type[mtype];
@@ -2579,12 +2595,7 @@ $(document).ready(function() {
                   text_type = '<i class="glyphicon '+type2icon[ttyp]+'"></i>'+mtype;
               }
           }
-          /*var html ='<div class="control-group input-group taIdentRefContainer" style="margin-top:10px">'+
-                      '<input id="annotation_'+id+'" type="text" name="addmore[]" class="form-control taIdentRef" placeholder="Enter Name Here">'+
-                      '<div class="input-group-btn"> '+
-                          '<button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>'+
-                      '</div>'+
-                   '</div>';*/
+
           var text = $("#modalModifyAnnotationSelectURI").val();
           var html ='<div class="control-group input-group taIdentRefContainer" style="margin-top:10px">'+
                       '<input id="annotation_'+id+'" mentiontype="'+mtype+'" type="text" name="addmore[]" class="form-control taIdentRef" placeholder="Link of the selected entity mention">'+
@@ -2653,7 +2664,6 @@ $(document).ready(function() {
                 }
                 
                 // -- added
-                console.log("---------------------------------\n",text);
                 //if (link2type[text] == undefined){
                     var typeMention = $(this).attr("mentiontype");
                     if (typeMention != '- Select Type -'){
@@ -2686,22 +2696,7 @@ $(document).ready(function() {
             
             A[ide]["uri"] = list_uri;
  
-            //console.log("in_uri:",in_uri);
-            //warning_alert($("#modalSelectTaxonomy").val());
-            /*var tax_val = $("#modalModifyAnnotationSelectTaxonomy").val();
-            if (tax_val){
-                if (parseInt(tax_val)!=1000){ // if it's not "-none-"
-                    var listInputTaxonomy = $("#taxonomyInput").select2('data');
-                    if (listInputTaxonomy.length >0){
-                        var ann_tax_val = listInputTaxonomy[tax_val];
-                        var tag_text = ann_tax_val["text"];
-                        A[ide]["tag"] = tag_text;//$("#modalSelectTaxonomy").text();
-                    }
-                }
-                else{
-                    delete A[ide]["tag"];
-                }
-            }*/
+
             var list_tag = [];
             var listInputTaxonomy = $("#taxonomyMod").select2('data');        
             if (listInputTaxonomy.length != 0){
@@ -2713,6 +2708,16 @@ $(document).ready(function() {
             } 
             else{
                 delete A[ide]["tag"];
+            }
+            
+            
+            // comment
+            var comment = $("#commentMod").val();
+            if (comment != undefined && comment.length >0){
+                A[ide]["comment"] = comment;
+            }
+            else{
+                delete A[ide]["comment"];
             }
 
             

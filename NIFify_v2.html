@@ -451,30 +451,15 @@ Example:
                         <button class="btn btn-success add-more" type="button"><i class="glyphicon glyphicon-plus"></i> Add</button>
                    </div>
                </div>
-               <!--
-               <div class="copy hide">
-                  <div class="control-group input-group" style="margin-top:10px">
-                      <input type="text" name="addmore[]" class="form-control" placeholder="Enter Name Here">
-                      <div class="input-group-btn"> 
-                          <button class="btn btn-danger remove" type="button"><i class="glyphicon glyphicon-remove"></i> Remove</button>
-                      </div>
-                  </div>
-               </div> 
-               
-               
-               <label for="modalSelectURI" class="col-form-label">URI:</label>
-                   <input type="text" class="form-control espacioAbajo" id="modalSelectURI_" placeholder="Link of the selected entity mention"> -->
+
                <br>
                <label for="taxonomyAnn" class="col-form-label">Taxonomy:</label>
                <input type="text" style="width:100%!important;" id="taxonomyAnn" class="taxonomyInputClass"/>
 
-               <!--
-               <label for="modalSelectTaxonomy" class="col-form-label">Taxonomy:</label>
-               <select id="modalSelectTaxonomy" class="form-control">
-				   <option>Mustard</option>
-				   <option>Ketchup</option>
-				   <option>Relish</option>
-			   </select>-->
+               <br><br>
+               <label for="commentAnn">Comment:</label>
+               <textarea class="form-control" id="commentAnn" rows="2" style="min-height:100px;" placeholder="Enter the comments here"></textarea>
+
 
            </div>
            <div class="modal-footer">
@@ -485,7 +470,7 @@ Example:
               <button id="btn_annotate" type="button" class="btn btn-primary">Annotate!</button>-->
               <div class='bothside'>
                   <div style='float: left;'>
-                      <button id="btn_annotate_this_doc" type="button" class="btn btn-warning">Annotate int this doc</button>
+                      <button id="btn_annotate_this_doc" type="button" class="btn btn-warning">Annotate in this doc</button>
                       <button id="btn_annotate_all_doc" type="button" class="btn btn-warning">Annotate in all docs</button>
                   </div>
                   <div style='float: right;'>
@@ -510,31 +495,10 @@ Example:
            </div>
            <!--<form action="/" method="post" onsubmit="return upload();">-->
            <div id="modalUpload-body" class="modal-body form-group">
-
-                    <!--<form action="upload" method="post">
-					  <fieldset>
-						<legend>Upload photo</legend>
-						<input type="file" name="fileNif" id="fileNif">
-						<input type="submit" value="Upload">
-					  </fieldset>
-					</form>-->
-
-				  <!--  <input type="file" id="files" name="file" /> Read bytes: 
-					<span class="readBytesButtons">
-					  <button data-startbyte="0" data-endbyte="4">1-5</button>
-					  <button data-startbyte="5" data-endbyte="14">6-15</button>
-					  <button data-startbyte="6" data-endbyte="7">7-8</button>
-					  
-					</span>
-                    <button id="reaaad">entire file</button>
-					<div id="byte_range"></div>
-					<div id="byte_content"></div>-->
-
                 <div class="file-loading">
                     <input id="input-b9" name="input-b9" type="file"'>
-				</div>
+                </div>
                 <div id="kartik-file-errors"></div>
-
            </div>
            <div class="modal-footer">
               <!--<button type="button" class="btn btn-primary">Annotate!</button>
@@ -571,11 +535,6 @@ Example:
                
                <label for="modalModifyAnnotationSelectURI" class="col-form-label">List of URIs:</label>
                <div class="input-group control-group after-add-more-modification">
-                   <!--<input id="modalModifyAnnotationSelectURI" number="1" type="text" name="addmoremod[]" class="form-control" placeholder="Link of the selected entity mention">
-                   <div class="input-group-btn"> 
-                       <button class="btn btn-success add-more-modification" type="button"><i class="glyphicon glyphicon-plus"></i> Add</button>
-                   </div>
-                   -->
                    
                    <!-- -->
                    <input id="modalModifyAnnotationSelectURI" mentiontype="- Select Type -" number="1" type="text" name="addmore[]" class="form-control taIdentRefRoot" placeholder="Link of the selected entity mention">
@@ -602,13 +561,9 @@ Example:
                <br>
                <label for="taxonomyMod" class="col-form-label">Taxonomy:</label>
                <input type="text" style="width:100%!important;" id="taxonomyMod" class="taxonomyInputClass"/>
-               <!--<label for="modalModifyAnnotationSelectTaxonomy" class="col-form-label">Taxonomy:</label>
-               <select id="modalModifyAnnotationSelectTaxonomy" class="form-control">
-                   <option>Mustard</option>
-                   <option>Ketchup</option>
-                   <option>Relish</option>
-               </select>-->
-
+               <br><br>
+               <label for="commentMod">Comment:</label>
+               <textarea class="form-control" id="commentMod" rows="2" style="min-height:100px;" placeholder="Enter the comments here"></textarea>
            </div>
            <div class="modal-footer">
               <!--<button type="button" class="btn btn-primary">Annotate!</button>
