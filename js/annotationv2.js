@@ -1149,7 +1149,6 @@ $(document).ready(function() {
 
                      var st = "";
                      if ("tag" in ann){
-                         console.log("ann:::::",ann);
                          if (ann["tag"].indexOf("tax:Ambiguous")>-1){
                              st = 'style="background-color: #5cb85c;"';
                          }
@@ -1163,12 +1162,16 @@ $(document).ready(function() {
                      //--
                      var mentionType = "";
                      var ttype = typeOfAnn(ann["uri"]); // como cada anotacion puede tener mas de un enlace entonces aqui devuelvo el tipo del enlace, dando preferencia a [PERSON, ORG, PLACE] sobre MISC, si no hay enlace devuelvo undefined
-                     console.log(ttype);
+                     //console.log(ttype);
                      if ( ttype != undefined){
                        mentionType = '<i class="glyphicon '+type2icon[ttype]+'"></i>&nbsp;';  
                      }
                      //--
-                     httpAnnotation = '<span ide="'+ann["idA"]+'"  class="blueLabel classlabelAnnotation"  data-toggle="tooltip" title="'+ann["uri"].join()+'" '+st+'>'+mentionType+label+'</span>';
+                     var httpTags = "";
+                     if ("tag" in ann){
+                         httpTags = ann["tag"].join()+"\n";
+                     }
+                     httpAnnotation = '<span ide="'+ann["idA"]+'"  class="blueLabel classlabelAnnotation"  data-toggle="tooltip" title="'+httpTags+ann["uri"].join()+'" '+st+'>'+mentionType+label+'</span>';
                      textOut = textOut + sent.substring(pos,ini) + httpAnnotation;
                      pos = fin;
                  }  
@@ -2671,7 +2674,7 @@ $(document).ready(function() {
                 var typeMention = $("#modalModifyAnnotationSelectURI").attr("mentiontype");
                 if (typeMention != '- Select Type -' ){
                     link2type[in_uri] = w2type[typeMention];
-                    console.log("in_uri:",in_uri,"   w2type[typeMention]:",w2type[typeMention],"    typeMention:",typeMention);
+                    //console.log("in_uri:",in_uri,"   w2type[typeMention]:",w2type[typeMention],"    typeMention:",typeMention);
                 }
             }
             
@@ -2707,9 +2710,11 @@ $(document).ready(function() {
                     list_tag.push(v["text"])
                 }
                 A[ide]["tag"] = list_tag;
-                console.log("actualizado");
             } 
-            
+            else{
+                delete A[ide]["tag"];
+            }
+
             
             //surface form
             var ann_label = $("#modalModifyAnnotationLabel").val();
