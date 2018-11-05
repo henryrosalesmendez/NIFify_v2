@@ -1824,13 +1824,10 @@ $(document).ready(function() {
                 var n_chunk = chunk.length;
                 if (chunk.indexOf("mnt:entityType")!=-1){ // entity type
                     var trp = chunk.split("mnt:entityType");
-                    console.log("trp:",trp,"   trp.length:",trp.length);
                     if (trp.length == 2){
                         var s = trim_1(trp[0]);
-                        console.log("s:",s);
                         
                         var o = trim_1(trp[1]);
-                        console.log("o:",o);
                         link2type[s] = o;
                     }
                     
@@ -4242,7 +4239,7 @@ $(document).ready(function() {
             '<span class="label label-info">Type of annotation: '+ttype_ann+'</span>&nbsp;' +
             '<span class="label label-info">Annotator: '+systems[_ido]["name"]+'</span>';
         return ''+
-        '<div id="sys_doc'+_iddoc+'" class="col-lg-12 row parent_div_show drop-shadow" style="margin-left:5px!important;">  '+      
+        '<div id="sys_doc'+_iddoc+'" class="col-lg-12 row parent_show drop-shadow" style="margin-left:5px!important;">  '+      
             '<div class="row">'+
                 //--
                 '<div id= "sys_labels'+_iddoc+'"class="col-lg-12">'+labels_html+'<br>'+
@@ -4533,6 +4530,707 @@ $(document).ready(function() {
         warning_alert("The URI was successfully changed!");
         
     });
+
+    
+    
+    ///----- Validation tab
+    V = {};
+    
+    V[1] = {
+        "name":"Link validations",
+        "date":"-",
+        "time":"-",
+        "description":"Here we check that the links of the annotations exists.",
+        "number_errors":"-",
+        "errors":[],
+        "type":"static"
+    };
+    
+    V[2] = {
+        "name":"Unambiguous links",
+        "date":"-",
+        "time":"-",
+        "description":"Here we check that the links are not ambiguous or redirect in the case of link of Wikipedia or DBpedia.",
+        "number_errors":"-",
+        "errors":[],
+        "type":"static"
+    };
+    
+    V[3] = {
+        "name":"Overlapping checker",
+        "date":"-",
+        "time":"-",
+        "description":"Here we check that the overlap tags are correct (maximum, minimum and intermediate).",
+        "number_errors":"-",
+        "errors":[],
+        "type":"static"
+    };
+    
+    V[4] = {
+        "name":"Reference checker",
+        "date":"-",
+        "time":"-",
+        "description":"Here we check that the reference tags are correct (antecedent and coreference). Only for Proper Names and Pro-Form!",
+        "number_errors":"-",
+        "errors":[],
+        "type":"static"
+    };
+    
+    V[5] = {
+        "name":"Spelling checker",
+        "date":"-",
+        "time":"-",
+        "description":"Those entity mentions with special characters or spaces on the borders, or with missing characters are identified.",
+        "number_errors":"-",
+        "errors":[],
+        "type":"static"
+    };
+    
+    V[6] = {
+        "name":"Refining References",
+        "date":"-",
+        "time":"-",
+        "description":"Here you can keep the mnt:AntecedentRf/mnt:CoreferenceRf tags only for Proper Names and Pro-Forms",
+        "number_errors":"-",
+        "errors":[],
+        "type":"dinamic",
+        "automatic_expresion":"<tag@mnt:NumericTemporalPN,tag@mnt:CommonFormPN><tag@mnt:AntecedentRf,tag@mnt:CoreferenceRf>%(mnt:AntecedentRf,mnt:CoreferenceRf)"
+    };
+    
+    
+    updateMainTableValidation = function(){
+       $("#valid_mainTable").empty();
+       
+       var html_table = '<thead>'+
+                        '<tr>'+
+                            '<th scope="col" style="width: 50px;">#</th>'+
+                            '<th scope="col" style="width: 200px;">Name</th>'+
+                            '<th scope="col" style="width: 70px;">Erros</th>'+
+                            '<th scope="col" style="width: 100px;">Date</th>'+
+                            '<th scope="col" style="width: 100px;">Time</th>'+
+                            '<th scope="col">Description</th>'+
+                            '<th scope="col" style="text-align:center;width: 100px;">Action</th>'+
+                        '</tr>'+
+                    '</thead>'+
+                    '<tbody>'+                     
+                    '</tbody>';
+       
+                            
+       
+       $("#valid_mainTable").html(html_table);
+       var pos = 1;
+       for (i in V){
+           var v = V[i];
+           var ttt = '<i class="fa fa-times fa-lg"></i>';
+           var classColor='';
+           var actions = '<button class="btn btn-secondary valid_btnRun" type="button" idv="'+i+'" data-toggle="tooltip" title="Run cheker '+v["name"]+'"><i class="glyphicon glyphicon-expand"></i></button>';
+           
+           if (v["number_errors"]!="-"){
+               ttt = '<i class="fa fa-lg fa-check"></i>';
+               classColor='class="text-primary"';
+               actions = '<button class="btn btn-secondary valid_btnDescription" type="button" idv="'+i+'" data-toggle="tooltip" title="Details of '+v["name"]+'"><i class="glyphicon glyphicon-th"></i></button>'+
+               '<button class="btn btn-secondary valid_btnRun" type="button" idv="'+i+'" data-toggle="tooltip" title="Run cheker '+v["name"]+'"><i class="glyphicon glyphicon-repeat"></i></button>';
+               
+           }
+
+
+           var table_html_tr = '<tr>'+
+                            '<td '+classColor+'>'+ttt+' '+pos+'</td>'+
+                            '<td '+classColor+'>'+v["name"]+'</td>'+
+                            '<td '+classColor+'>'+v["number_errors"]+'</td>'+
+                            '<td '+classColor+'>'+v["date"]+'</td>'+
+                            '<td '+classColor+'>'+v["time"]+'</td>'+
+                            '<td '+classColor+'>'+v["description"]+'</td>'+
+                            '<td '+classColor+' style="text-align:center;width: 100px;">'+actions+'</td>'+
+                        '<tr>';
+           $("#valid_mainTable").append(table_html_tr);
+           pos = pos + 1;
+       }
+    }
+    updateMainTableValidation();
+   
+    
+    // you can specify a conjunctions, e.g. {}<>{}{}<><>
+    checkContrain = function(a,_constrain){
+        console.log("---------------");
+        var found = false;
+        while (_constrain.indexOf("{") != -1){
+            var L = textBetween(_constrain,"{","}").split(",");
+            for (var c_i in L){
+                var l = L[c_i];
+                if (l.indexOf("tag")!=-1){
+                    var ttag = l.split("@")[1];
+                    if (a["tag"].indexOf(ttag)==-1){
+                        return false;
+                    }
+                }
+                else if (l.indexOf("mnt")!=-1){
+                    var tmnt = l.split("@")[1];
+                    if (a["label"] != tmnt){
+                        return false;
+                    }
+                }
+                
+            }
+            _constrain = _constrain.substring(_constrain.indexOf("}")+1,_constrain.length);
+        }
+        
+        
+        while(_constrain.indexOf("<") != -1){
+            var L = textBetween(_constrain,"<",">").split(",");
+            found = false;
+            for (var c_i in L){
+                var l = L[c_i];
+                if (l.indexOf("tag")!=-1){
+                    var ttag = l.split("@")[1];
+                    if (a["tag"].indexOf(ttag)!=-1){
+                        found = true;
+                        break;
+                    }
+                }
+                else if (l.indexOf("mnt")!=-1){
+                    var tmnt = l.split("@")[1];
+                    if (a["label"] == tmnt){
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (found == false){
+                return false;
+            }
+            _constrain = _constrain.substring(_constrain.indexOf(">")+1,_constrain.length);        
+        }
+        
+        return true;
+    }
+    
+    
+    //--
+    $(document).on('click', '.valid_btnRun', function () {
+        var idv = $(this).attr("idv");
+        v = V[idv];
+        V[idv]["errors"] = [];
+        $.blockUI({ message: null });
+        
+        if (v["type"] == "static"){
+            if (v["name"] == "Link validations"){
+                valid_CheckLinks(idv);
+            }
+            else if (v["name"] == "Unambiguous links"){
+                valid_CheckUnambiguousLinks(idv);
+            } 
+            else if (v["name"] == "Overlapping checker"){
+                valid_CheckOverlaps(idv);
+            } 
+            else if (v["name"] == "Reference checker"){
+                valid_CheckReferences(idv);
+            }
+            else if (v["name"] == "Spelling checker"){
+                valid_CheckSpelling(idv);
+            }
+        }
+        else{
+            
+            var aut_exp = v["automatic_expresion"];
+            var constrain = aut_exp.split("%")[0];
+            var exp = aut_exp.split("%")[1];
+            var count_errors = 0;
+            for (aa_i in A){
+                var aa = A[aa_i];
+                if (checkContrain(aa,constrain) == true){
+                    //valid_fix_error(exp,aa,idv);
+                    count_errors = count_errors +1;
+                    V[idv]["errors"].push({
+                        "status":"uncorrected",
+                        "position": count_errors,
+                        "idA" : aa_i,
+                        "uridoc": aa["uridoc"],
+                        "label":aa["label"],
+                        "id_sentence": aa["id_sentence"],
+                        "error_detail": "Mention <i>"+aa["label"]+"</i> matchs with the specified constrain!",
+                        "automatic_expresion": exp
+                    });
+                }
+            }
+            
+            //updating main table
+            V[idv]["number_errors"] = count_errors;
+            V[idv]["time"]= new Date().toLocaleTimeString();
+            V[idv]["date"]= new Date().toLocaleDateString();
+            updateMainTableValidation();
+            
+            //displaying the content
+            valid_idvToShow = idv;
+            valid_showContent();
+        }
+        $.unblockUI();
+    });
+    
+    
+    //--
+    valid_CheckLinks = function(_idv){
+        alert("Not Yet :)");
+    }
+    
+    
+    //--
+    valid_CheckUnambiguousLinks = function(_idv){
+        alert("Not Yet :P");
+    }
+    
+    
+    
+    
+    //--
+    valid_hayOverlapping = function(i){
+        var ann = A[i];
+        var ini = ann["ini"];
+        var fin = ann["fin"];
+        
+        var b = false
+        var bini = false;  //beforeIni, is when some overlapping statement starts before the current one
+        var aini = false;  //afterIni
+        var bfin = false;
+        var afin = false;
+        
+        var has_interior = false
+        var has_exterior = false
+        
+        for (k in A){
+            var _ann = A[k];
+            if ((k == i) || (ann["id_sentence"] != _ann["id_sentence"])){continue;}
+            var ini_ = _ann["ini"];
+            var fin_ = _ann["fin"];
+
+            if ((ini <=ini_ && ini_ <= fin) || (ini_ <= ini && ini <= fin_)){
+                b = true
+                bini = (bini || (ini_ <= ini))
+                aini = (aini || (ini_>= ini))
+                bfin = (bfin || (fin_ <= fin))
+                afin = (afin || (fin_ >= fin))
+                    
+                has_interior = (has_interior || ((ini <= ini_) && (fin>=fin_)))
+                has_exterior = (has_exterior || ((ini >= ini_) && (fin<=fin_)))
+            }
+        }
+        return [b,has_exterior,has_interior];
+    }
+
+            
+        //-
+        valid_overlap_tag = function(i){
+            var ann = A[i];
+            //console.log(["ann:",ann]);
+            if (ann == undefined){return "mnt:Non-Overlapping";}
+            
+            var ini = ann["ini"];
+            var fin = ann["fin"];
+            
+            var _result = valid_hayOverlapping(i);
+            //console.log(["results:",_result]);
+            var b_there_are_overlaps = _result[0];
+            var b_ext = _result[1];
+            var b_int = _result[2];
+            
+            if (b_there_are_overlaps == false){return "mnt:Non-Overlapping";}
+            if (b_ext == true && b_int == false){return 'mnt:MinimalOverlap';}
+            if (b_int == true && b_ext == false){return 'mnt:MaximalOverlap';}
+            return 'mnt:IntermediateOverlap';
+        }
+
+
+    //--
+    tagOverlapList = ["mnt:Non-Overlapping","mnt:MinimalOverlap","mnt:MaximalOverlap","mnt:IntermediateOverlap"];
+    valid_CheckOverlaps = function(_idv){
+        var count_errors = 0;
+        for (a_i in A){
+            var ann_ = A[a_i];
+            var correctOverlapTag = valid_overlap_tag(a_i);
+            
+            if (ann_["tag"].indexOf(correctOverlapTag) == -1){
+                count_errors = count_errors +1;
+                V[_idv]["errors"].push({
+                    "status":"uncorrected",
+                    "position": count_errors,
+                    "idA" : a_i,
+                    "uridoc": ann_["uridoc"],
+                    "label":ann_["label"],
+                    "id_sentence": ann_["id_sentence"],
+                    "error_detail": "Mention <i>"+ann_["label"]+"</i> should be "+correctOverlapTag,
+                    "automatic_expresion": "["+correctOverlapTag+"]("+tagOverlapList.join()+")"
+                });
+            }
+        } 
+        
+        //updating main table
+        V[_idv]["number_errors"] = count_errors;
+        V[_idv]["time"]= new Date().toLocaleTimeString();
+        V[_idv]["date"]= new Date().toLocaleDateString();
+        updateMainTableValidation();
+        
+        //displaying the content
+        valid_idvToShow = _idv;
+        valid_showContent();
+    }
+    
+    
+    //--
+    valid_CheckReferences = function(_idv){
+        var count_errors = 0;
+        var current_doc = "";
+        var _Set = {};
+        var sent_temp = 0;
+        var correctReferenceTag = {};
+        for (s_i in Sentences){
+            var s = Sentences[s_i];
+            
+            if (s["uridoc"] != current_doc){
+                _Set = {};
+                current_doc = s["uridoc"];
+            }            
+            
+            var SentencesAnnotations = getSentencesAnnotations(s_i);
+            for (a_i in SentencesAnnotations){                     
+                var a = SentencesAnnotations[a_i];                
+
+                if (a["tag"].indexOf("mnt:Pro-formPN") != -1){
+                    // have to be Coreference
+                    correctReferenceTag[a["idA"]] = {"ref":"mnt:CoreferenceRf","id_sentence":-1};
+                }
+                else if (a["tag"].indexOf("mnt:CommonFormPN")==-1 && a["tag"].indexOf("mnt:NumericTemporalPN") == -1){
+                    var alreadyAnn = false;
+                    for (var u_i in a["uri"]){
+                        var u = a["uri"][u_i];
+                        if (u.indexOf("mnt:entityType")==-1){
+                            if (u in _Set){
+                                alreadyAnn = true;
+                                sent_temp = _Set[u];
+                                console.log(["u:",u]);
+                            }
+                            else{
+                                _Set[u] = a["id_sentence"];
+                            }
+                        }
+                        
+                    }
+                    
+                    if (alreadyAnn == true){
+                        correctReferenceTag[a["idA"]] = {"ref":"mnt:CoreferenceRf","id_sentence":sent_temp};
+                    }
+                    else{
+                        correctReferenceTag[a["idA"]] = {"ref":"mnt:AntecedentRf","id_sentence":a["id_sentence"]};
+                    }                    
+                }                
+            }
+        }
+        
+        
+        for (a_i in A){
+            var ann_ = A[a_i];
+            if (!(ann_["idA"] in correctReferenceTag)){continue;}
+            var val_ref = correctReferenceTag[ann_["idA"]];
+            if (ann_["tag"].indexOf(val_ref["ref"]) == -1){
+                console.log(["ann_:",ann_]);
+                console.log(["valor_ref:",val_ref["ref"]]);
+                count_errors = count_errors +1;
+                var sent_id = parseInt(val_ref["id_sentence"])+1;
+                var msg = "Mention <i>"+ann_["label"]+"</i> should be "+val_ref["ref"]+" because appear before in sentence "+sent_id+".";
+                if (val_ref["id_sentence"] == -1){
+                    msg = "Should be mnt:CoreferenceRf because <i>"+ann_["label"]+"</i> is a mnt:Pro-formPN.";
+                }
+                else if (val_ref["id_sentence"] == "mnt:AntecedentRf"){
+                    msg = "Should be mnt:AntecedentRf because <i>"+ann_["label"]+"</i> does not appear before.";
+                }
+                V[_idv]["errors"].push({
+                    "status":"uncorrected",
+                    "position": count_errors,
+                    "idA" : a_i,
+                    "uridoc": ann_["uridoc"],
+                    "label":ann_["label"],
+                    "id_sentence": ann_["id_sentence"],
+                    "error_detail": msg,
+                    "automatic_expresion": "["+val_ref["ref"]+"](mnt:AntecedentRf,mnt:CoreferenceRf)"
+                });
+            }
+        } 
+        
+        //updating main table
+        V[_idv]["number_errors"] = count_errors;
+        V[_idv]["time"]= new Date().toLocaleTimeString();
+        V[_idv]["date"]= new Date().toLocaleDateString();
+        updateMainTableValidation();
+        
+        //displaying the content
+        valid_idvToShow = _idv;
+        valid_showContent();
+    }
+    
+    
+    //--
+    valid_CheckSpelling = function(idv){
+        alert("Not Yet xD");
+    }
+    
+    
+    valid_sent = function(i,uridoc){
+        var temp_i = parseInt(i);
+        var SentencesAnnotations = getSentencesAnnotations(i);
+        //console.log(["i:",i]);
+        //console.log(["SentencesAnnotations:",SentencesAnnotations]);
+        pos = 0;
+        textOut = "";
+        var sent = Sentences[i]["text"];
+        //console.log(["sent:",sent]);
+        //console.log(["uridoc:",uridoc,"   uridoc2id(uridoc)",uridoc2id(D,uridoc)]);
+        var txt = id2text(uridoc2id(D,uridoc));
+        var overall = txt.indexOf(sent);
+        for (j in SentencesAnnotations){                     
+                var index = parseInt(j);
+                ann = SentencesAnnotations[j];
+                
+
+                var ini = ann["ini"] - overall;
+                var fin = ann["fin"] - overall;
+                if (index+1 < SentencesAnnotations.length){
+                    var ann2 = SentencesAnnotations[index+1];
+                    if (ann["fin"]>ann2["ini"]){
+                        fin = ann2["ini"] - overall;
+                        ann["overlap"] = true;
+                        ann2["overlap"] = true;
+                    }
+                }
+                label = sent.substring(ini, fin);
+                //console.log(["ini:",ini,"  label:",label]);
+                var st = "";
+                if ("tag" in ann){
+                    if (ann["tag"].indexOf("tax:Ambiguous")>-1){
+                        st = 'style="background-color: #5cb85c;"';
+                    }
+                }
+                if ("overlap" in ann){
+                    if (ann["overlap"] == true){
+                        st = 'style="background-color: #88783a;"';
+                    }
+                    ann["overlap"] = false;
+                }
+                //--
+                var mentionType = "";
+                var ttype = typeOfAnn(ann["uri"]);
+                
+                if ( ttype != undefined){
+                mentionType = '<i class="glyphicon '+type2icon[ttype]+'"></i>&nbsp;';  
+                }
+                //--
+                var httpTags = "";
+                if ("tag" in ann){
+                    httpTags = ann["tag"].join()+"\n";
+                }
+                httpAnnotation = '<span ide="'+ann["idA"]+'"  class="blueLabel classlabelAnnotation"  data-toggle="tooltip" title="'+httpTags+ann["uri"].join()+'" '+st+'>'+mentionType+label+'</span>';
+                textOut = textOut + sent.substring(pos,ini) + httpAnnotation;
+                pos = fin;
+            
+        }
+        return textOut;
+    }
+    
+    valid_idSentence2html = function(id_sent,uridoc){
+        
+        var valid_text_sent = valid_sent(id_sent,uridoc);
+        var id_sent_plus = (parseInt(id_sent)+1);
+        return '<div class="div_parent">'+
+                            '<div class="right-wrapper">'+
+                                '<div class="right">'+
+                                    '<div style="width: 100%;padding-left:10px;">'+valid_text_sent+'</div>'+
+                                '</div>'+
+                            '</div>'+
+                            '<div class="left div_line"> &nbsp;'+id_sent_plus+
+                            '</div>'+
+                        '</div>';
+    }
+    
+    //- details
+    valid_idvToShow = -1;
+    valid_showContent = function(){
+        var _idv = valid_idvToShow;
+        if (valid_idvToShow != -1){
+            $("#valid_div_name_details").html("("+V[_idv]["number_errors"]+") Showing: "+V[_idv]["name"]);
+            $("#valid_output_div").html('<div class="row head_valid_details">'+
+                    '<div class="col-lg-1">#</div>'+
+                    '<div class="col-lg-3">Message</div>'+
+                    '<div class="col-lg-7">Sentence</div>'+
+                    '<div class="col-lg-1"></div>'+
+                '</div>');
+            
+            for (v_i in V[_idv]["errors"]){
+                var e = V[_idv]["errors"][v_i];
+                var action_btn = '<button type="button" idA="'+e["idA"]+'" idv="'+_idv+'" ide="'+v_i+'"  class="btn btn-secondary valid_btn_fix" data-toggle="tooltip" title="Fix this error automatically"><i class="glyphicon glyphicon-wrench"></i></button>';
+                var check_div = '<input class="checkbox_valid_details" type="checkbox" idv="'+_idv+'" ide="'+v_i+'"/>';
+                if (e["status"] == "corrected"){
+                    action_btn = '<i class="glyphicon glyphicon-ok-sign my-form-control" style="color:#337ab7;"></i>';
+                    check_div = "";
+                }              
+                
+                
+                $("#valid_output_div").append('<div class="row item_valid_details">'+
+                            '<div class="col-lg-1">'+e["position"]+' '+check_div+'</div>'+
+                            '<div class="col-lg-3">'+e["error_detail"]+'</div>'+
+                            '<div class="col-lg-7">'+valid_idSentence2html(e["id_sentence"],e["uridoc"])+'</div>'+
+                            '<div class="col-lg-1 text-rigth"> '+action_btn+' </div>'+
+                    '</div>');
+            }
+        }
+    }
+    
+    
+    $(document).on('click', '.valid_btnDescription', function () {
+        valid_idvToShow = $(this).attr("idv");
+        valid_showContent();
+        
+    });
+    
+    
+    setAsCorrected = function(_ide_,_idv_){
+        if (_idv_ in V && "errors" in V[_idv_]){
+                var e = V[_idv_]["errors"][_ide_];
+                var _ida_ = e["idA"];
+                e["status"] = "corrected";
+        }    
+    }
+    
+    textBetween = function(txt,ch1,ch2){
+        if (txt.length == 0){return "";}
+        var ppi = 0;
+        var found = false;
+        var begin = false;
+        if (ch1 == "\n"){  // if the start char is \n then start the text from the beggining
+            begin = true;
+        }
+        var ss = "";
+        while (!found && ppi < txt.length){
+            if (begin==false && txt[ppi] == ch1){
+                begin = true;
+            }
+            else if (begin==true){
+                if (txt[ppi] == ch2){
+                    return ss;
+                }
+                ss = ss.concat(txt[ppi]);
+            }
+            ppi = ppi +1;
+        }
+        return ss;
+    }
+    
+    
+    valid_delete_tags = function(Tags, L){
+        var R_tags = [];
+        for (vt_i in Tags){
+            var vt_t = Tags[vt_i];
+            var found = false;
+            for (vt_j in L){
+                var vt_t1 = L[vt_j];
+                if (vt_t == vt_t1){
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (found == false){
+                R_tags.push(vt_t);
+            }
+        }
+        return R_tags;
+    }
+    
+    
+    valid_add_if_not_contains = function(Tags, L){
+        var R_tags = [];
+        for (vt_i in Tags){
+            var vt_t = Tags[vt_i];
+            R_tags.push(vt_t);
+        }
+        
+        for (vt_i in L){
+            var vt_l = L[vt_i];
+            var found = false;
+            for (vt_j in Tags){
+                var vt_t = Tags[vt_j];
+                if (vt_l == vt_t){
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (found == false){
+                R_tags.push(vt_l);
+            }
+        }
+        return R_tags;
+    }
+    
+    
+    valid_fix_error = function(exp,f_e,vidv){
+
+            //eliminations
+            if (exp.indexOf("(")!=-1){
+                var L = textBetween(exp,"(",")").split(",");
+                var ann = A[f_e["idA"]];
+                if ("tag" in ann){
+                    ann["tag"] = valid_delete_tags(ann["tag"], L);
+                }                
+            }
+            
+
+            if (exp.indexOf("[")!=-1){
+                var L = textBetween(exp,"[","]").split(",");
+                var ann = A[f_e["idA"]];
+                console.log(["ann:",ann]);
+                ann["tag"] = valid_add_if_not_contains(ann["tag"],L);
+            }
+    }
+    
+    $(document).on('click', '.valid_btn_fix', function () {
+        var vidv = $(this).attr("idv");
+        var vide = $(this).attr("ide");
+        
+        var f_e = V[vidv]["errors"][vide];
+        if ("automatic_expresion" in f_e){
+            var exp_ = f_e["automatic_expresion"];
+            valid_fix_error(exp_,f_e,vidv);
+            setAsCorrected(vide,vidv);
+            valid_idvToShow = vidv;
+            valid_showContent();
+            buildNIFCorpora();
+        }
+        
+    });
+    
+    
+    $("#valid_select_all_check").click(function(){
+        $('.checkbox_valid_details').prop('checked', true);
+    });
+    
+    
+    $("#valid_fix_all").click(function(){
+        $(".checkbox_valid_details").each(function() {
+            var isChecked = $(this).prop('checked');
+            if(isChecked == true){
+                var vidv = $(this).attr("idv");
+                var vide = $(this).attr("ide");
+                
+                var f_e = V[vidv]["errors"][vide];
+                if ("automatic_expresion" in f_e){
+                    var exp_ = f_e["automatic_expresion"];
+                    valid_fix_error(exp_,f_e,vidv);
+                    setAsCorrected(vide,vidv);
+                }
+            }            
+        });        
+        valid_showContent();
+        buildNIFCorpora();
+    });
+   
     
 });
 

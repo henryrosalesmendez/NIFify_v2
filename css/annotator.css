@@ -205,6 +205,15 @@ ul.tabs li.current{
 
 }
 
+.parent_show{
+  /* demo only: */
+  padding:20px;
+  box-shadow:0 0 3px #888;
+  margin-right:10px;
+  margin-bottom:20px;
+
+}
+
 .textareaclass{
   
 }
@@ -215,6 +224,43 @@ ul.tabs li.current{
     box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
 }
 
+.drop-shadow_ligth {
+    background-color: #F9F9F9;
+}
+
 .redHighlited {
     color: red;
+}
+
+.item_valid_details{
+    line-height: 2;
+    min-height: 50px;
+    border-top: 1px solid #ddd;
+    box-sizing: border-box;
+    vertical-align: top;
+    padding-top: 10px;
+}
+
+.head_valid_details{
+    line-height: 2;
+    min-height: 50px;
+    box-sizing: border-box;
+    vertical-align: top;
+    padding-top: 10px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+
+.valid_checks_details{
+    
+}
+
+.text-rigth{
+    text-align: right;
+}
+
+.my-form-control{
+    padding: 6px 12px; 
+    line-height: 1.42857143;
 }

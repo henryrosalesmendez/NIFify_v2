@@ -44,6 +44,7 @@
                 <li id="aceli" class="tab-link" data-tab="ace">ACE Format</li>
                 <li id="msnbcli" class="tab-link" data-tab="MSNBC">MSNBC Format</li>
                 <li id="elsystemsli" class="tab-link" data-tab="elsystems">State-of-the-art Systems</li>
+                <li id="validationli" class="tab-link" data-tab="validation">Validation</li>
                 <li class="tab-link" data-tab="help">Help</li>
                 <!--<li class="nav-item"><a href="#help" data-toggle="tab">Help</a></li>-->
             </ul>
@@ -349,8 +350,6 @@ Example:
    </div> 
 
 
-
-
    
    
    
@@ -389,8 +388,111 @@ Example:
    </div> 
    
    
+   <!----- Validation ---->
+   <div id="validation" class="tab-content">
+       <div class="row padd1">
+           Category Rule Validations
+       </div>
+       
+       <div class="row">
+           <div class="col-lg-12">
+                <div style=";width:100%">
+                    <div class="input-group"style=";width:100%">
+                        <!--<span class="input-group-addon">Condition</span>-->
+                        <input id="vald_firstRule" type="text" style="" class="form-control" placeholder="e.g., {mnt@Michael Jackson,tag@mnt:AntecedentRf}" data-toggle="tooltip" title="Constraint between {} for conjuntion or <> for disjuntion. Use the prefix mnt@  and tag@ for mentions or tags respectively."/>
+                    </div>
+                </div>
+                <div style="margin-top: 5px;width:100%" >    
+                    <div class="input-group" style="margin-top: 5px;width:100%">
+                        <!--<span class="input-group-addon">Consecuent</span>-->
+                        <input id="vald_SecondRule" type="text" style="" class="form-control" placeholder="e.g., [mnt:SingularNounPOS](mnt:PluralNounPOS,mnt:FigurativeRh)" data-toggle="tooltip" title="what to do, additions with [], and deletions with () and separated by coma."/>
+                        <div class="input-group-btn"> 
+                            <button id="vald_rules_validate" type="button"  class="btn btn-secondary"> 
+                            <!--<i class="fa fa-check fa-lg"></i> -->
+                            <i class="glyphicon glyphicon-check"></i>
+                            Validate Rule</button> 
+                        </div>
+                    </div>
+                 </div>
+                 <br>
+            </div>
+        </div>
+        <!-- -->
+        <div class="row padd1">
+           Current Validators
+       </div>       
+       <div class="row">
+            <div class="col-lg-12">
+                <table id="valid_mainTable" class="table table-striped" >
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 50px;">#</th>
+                            <th scope="col" style="width: 200px;">Name</th>
+                            <th scope="col" style="width: 70px;">Erros</th>
+                            <th scope="col" style="width: 100px;">Date</th>
+                            <th scope="col" style="width: 100px;">Time</th>
+                            <th scope="col">Description</th>
+                            <th scope="col" style="text-align:center;width: 100px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fa fa-times fa-lg"></i> 1</td>
+                            <td>Links validations</td>
+                            <td>0</td>
+                            <td>20/03/2018</td>
+                            <td>10:20</td>
+                            <td>Here we check that the links of the annotations exists.</td>
+                            <td></td>
+                        <tr>
+                    </tbody>
+                </table>
+                <br>
+            </div>
+       </div>   
+       <!--<div class="row padd1" id="valid_div_name_details">
+          Showing
+       </div>-->
+        <div class="row padd1">
+            <div class='bothside'>
+                <div style='float: left;'>
+                    <div class="row padd1"><!-- style='display: flex;justify-content: space-between;'>-->
+                        <div id="valid_div_name_details">Showing</div>
+                    </div>
+                </div>
+                <div style='float: right;'>
+                    <button id="valid_select_all_check" type="button"  class="btn btn-primary" data-toggle="tooltip" title="Select all the errors detected"><i class="glyphicon glyphicon-record"></i></button>
+                    <button id="valid_fix_all" type="button"  class="btn btn-primary" data-toggle="tooltip" title="Fix all the selected errors"><i class="glyphicon glyphicon-wrench"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="row padd1">
+           <div id="valid_output_div" class="col-lg-12 parent_show drop-shadow_ligth">
+               <div class="row head_valid_details">
+                   <div class="col-lg-1">#</div>
+                   <div class="col-lg-3">Message</div>
+                   <div class="col-lg-7">Sentence</div>
+                   <div class="col-lg-1"></div>
+               </div>
+               <!--<div class="row item_valid_details">
+                   <div class="col-lg-1">1 <input type="checkbox"/></div>
+                   <div class="col-lg-3">Cardenas should be MAXMIMO</div>
+                   <div class="col-lg-7">Aquí iría a línea</div>
+                   <div class="col-lg-1 text-rigth"><button type="button"  class="btn btn-secondary valid_btn_details"> </div>
+               </div>
+               <div class="row item_valid_details">
+                   <div class="col-lg-1">1 <input type="checkbox"/></div>
+                   <div class="col-lg-3">Cardenas should be MAXMIMO</div>
+                   <div class="col-lg-7">Aquí iría a línea</div>
+                   <div class="col-lg-1 text-rigth"><button type="button"  class="btn btn-secondary valid_btn_details"> </div>
+               </div>-->
+           </div>
+        </div>
+   </div>
    
    
+   
+  
    
    
    <!----- Help ---->
@@ -422,10 +524,8 @@ Example:
       <div class="modal-dialog" role="document">
         <div class="modal-content">
            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
               <h4 id="myModal-title" class="modal-title">Add Annotation</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-               <span aria-hidden="true">&times;</span>
-              </button>
               <div id="myModal-title-desc"></div>
            </div>
            <div id="myModal-body" class="modal-body form-group">
@@ -488,10 +588,8 @@ Example:
       <div class="modal-dialog" role="document">
         <div class="modal-content">
            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
               <h4 id="modalUpload-title" class="modal-title">Upload NIF file</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-               <span aria-hidden="true">&times;</span>
-              </button>
            </div>
            <!--<form action="/" method="post" onsubmit="return upload();">-->
            <div id="modalUpload-body" class="modal-body form-group">
@@ -520,10 +618,8 @@ Example:
       <div class="modal-dialog" role="document">
         <div class="modal-content">
            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
               <h4 id="modalModifyAnnotation-title" class="modal-title">Modify Annotation</h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-               <span aria-hidden="true">&times;</span>
-              </button>
               <div id="modalModifyAnnotation-title-desc"></div>
            </div>
            <div id="modalModifyAnnotation-body" class="modal-body form-group">
@@ -585,10 +681,8 @@ Example:
       <div class="modal-dialog" role="document">
         <div class="modal-content">
            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
               <h4 class="modal-title"><b>Summary</b></h4>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-               <span aria-hidden="true">&times;</span>
-              </button>
            </div>
            <div id="modalSummary-body" class="modal-body form-group">           
                <table id="sry_table" class="table table-striped"></table>
