@@ -5230,6 +5230,44 @@ $(document).ready(function() {
         valid_showContent();
         buildNIFCorpora();
     });
+    
+    
+    $("#vald_rules_validate").click(function(){
+        var newidV = 1;
+        var Vkey = Object.keys(V);
+        if (Vkey.length != 0){
+            newidV = parseInt(Vkey[Vkey.length-1])+1;
+        }
+        
+        var constrain = $("#vald_firstRule").val();
+        if (constrain == undefined || constrain == ""){
+            warning_alert("You have to specify a constrain!");
+            return false;
+        }
+        
+        var exp = $("#vald_SecondRule").val();
+        if (exp == undefined || exp == ""){
+            warning_alert("You have to specify an expresion!");
+            return false;
+        }
+        
+        var str_constrain = constrain.replace("<","&lt;");
+        str_constrain = str_constrain.replace(">","&gt;");
+        V[newidV] = {
+            "name":"Dinamic RULE #"+newidV,
+            "date":"-",
+            "time":"-",
+            "description":str_constrain+"%"+exp,
+            "number_errors":"-",
+            "errors":[],
+            "type":"dinamic",
+            "automatic_expresion": constrain+"%"+exp
+        };
+        
+        updateMainTableValidation();
+        $("#vald_firstRule").val("");
+        $("#vald_SecondRule").val("");
+    });
    
     
 });
