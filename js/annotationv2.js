@@ -4536,27 +4536,19 @@ $(document).ready(function() {
     ///----- Validation tab
     V = {};
     
+    
     V[1] = {
         "name":"Link validations",
         "date":"-",
         "time":"-",
-        "description":"Here we check that the links of the annotations exists.",
+        "description":"Here we check if each link is valid or not. Also, we identify if they are ambiguous or redirect Wikipages",
         "number_errors":"-",
         "errors":[],
-        "type":"static"
+        "type":"static",
+        "requireInternet": true
     };
     
     V[2] = {
-        "name":"Unambiguous links",
-        "date":"-",
-        "time":"-",
-        "description":"Here we check that the links are not ambiguous or redirect in the case of link of Wikipedia or DBpedia.",
-        "number_errors":"-",
-        "errors":[],
-        "type":"static"
-    };
-    
-    V[3] = {
         "name":"Overlapping checker",
         "date":"-",
         "time":"-",
@@ -4566,7 +4558,7 @@ $(document).ready(function() {
         "type":"static"
     };
     
-    V[4] = {
+    V[3] = {
         "name":"Reference checker",
         "date":"-",
         "time":"-",
@@ -4576,7 +4568,7 @@ $(document).ready(function() {
         "type":"static"
     };
     
-    V[5] = {
+    V[4] = {
         "name":"Spelling checker",
         "date":"-",
         "time":"-",
@@ -4586,7 +4578,7 @@ $(document).ready(function() {
         "type":"static"
     };
     
-    V[6] = {
+    V[5] = {
         "name":"Refining References",
         "date":"-",
         "time":"-",
@@ -4623,13 +4615,17 @@ $(document).ready(function() {
            var v = V[i];
            var ttt = '<i class="fa fa-times fa-lg"></i>';
            var classColor='';
-           var actions = '<button class="btn btn-secondary valid_btnRun" type="button" idv="'+i+'" data-toggle="tooltip" title="Run cheker '+v["name"]+'"><i class="glyphicon glyphicon-expand"></i></button>';
+           var color_btn = "btn-secondary";
+           if ("requireInternet" in v && v["requireInternet"] == true){
+               color_btn = "btn-success";    
+           }
+           var actions = '<button class="btn '+color_btn+' valid_btnRun" type="button" idv="'+i+'" data-toggle="tooltip" title="Run cheker '+v["name"]+'"><i class="glyphicon glyphicon-expand"></i></button>';
            
            if (v["number_errors"]!="-"){
                ttt = '<i class="fa fa-lg fa-check"></i>';
                classColor='class="text-primary"';
                actions = '<button class="btn btn-secondary valid_btnDescription" type="button" idv="'+i+'" data-toggle="tooltip" title="Details of '+v["name"]+'"><i class="glyphicon glyphicon-th"></i></button>'+
-               '<button class="btn btn-secondary valid_btnRun" type="button" idv="'+i+'" data-toggle="tooltip" title="Run cheker '+v["name"]+'"><i class="glyphicon glyphicon-repeat"></i></button>';
+               '<button class="btn '+color_btn+' valid_btnRun" type="button" idv="'+i+'" data-toggle="tooltip" title="Run cheker '+v["name"]+'"><i class="glyphicon glyphicon-repeat"></i></button>';
                
            }
 
@@ -4660,7 +4656,7 @@ $(document).ready(function() {
                 var l = L[c_i];
                 if (l.indexOf("tag")!=-1){
                     var ttag = l.split("@")[1];
-                    if (a["tag"].indexOf(ttag)==-1){
+                    if ("tag" in a &&  a["tag"].indexOf(ttag)==-1){
                         return false;
                     }
                 }
@@ -4683,7 +4679,7 @@ $(document).ready(function() {
                 var l = L[c_i];
                 if (l.indexOf("tag")!=-1){
                     var ttag = l.split("@")[1];
-                    if (a["tag"].indexOf(ttag)!=-1){
+                    if ("tag" in a && a["tag"].indexOf(ttag)!=-1){
                         found = true;
                         break;
                     }
@@ -4711,23 +4707,26 @@ $(document).ready(function() {
         var idv = $(this).attr("idv");
         v = V[idv];
         V[idv]["errors"] = [];
-        $.blockUI({ message: null });
+        
         
         if (v["type"] == "static"){
             if (v["name"] == "Link validations"){
-                valid_CheckLinks(idv);
-            }
-            else if (v["name"] == "Unambiguous links"){
                 valid_CheckUnambiguousLinks(idv);
             } 
             else if (v["name"] == "Overlapping checker"){
+                $.blockUI({ message: null });
                 valid_CheckOverlaps(idv);
+                $.unblockUI();
             } 
             else if (v["name"] == "Reference checker"){
+                $.blockUI({ message: null });
                 valid_CheckReferences(idv);
+                $.unblockUI();
             }
             else if (v["name"] == "Spelling checker"){
+                $.blockUI({ message: null });
                 valid_CheckSpelling(idv);
+                $.unblockUI();
             }
         }
         else{
@@ -4764,7 +4763,7 @@ $(document).ready(function() {
             valid_idvToShow = idv;
             valid_showContent();
         }
-        $.unblockUI();
+        //$.unblockUI();
     });
     
     
@@ -4774,9 +4773,141 @@ $(document).ready(function() {
     }
     
     
+    
+    update_block_caption = function(id_div,progress,total){
+        var porc = parseInt((progress*100)/total);
+        $("#"+id_div).html("Progress: "+porc+"%");
+    }
+    
+    
+    valid_valLinks = 0;
+    valid_refLinks = 0;
+    valid_disLinks = 0;
+    sincronism_redirect_disamb_Links = function(_a_i, _a_j, _idv_){
+        if (_a_i == A.length){
+            //updating main table
+            V[_idv_]["number_errors"] = unambiguousErrors;
+            V[_idv_]["time"]= new Date().toLocaleTimeString();
+            V[_idv_]["date"]= new Date().toLocaleDateString();
+            updateMainTableValidation();
+            
+            //displaying the content
+            valid_idvToShow = _idv_;
+            valid_showContent();
+            $.unblockUI();
+            var htmlMessage = "<b>Not Valid: </b>"+valid_valLinks+"<br>  <b>Redirect: </b>"+valid_refLinks+"<br>  <b>Ambiguous:</b> "+valid_disLinks;
+            warning_alert(htmlMessage);
+        }
+        else{
+            update_block_caption('validation_disamb',_a_i,A.length);
+            var ann_ = A[_a_i];                    
+            var uri = ann_["uri"][_a_j];
+            //console.log(["uri:",uri]);
+            $.ajax({
+                //data:params,
+                data:{"values":{"uri":uri}},
+                url: 'elvalidation.php',
+                type: 'POST',
+                dataType: "html",
+                beforeSend: function(){},
+                success: function(response){
+                    //console.log(["response:",response]);
+                    var json_response = JSON.parse(trim_1(response));
+                    var resp =  json_response;
+                    
+                    if ("response" in resp){
+                        if (resp["response"]["valid"] == false){
+                            unambiguousErrors = unambiguousErrors +1;
+                            valid_valLinks = valid_valLinks +1;
+                            
+                            V[_idv_]["errors"].push({
+                                "status":"uncorrected",
+                                "position": unambiguousErrors,
+                                "idA" : _a_i,
+                                "uridoc": ann_["uridoc"],
+                                "label":ann_["label"],
+                                "id_sentence": ann_["id_sentence"],
+                                "error_detail": "The uri <a href="+uri+">"+uri+"</a> of the mention <i>"+ann_["label"]+"</i> is not a valid link.",
+                                //"automatic_expresion": "["+correctOverlapTag+"]("+tagOverlapList.join()+")"
+                            });
+                        } 
+                        else if (resp["response"]["redirect"] == true){
+                            unambiguousErrors = unambiguousErrors +1;
+                            valid_refLinks = valid_refLinks +1;
+                            
+                            V[_idv_]["errors"].push({
+                                "status":"uncorrected",
+                                "position": unambiguousErrors,
+                                "idA" : _a_i,
+                                "uridoc": ann_["uridoc"],
+                                "label":ann_["label"],
+                                "id_sentence": ann_["id_sentence"],
+                                "error_detail": "The uri <a href="+uri+">"+uri+"</a> of the mention <i>"+ann_["label"]+"</i> is a redirect page.",
+                                //"automatic_expresion": "["+correctOverlapTag+"]("+tagOverlapList.join()+")"
+                            });
+                        } 
+                        else if (resp["response"]["disambiguation"] == true){
+                            unambiguousErrors = unambiguousErrors +1;
+                            valid_disLinks = valid_disLinks +1;
+                            
+                            V[_idv_]["errors"].push({
+                                "status":"uncorrected",
+                                "position": unambiguousErrors,
+                                "idA" : _a_i,
+                                "uridoc": ann_["uridoc"],
+                                "label":ann_["label"],
+                                "id_sentence": ann_["id_sentence"],
+                                "error_detail": "The uri <a href="+uri+">"+uri+"</a> of the mention <i>"+ann_["label"]+"</i> is a disambiguation page.",
+                                //"automatic_expresion": "["+correctOverlapTag+"]("+tagOverlapList.join()+")"
+                            });
+                        }
+                    }                  
+                    
+                    
+                    var next_aj = _a_j + 1;
+                    if (next_aj == ann_["uri"].length){
+                        _a_i = _a_i +1;
+                        next_aj = 0;
+                    }
+                    sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
+                    
+                },
+                error: function(response){
+                    var next_aj = _a_j + 1;
+                    if (next_aj == ann_["uri"].length){
+                        _a_i = _a_i +1;
+                        next_aj = 0;
+                    }
+                    sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
+                }
+            });
+            
+        }        
+    }
+    
+    
     //--
+    unambiguousErrors = 0;
     valid_CheckUnambiguousLinks = function(_idv){
-        alert("Not Yet :P");
+        unambiguousErrors = 0;
+        valid_valLinks = 0;
+        valid_refLinks = 0;
+        valid_disLinks = 0;
+        $.blockUI( {
+                message: '<div id="validation_disamb">Progress: 0%</div>',
+                css: { 
+                    border: 'none', 
+                    padding: '15px', 
+                    backgroundColor: '#000', 
+                    '-webkit-border-radius': '10px', 
+                    '-moz-border-radius': '10px', 
+                    opacity: .5, 
+                    color: '#fff' 
+                }
+            }
+        );
+        //$.blockUI({ message: null });
+        sincronism_redirect_disamb_Links(0,0,_idv);
     }
     
     
@@ -4846,6 +4977,7 @@ $(document).ready(function() {
         var count_errors = 0;
         for (a_i in A){
             var ann_ = A[a_i];
+            if (!("tag" in ann)){continue;}
             var correctOverlapTag = valid_overlap_tag(a_i);
             
             if (ann_["tag"].indexOf(correctOverlapTag) == -1){
@@ -4894,11 +5026,11 @@ $(document).ready(function() {
             for (a_i in SentencesAnnotations){                     
                 var a = SentencesAnnotations[a_i];                
 
-                if (a["tag"].indexOf("mnt:Pro-formPN") != -1){
+                if ("tag" in a &&  a["tag"].indexOf("mnt:Pro-formPN") != -1){
                     // have to be Coreference
                     correctReferenceTag[a["idA"]] = {"ref":"mnt:CoreferenceRf","id_sentence":-1};
                 }
-                else if (a["tag"].indexOf("mnt:CommonFormPN")==-1 && a["tag"].indexOf("mnt:NumericTemporalPN") == -1){
+                else if ("tag" in a &&  a["tag"].indexOf("mnt:CommonFormPN")==-1 && a["tag"].indexOf("mnt:NumericTemporalPN") == -1){
                     var alreadyAnn = false;
                     for (var u_i in a["uri"]){
                         var u = a["uri"][u_i];
@@ -4931,8 +5063,6 @@ $(document).ready(function() {
             if (!(ann_["idA"] in correctReferenceTag)){continue;}
             var val_ref = correctReferenceTag[ann_["idA"]];
             if (ann_["tag"].indexOf(val_ref["ref"]) == -1){
-                console.log(["ann_:",ann_]);
-                console.log(["valor_ref:",val_ref["ref"]]);
                 count_errors = count_errors +1;
                 var sent_id = parseInt(val_ref["id_sentence"])+1;
                 var msg = "Mention <i>"+ann_["label"]+"</i> should be "+val_ref["ref"]+" because appear before in sentence "+sent_id+".";
@@ -5064,8 +5194,14 @@ $(document).ready(function() {
             
             for (v_i in V[_idv]["errors"]){
                 var e = V[_idv]["errors"][v_i];
-                var action_btn = '<button type="button" idA="'+e["idA"]+'" idv="'+_idv+'" ide="'+v_i+'"  class="btn btn-secondary valid_btn_fix" data-toggle="tooltip" title="Fix this error automatically"><i class="glyphicon glyphicon-wrench"></i></button>';
-                var check_div = '<input class="checkbox_valid_details" type="checkbox" idv="'+_idv+'" ide="'+v_i+'"/>';
+                var action_btn = "";
+                var check_div = "";
+                if ("automatic_expresion" in e){
+                    action_btn = '<button type="button" idA="'+e["idA"]+'" idv="'+_idv+'" ide="'+v_i+'"  class="btn btn-secondary valid_btn_fix" data-toggle="tooltip" title="Fix this error automatically"><i class="glyphicon glyphicon-wrench"></i></button>';
+                    check_div = '<input class="checkbox_valid_details" type="checkbox" idv="'+_idv+'" ide="'+v_i+'"/>';
+                    
+                }
+                
                 if (e["status"] == "corrected"){
                     action_btn = '<i class="glyphicon glyphicon-ok-sign my-form-control" style="color:#337ab7;"></i>';
                     check_div = "";
