@@ -407,6 +407,17 @@ $(document).ready(function() {
         }
         return -1;
     }
+    
+    
+    urisent2id = function(A,uris){
+        for (a_i in A){
+            a = A[a_i];
+            if (a["id_sent"] == uris){
+                return a_i;
+            }            
+        }
+        return -1;
+    }
 
 
     id2text = function(_inDocCounter){
@@ -430,10 +441,6 @@ $(document).ready(function() {
                 tags.push(t);
             }
         }
-        console.log("--->");
-        console.log(flag);
-        console.log(temp_tags);
-        console.log(tags);
         return tags;
     }
 
@@ -450,7 +457,6 @@ $(document).ready(function() {
             console.log("typeMention -->",typeMention)
             if (typeMention != '- Select Type -'){
                 link2type[text] = w2type[typeMention];
-                console.log(text,"----->",typeMention);
             }
             
         });
@@ -460,10 +466,8 @@ $(document).ready(function() {
             list_uri.push(in_uri);
             
             var typeMention = $("#modalSelectURI").attr("mentiontype");
-            console.log("PPPPPPPRRRRRRRIIIIIIIIIMMMMMMEEEEERRRRRAAAA:",typeMention)
             if (typeMention != '- Select Type -'){
                 link2type[in_uri] = w2type[typeMention];
-                console.log("in_uri:",in_uri,"   w2type[typeMention]:",w2type[typeMention],"    typeMention:",typeMention);
             }
         }
            
@@ -905,7 +909,8 @@ $(document).ready(function() {
                    var index_j = parseInt(j);
                    e = SortedList[j];
                    if (ann["ini"]==e["ini"] && !inserted){ // ordeno segun "fin"
-                       if (ann["fin"]==e["fin"]){
+                       if (ann["fin"]==e["fin"] && ann["id_sentence"]==e["id_sentence"]){
+                           console.log(["ann:",ann,"  e:",e]);
                            warning_alert("This entity has already added.");
                            return 0; 
                        }
@@ -1786,6 +1791,270 @@ $(document).ready(function() {
         return txt.substr(ini,fin-ini+1);
     }
     
+    
+    
+    
+    parser_NIF = function(text,tag){
+        //console.log(["text:",text]);
+        //console.log(["tag:",tag]);
+        state = 0;
+        var p = 0;
+        if (tag!=false){
+            p = text.indexOf(tag);
+            if (p == -1) {return false;} 
+        }
+        //console.log(["p:",p,p != -1,p<text.lenth,text.length]);
+        tt = "";
+        p = p -1;
+        //console.log("dentro");
+        while (p<text.length){
+            p = p +1;
+            ch = text[p];
+            //console.log(["(",state,")",p,ch]);
+            
+            if (state == 0){ // search the doble comilla
+                if (ch=='"'){ 
+                    state = 1;
+                }
+                else if (ch=='<'){
+                    state = 10;
+                }
+                else if (ch=='['){
+                    state = 20;
+                }
+            }
+            else if (state == 1){  // doble or simple?
+                if (ch == '"'){
+                    state = 3;
+                }
+                else{
+                    tt = tt + ch;
+                    state = 2; // simple
+                }
+            }
+            else if (state == 2){ // consume until simple
+                if (ch == '"'){
+                    return [p,tt];
+                }
+                else if (ch == '\\'){
+                    state = 6;
+                }
+                else {
+                    tt = tt + ch;
+                }
+            }
+            else if (state == 3){
+                if (ch == '"'){
+                    state = 4;
+                }
+                else {
+                    //console.log(ch,":(");
+                    return false;
+                }
+            }
+            else if (state == 4){ // consume until doble
+                if (ch == '"'){
+                    state = 7;
+                }
+                else if (ch == "\\"){
+                    state = 5;
+                }
+                else {
+                    tt = tt + ch;
+                }
+            }
+            else if (state == 5){
+                state = 4;
+                tt = tt +ch;
+            }
+            else if (state == 6){
+                state = 2;
+                tt = tt +ch;
+            }
+            else if (state == 7){
+                if (ch == '"'){
+                    state = 8;
+                }
+                else {
+                    tt = tt + '"' + ch;
+                    state = 4;
+                }
+            }
+            else if (state == 8){
+                if (ch == '"'){
+                    return [p,tt];
+                }
+                else{
+                    tt = tt + '""' + ch;
+                    state = 4;
+                }
+            }
+            else if (state == 10){
+                if (ch!='>'){
+                    tt = tt + ch;
+                }
+                else {
+                    return [p,tt];
+                }
+            }
+            else if (state == 20){
+                if (ch!=']'){
+                    tt = tt + ch;
+                }
+                else {
+                    return [p,tt];
+                }
+            }
+        }
+
+        //console.log("nada?");
+        return false;
+    }
+    
+    parseURI = function(text){
+        var p = -1;
+        var state = 0;
+        var tt = "";
+        var uri_doc = "";
+        var uri_sent = "";
+        var ini_sent = "";
+        var fin_sent = "";
+        
+        while (p<text.length){
+            p = p +1;
+            var ch = text[p];
+            
+            
+            //console.log(["(",state,")",p,ch,"   tt:",tt]);
+            
+            if (state == 0){
+                if (ch == "<"){
+                    state = 1;
+                }
+            }
+            else if (state == 1){
+                if (ch == ">"){
+                    return [tt,"","",""];
+                }
+                if (ch == "#"){
+                    state = 2;
+                    uri_doc = tt;
+                    tt = tt + ch;
+                }
+                else {
+                    tt = tt + ch;
+                }
+            }
+            else if (state == 2){
+                if (ch == ">"){
+                    return [uri_doc,tt,"",""]
+                }
+                else if (ch == "="){
+                    tt = tt + "=";
+                    state = 3;
+                }
+                else{
+                    tt = tt + ch;
+                }
+            }
+            else if (state == 3){
+                if (isNumber(ch) == true){
+                    tt = tt + ch;
+                    ini_sent = ini_sent + ch;                    
+                }
+                else if (ch == ","){
+                    state = 4;
+                    tt = tt + ch;
+                }
+                else if (ch == ">"){
+                    return [uri_doc,tt,ini_sent,""];
+                }
+                else {
+                    state = 5;
+                    tt = tt + ch;
+                }
+            }
+            else if (state == 4){
+                if (isNumber(ch) == true){
+                    fin_sent = fin_sent + ch;
+                    tt = tt + ch;
+                }
+                else if (ch == ">"){
+                    return [uri_doc,tt,ini_sent,fin_sent];
+                }
+                else {
+                    state = 5;
+                    tt = tt + ch;
+                }
+            }
+            else if (state == 5){
+                if (ch == ">"){
+                    return [uri_doc,tt,"",""]
+                }
+                else {
+                    tt = tt + ch;
+                }
+            }
+            
+        }
+        
+    }
+    
+    
+    _inDocCounter = 0;
+    _inSentenceIni= 0;
+    reading_sentence = function(chunk){
+        //console.log(";)");
+        var p_isString = chunk.indexOf("nif:isString");
+        if (p_isString == -1){
+            console.log("--->> Error, there musts be a nif:isString triple (start)");
+            return false;
+        }
+        //console.log("B)");
+        var n_chunk = chunk.length;
+        var r_text = chunk.substring(p_isString, n_chunk);
+
+        var sent_text = parser_NIF(chunk,"nif:isString")[1];
+        //console.log(":P");
+        var rr = parseURI(chunk);
+        var _uridoc = rr[0];
+        var _urisent = rr[1]; if (_urisent == ""){_urisent = _uridoc;}
+        var _ini = rr[2]; if (_ini == ""){_ini = _inSentenceIni; _inSentenceIni = _inSentenceIni +1;}
+        var _fin = rr[3];
+        //console.log(["rr",rr,"uridoc:",_uridoc]);
+        //console.log(["Sentences:",Sentences]);
+        //console.log(["_urisent:",_urisent]);
+        
+        
+        //
+        if (uridoc2id(D,_uridoc) == -1){            
+            D.push({"uri":_uridoc, "inDocCounter":_inDocCounter});
+            dicc_uri2inDocCounter[_uridoc] = _inDocCounter;
+            _inDocCounter = _inDocCounter +1;
+        }  
+        
+        
+        //
+        var p_sent = urisent2id(Sentences,_urisent);
+        if (p_sent == -1){
+            var sent = {"text":sent_text, "uridoc":_uridoc, "id_sent":_urisent, "ini":parseInt(_ini), "fin":parseInt(_fin)};
+            Sentences.push(sent);
+            //console.log(":(");
+            return sent;
+        }
+        
+        else if (Sentences[p_sent]["text"] == undefined){
+            //console.log(["--text:",sent_text]);
+            Sentences[p_sent]["text"] = sent_text;
+            Sentences[p_sent]["ini"] = parseInt(_ini);
+            Sentences[p_sent]["fin"] = parseInt(_fin);
+        }
+        //console.log("xD");
+        //console.log(["p_sent:",p_sent,"   Sentences[p_sent]:",Sentences[p_sent]]);
+        return Sentences[p_sent];
+    }
+    
+    
     $("#btn_inputNIF").click(function(){   // que no necesite estar ordenado el fichero
         //$(".parent_div_show").remove();
         CleanAnnotationDocument();
@@ -1803,6 +2072,8 @@ $(document).ready(function() {
         var sent_uri;
         var overall = 0;
         var sent_text;
+        _inDocCounter = 0;
+        _inSentenceIni= 0;
         
         Sentences = [];
         D = [];
@@ -1814,176 +2085,90 @@ $(document).ready(function() {
             if (l.length == 0){
                continue;
             }
-
+            
             if (l[l.length-1]!="."){
                 // add to chunck
                 chunk = chunk + l;
             }
             else { //end of the chunk
                 chunk = chunk + l;
-                var n_chunk = chunk.length;
-                if (chunk.indexOf("mnt:entityType")!=-1){ // entity type
-                    var trp = chunk.split("mnt:entityType");
-                    if (trp.length == 2){
-                        var s = trim_1(trp[0]);
-                        
-                        var o = trim_1(trp[1]);
-                        link2type[s] = o;
-                    }
-                    
+                //console.log("========================================");
+                //console.log(chunk);
+                //console.log(".........................");
+                
+                if (chunk.indexOf("@prefix")!=-1){
+                    chunk = "";
+                    continue;                        
                 }
-                else if (chunk.indexOf("nif:sourceUrl")!=-1){ // Document
-                    var u_text = chunk.substring(p_ref, n_chunk);
-                    var i_number = u_text.indexOf("<");
-                    var p_number = u_text.indexOf("#");
-                    if (p_number != -1){
-                        uridoc = u_text.substring(i_number + 1,p_number); // 22
-                    }
-                    else {
-                        var p_number = u_text.indexOf(">");
-                        uridoc = u_text.substring(i_number + 1,p_number); // 8
-                    }
-                    
-                    D.push({"uri":uridoc, "inDocCounter":inDocCounter});
-                    dicc_uri2inDocCounter[uri] = inDocCounter;
-                    inDocCounter = inDocCounter +1;
-                    overall = 0;
-                    
+                
+                var n_chunk = chunk.length;
+                var p_ref = chunk.indexOf("nif:referenceContext");
+                var p_bro = chunk.indexOf("nif:broaderContext");
+                
+                if (chunk.indexOf("nif:sourceUrl")!=-1){ // Document
+                    //console.log("--> DOC");
                     chunk = "";
                     continue;
                 }
-                var p_ref = chunk.indexOf("nif:referenceContext");
-                var p_bro = chunk.indexOf("nif:broaderContext");
-                if (p_ref!=-1  || p_bro!=-1 ){  // it is a Setence or an Annotation (nif:Phrase)
-                    if (chunk.indexOf("@prefix")!=-1){continue;}
+                else if (p_ref!=-1  || p_bro!=-1 ){  // it is a Setence or an Annotation (nif:Phrase)
+                    
                     if (chunk.indexOf("nif:Phrase")!=-1){  // It's an Annotation
-
-                        // -- nif:beginIndex
-                        var p_beginIndex = chunk.indexOf("nif:beginIndex");
-                        if (p_beginIndex == -1){
-                            console.log("--->> Error, there musts be a nif:beginIndex triple (start)");
-                            continue;
-                        }
+                        //console.log("--> ANN");
+                        //console.log(["id_s:",id_s]);
+                        
+                        // quizas luego se puede hacer algo de ver si es la sentenia anterior no vlver a buscar
+                        var rr = parseURI(chunk);
+                        var _uridoc = rr[0];
+                        var _uriann = rr[1];
+                        var _ini = rr[2]; if (_ini == ""){_ini = _inSentenceIni; _inSentenceIni = _inSentenceIni +1;}
+                        var _fin = rr[3];
+                        //console.log(["rr:",rr,"    _uridoc:",_uridoc]);
                         
                         
-                        var r_text = chunk.substring(p_beginIndex, n_chunk);
-                        var fin_beginIndex = r_text.indexOf('"^^xsd:');
-                        if (fin_beginIndex == -1){
-                            //console.log(chunk + "\n----------------\n");
-                            console.log("--->> Error, there musts be a nif:beginIndex triple (end)");
-                            continue;
-                        }
-                        var startPosition = r_text.substring(16,fin_beginIndex);
-
-                        // -- nif:endIndex
-                        var p_endIndex = chunk.indexOf("nif:endIndex");
-                        if (p_endIndex == -1){
-                            console.log("--->> Error, there musts be a nif:endIndex triple (start)");
-                            continue;
-                        }
-                        
-                        var r_text = chunk.substring(p_endIndex, n_chunk);
-                        var fin_endIndex = r_text.indexOf('"^^xsd:');//('"^^xsd:nonNegativeInteger');
-                        if (fin_endIndex == -1){
-                            console.log("--->> Error, there musts be a nif:endIndex triple (end)");
-                            continue;
-                        }
-                        var endPosition = r_text.substring(14,fin_endIndex);
-
-
-                       //--- nif:anchorOf
-                        var p_anchorOf = chunk.indexOf("nif:anchorOf");
-                        if (p_anchorOf == -1){
-                            console.log("--->> Error, there musts be a nif:anchorOf triple (start)");
-                            continue;
-                        }
-                        
-                        var r_text = chunk.substring(p_anchorOf, n_chunk);
-                        var label = "";
-                        var fin_anchorOf = r_text.indexOf('"""^^xsd:string');
-                        if (fin_anchorOf == -1){
-                            var fin_anchorOf = r_text.indexOf('"^^xsd:string');
-                            if (fin_anchorOf == -1){
-                                console.log(chunk);
-                                console.log("r_text:"+r_text);
-                                console.log("--->> Error, there musts be a nif:anchorOf triple (end)");
-                                continue;
-                            }
-                            label = r_text.substring(14,fin_anchorOf);
-                            //console.log("label:"+label);
+                        // if the sentences appear in the annotation or not
+                        var urisent = parser_NIF(chunk,"nif:referenceContext")[1];
+                        //console.log(["==>urisent:",urisent,"   _uridoc:",_uridoc]);
+                        if (urisent == false){
+                            // get the uri of the document
+                            urisent = _uridoc;
                         }
                         else {
-                            label = r_text.substring(16,fin_anchorOf);
-                        }
-
-
-
-                        //uri itsrdf:taIdentRef
-                        var p_taIdentRef = chunk.indexOf("itsrdf:taIdentRef");
-                        if (p_taIdentRef == -1){
-                            console.log("--->> Error, there musts be a nif:taIdentRef triple (start)");
-                            continue;
+                            //console.log(["Sentences:",Sentences]);
+                            var p_sent = urisent2id(Sentences,urisent);
+                            //console.log(["MMMMMMMMMMMMMMM   p_sent:",p_sent]);
+                            if ( p_sent == -1){
+                                sent = {"text":undefined, "uridoc":_uridoc, "id_sent":urisent};
+                                console.log(["sent:",sent]);
+                                Sentences.push(sent);
+                            }
                         }
                         
-                        // get the list of links
+                        
+                        var startPosition = _ini;
+                        var endPosition   = _fin;
+                        //var startPosition = parser_NIF(chunk,"nif:beginIndex")[1];
+                        //var endPosition = parser_NIF(chunk,"nif:endIndex")[1];
+                        var label = parser_NIF(chunk,"nif:anchorOf")[1];
                         var list_uri = [];
-                        var r_text = chunk.substring(p_taIdentRef, n_chunk);
-                        var terminate = false;
-                        while (!terminate){
-                            var fin_taIdentRef = r_text.indexOf('>');
-                            if (fin_taIdentRef == -1){
-                                console.log("--->> Error, there musts be a nif:taIdentRef triple (end)");
-                                continue;
+                        var uri = parser_NIF(chunk,"itsrdf:taIdentRef");
+                        var r_text = chunk.substring(uri[0],chunk.length);
+                        while(uri != false){
+                            list_uri.push(uri[1]);
+                            if (uri[1].indexOf("mnt:entityType")!=-1){
+                                break;
                             }
-                            else{
-                                var uri = "";
-                                if (r_text[0]=="<"){ // other object for the same predicate
-                                    uri = r_text.substring(1,fin_taIdentRef);
-                                }
-                                else{
-                                    uri = r_text.substring(19,fin_taIdentRef);                                    
-                                }
-                                list_uri.push(uri);
-                            }
-                            
-                            // what's next, either ',' , itsrdf:taIdentRef ?? , or other predicate
-                            var k = fin_taIdentRef+1;
-                            while (k<r_text.length && r_text[k]==" "){
-                                k = k +1;
-                            }
-                            
-                            if (r_text[k] == ","){                                
-                                var p_ini = r_text.indexOf('<');
-                                if (p_ini == -1){
-                                    console.log("--->> Error, there musts be a nif:taIdentRef triple (end-1)");
-                                    continue;
-                                }
-                                else{
-                                    r_text = chunk.substring(p_taIdentRef+k, n_chunk);
-                                }
-                            }
-                            else if (r_text[k] == ";"){ // then it is other predicate, we will se if there are other itsrdf:taIdentRef
-                                var r_text_temp = chunk.substring(p_taIdentRef+k, n_chunk);
-                                var t  = r_text_temp.indexOf("itsrdf:taIdentRef");
-                                if (t == -1){
-                                    terminate = true;
-                                }
-                                else {
-                                    p_taIdentRef = p_taIdentRef+t+k;
-                                    r_text = chunk.substring(p_taIdentRef, n_chunk);
-                                }
-                            } else{terminate = true;}
+                            uri = parser_NIF(r_text,"itsrdf:taIdentRef");
+                            r_text = r_text.substring(uri[0],r_text.length);
                         }
-                        
 
                         var id_s_t = id_s-1
-                        //console.log("=====>",startPosition,parseInt(startPosition), endPosition, parseInt(endPosition));
                         ann = {   // esta variable global la voy a completar cuando  llene el URI y a taxonomia en el modal
-                                  "ini":parseInt(startPosition) + overall - sent_text.length-1,
-                                  "fin":parseInt(endPosition)+ overall - sent_text.length-1,
-                                  "id_sentence":id_s_t.toString(),
-                                  "label":label,
-                                  "uri": list_uri
+                            "ini":parseInt(startPosition),
+                            "fin":parseInt(endPosition),
+                            //"id_sentence":undefined,
+                            "urisent":urisent,
+                            "label":label,
+                            "uri": list_uri
                         };
 
                         //tags
@@ -2009,88 +2194,48 @@ $(document).ready(function() {
                         }
                         
                         //comment
-                        var comment = undefined;
-                        var p_comment = chunk.indexOf("rdfs:comment");
-                        var r_text = chunk.substring(p_comment, n_chunk);
-                        if (p_comment != -1){
-                            var fin3_comment = r_text.indexOf('"""^^xsd:string');
-                            if (fin3_comment == -1){
-                                var fin1_comment = r_text.indexOf('"^^xsd:string');
-                                if (fin1_comment != -1){
-                                    comment = r_text.substring(14,fin1_comment);
-                                    ann["comment"] = comment;
-                                }
-                            }
-                            else {
-                                comment = r_text.substring(16,fin3_comment);
-                                ann["comment"] = comment;
-                            }
-                            
+                        var comment = parser_NIF(chunk,"rdfs:comment");
+                        if (comment != false){
+                            ann["comment"] = comment[1];
                         }
                         
-                        ann["idA"] = A.length;
-                        ann["uridoc"] = Sentences[id_s_t]["uridoc"];
+                        // Ojo, agregar estos campos
+                        /////////ann["idA"] = A.length;
+                        /////////ann["uridoc"] = Sentences[id_s_t]["uridoc"];
+                        //console.log(["ann:",ann]);
+                        //console.log(["Sentences:",Sentences]);
+                        
                         A.push(ann);
                     }
                     else{ // it's  Sentence
-
-                        // text's sentence
-                        var p_isString = chunk.indexOf("nif:isString");
-                        if (p_isString == -1){
-                            console.log("--->> Error, there musts be a nif:isString triple (start)");
-                            continue;
+                        //console.log("--> SENT");
+                        if (reading_sentence(chunk) == false){
+                            return false;                        
                         }
-                        
-                        var r_text = chunk.substring(p_isString, n_chunk);
-                        var fin_isString = r_text.indexOf('"""^^xsd:string');
-                        if (fin_isString == -1){
-                            var fin_isString = r_text.indexOf('"^^xsd:string');
-                            if (fin_isString == -1){
-                                console.log("--->> Error, there musts be a nif:isString triple (end)");
-                                continue;
-                            } else {
-                                sent_text = r_text.substring(14,fin_isString);
-                            }
-                            
-                        }
-                        else{
-                            sent_text = r_text.substring(16,fin_isString);
-                        }
-                        
-                        ///////Sentences.push(sent_text);
-
-
-                        // uri's sentence 
-                        sent_uri = chunk.substring(1,chunk.indexOf("#"));
-
-                        // sent_ini and send_fin are not used yet
-                        var sent_ini = 0;
-                        var sent_fin = 0;
-                         
-                        //uridoc
-                        if (uridoc==""){
-                            var u_text = chunk.substring(p_ref, n_chunk);
-                            var i_number = u_text.indexOf("<http");
-                            var p_number = u_text.indexOf("#");
-                            if (p_number != -1){
-                                uridoc = u_text.substring(i_number + 1,p_number); // 22
-                            }
-                            else {
-                                var p_number = u_text.indexOf(">");
-                                uridoc = u_text.substring(i_number + 1,p_number); // 8
-                            }
-                            $("#inIdDoc").val(uridoc);
-                        }
-                        Sentences.push({"text":sent_text, "uridoc":uridoc});
-                        ///////////idSentence2dicc[id_s] = {"uri": sent_uri, "ini":sent_ini, "fin":sent_fin, "len":sent_text.length};
-                        id_s = id_s + 1;
-                        overall = overall + sent_text.length +1;
                     }
-                } 
+                }
+                else if (chunk.indexOf("mnt:entityType")!=-1){ // entity type
+                    //console.log("--> TYPE");
+                    var trp = chunk.split("mnt:entityType");
+                    if (trp.length == 2){
+                        var s = trim_1(trp[0]);                        
+                        var o = trim_1(trp[1]);
+                        link2type[s] = o;
+                    }
+                    
+                }
+                else{
+                    // Same as Document and Sentence at the same time
+                    //console.log("--> SENT/DOC");
+                    if (chunk.indexOf("@prefix")==-1){
+                        // sentence               
+                        if (reading_sentence(chunk) == false){
+                            return false;                        
+                        }                      
+                    }
+                }
                 chunk = "";
             }
-
-            
         }
 
         // Display the sentences in the text area
@@ -2104,306 +2249,180 @@ $(document).ready(function() {
 
        // enable/disable buttons
         $("#divShow").removeClass("hide");
-        ////$("#inDoc").prop("readonly",true);
-        ///////$("#btn_3_annotation").prop( "disabled", false ); //Enable
-        ///////$("#btn_4_annotation").prop( "disabled", false ); //Enable
-        ///////$("#btn_1_split").prop( "disabled", true ); //Disable
 
-
+        sortValues_Sentences_A();
        //Update show-divs
        buildNIFCorpora();     
     });
-
     
     
-    // We suppose that the sentences are ordered
-    
-    textFromUpload = undefined;
-    /*$("#btn_inputNIF").click(function(){
-        var text = undefined;
-        if (textFromUpload == undefined){
-            text = $("#inDoc").val();
-        } else{
-            text = textFromUpload;
-            textFromUpload = undefined;
-        }
-        var L = text.split("\n");
-        var chunk = "";
-        var id_s = 0; 
-        var uridoc = "";
-        var sent_uri;
-        var overall = 0;
-        var sent_text;
+    sortSentencesOfDoc = function(index){
+        doc = D[index];
+        var _uridoc = D[index]["uri"];
         
-        Sentences = [];
-        for (i in L){
-            var l_raw = L[i];
-            var l = l_raw.trim();
-            if (l.length == 0){
-               continue;
-            }
-
-            if (l[l.length-1]!="."){
-                // add to chunck
-                chunk = chunk + l;
-            }
-            else { //end of the chunk
-                chunk = chunk + l;
-                var n_chunk = chunk.length;
-                if (chunk.indexOf("nif:sourceUrl")!=-1){ // Document
-                    var u_text = chunk.substring(p_ref, n_chunk);
-                    var i_number = u_text.indexOf("<");
-                    var p_number = u_text.indexOf("#");
-                    if (p_number != -1){
-                        uridoc = u_text.substring(i_number + 1,p_number); // 22
-                    }
-                    else {
-                        var p_number = u_text.indexOf(">");
-                        uridoc = u_text.substring(i_number + 1,p_number); // 8
-                    }
-                    $("#inIdDoc").val(uridoc);
-                    chunk = "";
-                    continue;
-                }
-                var p_ref = chunk.indexOf("nif:referenceContext");
-                var p_bro = chunk.indexOf("nif:broaderContext");
-                if (p_ref!=-1  || p_bro!=-1 ){  // it is a Setence or an Annotation (nif:Phrase)
-                    if (chunk.indexOf("@prefix")!=-1){continue;}
-                    if (chunk.indexOf("nif:Phrase")!=-1){  // It's an Annotation
-
-                        // -- nif:beginIndex
-                        var p_beginIndex = chunk.indexOf("nif:beginIndex");
-                        if (p_beginIndex == -1){
-                            console.log("--->> Error, there musts be a nif:beginIndex triple (start)");
-                            continue;
-                        }
-                        
-                        
-                        var r_text = chunk.substring(p_beginIndex, n_chunk);
-                        var fin_beginIndex = r_text.indexOf('"^^xsd:');
-                        if (fin_beginIndex == -1){
-                            console.log(chunk + "\n----------------\n");
-                            console.log("--->> Error, there musts be a nif:beginIndex triple (end)");
-                            continue;
-                        }
-                        var startPosition = r_text.substring(16,fin_beginIndex);
-
-                        // -- nif:endIndex
-                        var p_endIndex = chunk.indexOf("nif:endIndex");
-                        if (p_endIndex == -1){
-                            console.log("--->> Error, there musts be a nif:endIndex triple (start)");
-                            continue;
-                        }
-                        
-                        var r_text = chunk.substring(p_endIndex, n_chunk);
-                        var fin_endIndex = r_text.indexOf('"^^xsd:');//('"^^xsd:nonNegativeInteger');
-                        if (fin_endIndex == -1){
-                            console.log("--->> Error, there musts be a nif:endIndex triple (end)");
-                            continue;
-                        }
-                        var endPosition = r_text.substring(14,fin_endIndex);
-
-
-                       //--- nif:anchorOf
-                        var p_anchorOf = chunk.indexOf("nif:anchorOf");
-                        if (p_anchorOf == -1){
-                            console.log("--->> Error, there musts be a nif:anchorOf triple (start)");
-                            continue;
-                        }
-                        
-                        var r_text = chunk.substring(p_anchorOf, n_chunk);
-                        var label = "";
-                        var fin_anchorOf = r_text.indexOf('"""^^xsd:string');
-                        if (fin_anchorOf == -1){
-                            var fin_anchorOf = r_text.indexOf('"^^xsd:string');
-                            if (fin_anchorOf == -1){
-                                console.log(chunk);
-                                console.log("r_text:"+r_text);
-                                console.log("--->> Error, there musts be a nif:anchorOf triple (end)");
-                                continue;
-                            }
-                            label = r_text.substring(14,fin_anchorOf);
-                            console.log("label:"+label);
+        Sorted_sentences = [];
+        //  I suppose that Sorted_sentences is already sorted, and I'm going to insert the 
+        // current sentences in its place
+        var temp = [];
+        for (s_i in Sentences){
+            var sent = Sentences[s_i];
+            if (sent["uridoc"] == _uridoc || sent["urisent"] == _uridoc){
+                temp = [];
+                var inserted = false;
+                for (s_j in Sorted_sentences){
+                    var o = Sorted_sentences[s_j];
+                    if (!inserted){
+                        if (sent["ini"] < o["ini"] ){
+                            temp.push(sent);
+                            temp.push(o);
+                            inserted = true;
                         }
                         else {
-                            label = r_text.substring(16,fin_anchorOf);
+                            //console.log("==> there");                            
+                            //temp.push(sent);
+                            temp.push(o);
                         }
-
-
-
-                        //uri itsrdf:taIdentRef
-                        var p_taIdentRef = chunk.indexOf("itsrdf:taIdentRef");
-                        if (p_taIdentRef == -1){
-                            console.log("--->> Error, there musts be a nif:taIdentRef triple (start)");
-                            continue;
-                        }
-                        
-                        // get the list of links
-                        var list_uri = [];
-                        var r_text = chunk.substring(p_taIdentRef, n_chunk);
-                        var terminate = false;
-                        while (!terminate){
-                            var fin_taIdentRef = r_text.indexOf('>');
-                            if (fin_taIdentRef == -1){
-                                console.log("--->> Error, there musts be a nif:taIdentRef triple (end)");
-                                continue;
-                            }
-                            else{
-                                var uri = "";
-                                if (r_text[0]=="<"){ // other object for the same predicate
-                                    uri = r_text.substring(1,fin_taIdentRef);
-                                }
-                                else{
-                                    uri = r_text.substring(19,fin_taIdentRef);                                    
-                                }
-                                list_uri.push(uri);
-                            }
-                            
-                            // what's next, either ',' , itsrdf:taIdentRef ?? , or other predicate
-                            var k = fin_taIdentRef+1;
-                            while (k<r_text.length && r_text[k]==" "){
-                                k = k +1;
-                            }
-                            
-                            if (r_text[k] == ","){                                
-                                var p_ini = r_text.indexOf('<');
-                                if (p_ini == -1){
-                                    console.log("--->> Error, there musts be a nif:taIdentRef triple (end-1)");
-                                    continue;
-                                }
-                                else{
-                                    r_text = chunk.substring(p_taIdentRef+k, n_chunk);
-                                }
-                            }
-                            else if (r_text[k] == ";"){ // then it is other predicate, we will se if there are other itsrdf:taIdentRef
-                                var r_text_temp = chunk.substring(p_taIdentRef+k, n_chunk);
-                                var t  = r_text_temp.indexOf("itsrdf:taIdentRef");
-                                if (t == -1){
-                                    terminate = true;
-                                }
-                                else {
-                                    p_taIdentRef = p_taIdentRef+t+k;
-                                    r_text = chunk.substring(p_taIdentRef, n_chunk);
-                                }
-                            } else{terminate = true;}
-                        }
-                        
-                        var id_s_t = id_s-1
-                        //console.log("=====>",startPosition,parseInt(startPosition), endPosition, parseInt(endPosition));
-                        ann = {   // esta variable global la voy a completar cuando  llene el URI y a taxonomia en el modal
-                                  "ini":parseInt(startPosition) + overall - sent_text.length-1,
-                                  "fin":parseInt(endPosition)+ overall - sent_text.length-1,
-                                  "id_sentence":id_s_t.toString(),
-                                  "label":label,
-                                  "uri": list_uri
-                        };
-
-
-                        //itsrdf:taClassRef nerd:AdministrativeRegion ;
-                        var p_taClassRef = chunk.indexOf("itsrdf:taClassRef");
-                        //console.log("p_taClassRef",p_taClassRef);
-                        if (p_taClassRef != -1){
-                            var r_text = chunk.substring(p_taClassRef, n_chunk);
-                            var fin_taClassRef = r_text.indexOf(';');
-                            if (fin_taClassRef == -1){
-                                console.log("--->> Error, there musts be a nif:taClassRef triple (end)");
-                                continue;
-                            }
-                            var tag = r_text.substring(18,fin_taClassRef);
-                            tag = tag.trim();
-                            //console.log("tag:",tag);
-                            ann["tag"] = tag;
-                            if (tag == "tax:Ambiguous"){
-                                $("#taxonomyInput").select2("val",85); // fijo, hay que ponerlo dinamico
-                            }
-                        }
-                        ann["idA"] = A.length;
-                        A.push(ann);
-                    }
-                    else{ // it's  Sentence
-
-                        // text's sentence
-                        var p_isString = chunk.indexOf("nif:isString");
-                        if (p_isString == -1){
-                            console.log("--->> Error, there musts be a nif:isString triple (start)");
-                            continue;
-                        }
-                        
-                        var r_text = chunk.substring(p_isString, n_chunk);
-                        var fin_isString = r_text.indexOf('"""^^xsd:string');
-                        if (fin_isString == -1){
-                            var fin_isString = r_text.indexOf('"^^xsd:string');
-                            if (fin_isString == -1){
-                                console.log("--->> Error, there musts be a nif:isString triple (end)");
-                                continue;
-                            } else {
-                                sent_text = r_text.substring(14,fin_isString);
-                            }
-                            
-                        }
-                        else{
-                            sent_text = r_text.substring(16,fin_isString);
-                        }
-                        
-                        ///////Sentences.push(sent_text);
-
-
-                        // uri's sentence 
-                        sent_uri = chunk.substring(1,chunk.indexOf("#"));
-
-                        // sent_ini and send_fin are not used yet
-                        var sent_ini = 0;
-                        var sent_fin = 0;
-                         
-                        //uridoc
-                        if (uridoc==""){
-                            var u_text = chunk.substring(p_ref, n_chunk);
-                            var i_number = u_text.indexOf("<http");
-                            var p_number = u_text.indexOf("#");
-                            if (p_number != -1){
-                                uridoc = u_text.substring(i_number + 1,p_number); // 22
-                            }
-                            else {
-                                var p_number = u_text.indexOf(">");
-                                uridoc = u_text.substring(i_number + 1,p_number); // 8
-                            }
-                            $("#inIdDoc").val(uridoc);
-                        }
-                        Sentences.push({"text":sent_text, "uridoc":uridoc});
-                        ///////////idSentence2dicc[id_s] = {"uri": sent_uri, "ini":sent_ini, "fin":sent_fin, "len":sent_text.length};
-                        id_s = id_s + 1;
-                        overall = overall + sent_text.length +1;
-                    }
+                    } 
+                    else{
+                        temp.push(o);
+                    }                
+                }
+                
+                if (!inserted){
+                    temp.push(sent);
                 } 
-                chunk = "";
+                Sorted_sentences = temp;
             }
-
+        }
+        
+        return Sorted_sentences;
+    }
+    
+    
+    addToValidLoad = function(msg,_uridoc,_urisent){
+        var v = {
+            "name":"Loading errors",
+            "date":"-",
+            "time":"-",
+            "description":"Here we show the errors from the loading process.",
+            "number_errors":"-",
+            "errors":[],
+            "type":"dinamic"
+        };
+        
+        var pos = -1;
+        for (_v_i in V){
+            _v = V[_v_i];
+            if (_v == v["name"]){
+                pos = _v_i;
+                break;
+            }
+        }
+        
+        //
+        if (pos == -1){
+            var newidV = 1;
+            var Vkey = Object.keys(V);
+            if (Vkey.length != 0){
+                newidV = parseInt(Vkey[Vkey.length-1])+1;
+            }
             
+            V[newidV] = v;            
+            pos = newidV;
         }
-
-        // Display the sentences in the text area
-        var text = "";
-        for (i in Sentences){
-            s = Sentences[i]["text"];
-            text= text  + s + "\n";
+        
+        //
+        var count_errors = 1;
+        if (V[pos]["number_errors"] != "-"){
+            count_errors = parseInt(V[pos]["number_errors"]) + 1;
         }
-        n = text.length;
-        $("#inDoc").val(text);
+        
+        V[pos]["errors"].push({
+            "status":"uncorrected",
+            "position": count_errors,
+            "uridoc": _uridoc,
+            "id_sentence": _urisent,
+            "error_detail": msg
+        });
+        
+        V[pos]["number_errors"] = count_errors;
+        V[pos]["time"]= new Date().toLocaleTimeString();
+        V[pos]["date"]= new Date().toLocaleDateString();
+        updateMainTableValidation();
+    }
+    
+    
+    sortValues_Sentences_A = function(){
+        // searching for sentences without definition
+        var toDel = [];
+        for (var ind_s in Sentences){
+            var sent_ind = Sentences[ind_s];
+            if (sent_ind["text"] == undefined){
+                addToValidLoad("Error loading sentence <i>"+sent_ind["id_sent"]+"</i> from document <i>"+sent_ind["uridoc"]+"</i>.");
+                toDel.unshift(ind_s);
+            }
+        }
+        
+        for (del_i in toDel){
+           Sentences.splice(toDel[del_i],1); 
+        }
+        
+        
+        
+        // sorting sentences
+        var temp_Sentences = [];
+        for (var ind_d in D){
+            var oS = sortSentencesOfDoc(ind_d);            
+            for (oi in oS){
+                temp_Sentences.push(oS[oi]);
+            }
+        }
+        Sentences = temp_Sentences;        
+        
+        // sorting annotations
+        for (_j in A){
+            var _a = A[_j];            
+            for (_i in Sentences){
+                s = Sentences[_i];
+                if (s["id_sent"] == _a["urisent"]){
+                    A[_j]["id_sentence"] = _i;
+                    A[_j]["uridoc"] = s["uridoc"];
+                    break;
+                }
+            }
+        }
+        
+        temp_A = [];
+        var overall = 0;
+        var uridoc_ = "";
+        for (_i in Sentences){
+            s = Sentences[_i];
+            
+            if (s["uridoc"] != uridoc_){
+                uridoc_ = s["uridoc"];
+                overall = s["text"].length + 1;
+            }
+            else {
+                overall = overall + s["text"].length + 1;
+            }
+            var oA = getSentencesAnnotations(_i);//sortAnnotationsOfSent(_i);
+            for (_j in oA){
+                var _a = oA[_j];
+                _a["idA"] = temp_A.length;
+                _a["ini"] = parseInt(_a["ini"]) + overall - s["text"].length -1;
+                _a["fin"] = parseInt(_a["fin"]) + overall - s["text"].length -1;
+                temp_A.push(_a);                
+            }
+        }
+        A = temp_A;
+    }
+    
 
-       // enable/disable buttons
-        $("#divShow").removeClass("hide");
-        ////$("#inDoc").prop("readonly",true);
-        ///////$("#btn_3_annotation").prop( "disabled", false ); //Enable
-        ///////$("#btn_4_annotation").prop( "disabled", false ); //Enable
-        ///////$("#btn_1_split").prop( "disabled", true ); //Disable
+    
+    
 
-
-       //Update show-divs
-       buildNIFCorpora();       
-    });*/
-
-
-
+    
+    textFromUpload = undefined;
 
 
     ///------- modify annotation
@@ -4416,6 +4435,7 @@ $(document).ready(function() {
                 e = SortedList[j];
                 if (ann["ini"]==e["ini"] && !inserted){ // ordeno segun "fin"
                     if (ann["fin"]==e["fin"]){
+                        console.log(["ann:",ann,"  e:",e]);
                         warning_alert("This entity has already added.");
                         return 0; 
                     }
@@ -4811,10 +4831,18 @@ $(document).ready(function() {
                 dataType: "html",
                 beforeSend: function(){},
                 success: function(response){
-                    //console.log(["response:",response]);
-                    var json_response = JSON.parse(trim_1(response));
-                    var resp =  json_response;
+                    console.log(["response:",response]);
+                    var json_response = "";
+                    try {
+                        json_response = JSON.parse(trim_1(response));
+                    }
+                    catch(err) {
+                        console.log(["error:",err]);
+                        sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
+                        return true;
+                    }
                     
+                    var resp =  json_response;                    
                     if ("response" in resp){
                         if (resp["response"]["valid"] == false){
                             unambiguousErrors = unambiguousErrors +1;
@@ -5211,8 +5239,9 @@ $(document).ready(function() {
                 $("#valid_output_div").append('<div class="row item_valid_details">'+
                             '<div class="col-lg-1">'+e["position"]+' '+check_div+'</div>'+
                             '<div class="col-lg-3">'+e["error_detail"]+'</div>'+
+                            ((!("idA" in e))?'<div class="col-lg-7"></div><div class="col-lg-1 text-rigth"> </div>':
                             '<div class="col-lg-7">'+valid_idSentence2html(e["id_sentence"],e["uridoc"])+'</div>'+
-                            '<div class="col-lg-1 text-rigth"> '+action_btn+' </div>'+
+                            '<div class="col-lg-1 text-rigth"> '+action_btn+' </div>') +
                     '</div>');
             }
         }
