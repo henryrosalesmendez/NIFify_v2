@@ -48,11 +48,21 @@ function redirect_link($link){
 }
 
 
+function toWikipedia($uri){
+    if (strpos($uri,"dbpedia")){
+        list($_, $link) = explode("//", $uri);
+        $res = "https://en.wikipedia.org/wiki/".end(explode("/",$link));
+        return $res;
+    }
+    return $uri;
+}
+
+
 function isRedirect($link){
     $ch = curl_init();
 
     // Set query data here with the URL
-    curl_setopt($ch, CURLOPT_URL, redirect_link($link)); 
+    curl_setopt($ch, CURLOPT_URL, redirect_link(toWikipedia($link))); 
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
@@ -77,7 +87,7 @@ function isDisambiguation($link){
     $ch = curl_init();
 
     // Set query data here with the URL
-    curl_setopt($ch, CURLOPT_URL, $link); 
+    curl_setopt($ch, CURLOPT_URL, toWikipedia($link)); 
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
@@ -122,7 +132,6 @@ function isValid($link){
     return "true";
 }
 
-
     
 
 if (is_ajax()) {
@@ -151,8 +160,6 @@ if (is_ajax()) {
         echo '{"error":'.$e->getMessage().'}';
     }
 }
-
-
 ?>
 
 

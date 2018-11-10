@@ -613,7 +613,6 @@ $(document).ready(function() {
             list_uri.push(in_uri);
             
             var typeMention = $("#modalSelectURI").attr("mentiontype");
-            console.log("PPPPPPPRRRRRRRIIIIIIIIIMMMMMMEEEEERRRRRAAAA:",typeMention)
             if (typeMention != '- Select Type -'){
                 link2type[in_uri] = w2type[typeMention];
                 console.log("in_uri:",in_uri,"   w2type[typeMention]:",w2type[typeMention],"    typeMention:",typeMention);
@@ -4831,13 +4830,18 @@ $(document).ready(function() {
                 dataType: "html",
                 beforeSend: function(){},
                 success: function(response){
-                    console.log(["response:",response]);
+                    //console.log(["response:",response]);
                     var json_response = "";
                     try {
                         json_response = JSON.parse(trim_1(response));
                     }
                     catch(err) {
-                        console.log(["error:",err]);
+                        console.log(["-> error:",err]);
+                        var next_aj = _a_j + 1;
+                        if (next_aj == ann_["uri"].length){
+                            _a_i = _a_i +1;
+                            next_aj = 0;
+                        } 
                         sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
                         return true;
                     }
@@ -4901,6 +4905,7 @@ $(document).ready(function() {
                     
                 },
                 error: function(response){
+                    console.log(["error:",response]);
                     var next_aj = _a_j + 1;
                     if (next_aj == ann_["uri"].length){
                         _a_i = _a_i +1;
