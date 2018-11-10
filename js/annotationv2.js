@@ -4587,17 +4587,8 @@ $(document).ready(function() {
         "type":"static"
     };
     
-    V[4] = {
-        "name":"Spelling checker",
-        "date":"-",
-        "time":"-",
-        "description":"Those entity mentions with special characters or spaces on the borders, or with missing characters are identified.",
-        "number_errors":"-",
-        "errors":[],
-        "type":"static"
-    };
     
-    V[5] = {
+    V[4] = {
         "name":"Refining References",
         "date":"-",
         "time":"-",
@@ -4607,6 +4598,29 @@ $(document).ready(function() {
         "type":"dinamic",
         "automatic_expresion":"<tag@mnt:NumericTemporalPN,tag@mnt:CommonFormPN><tag@mnt:AntecedentRf,tag@mnt:CoreferenceRf>%(mnt:AntecedentRf,mnt:CoreferenceRf)"
     };
+    
+    
+    V[5] = {
+        "name":"Spelling checker",
+        "date":"-",
+        "time":"-",
+        "description":"Those entity mentions with special characters or spaces on the borders, or with missing characters are identified.",
+        "number_errors":"-",
+        "errors":[],
+        "type":"static"
+    };
+    
+    V[6] = {
+        "name":"Surface form checker",
+        "date":"-",
+        "time":"-",
+        "description":"We check here if the label of the annotations match with their correspondig sbstrings.",
+        "number_errors":"-",
+        "errors":[],
+        "type":"static"
+    };
+    
+    
     
     
     updateMainTableValidation = function(){
@@ -4745,6 +4759,11 @@ $(document).ready(function() {
             else if (v["name"] == "Spelling checker"){
                 $.blockUI({ message: null });
                 valid_CheckSpelling(idv);
+                $.unblockUI();
+            }
+            else if (v["name"] == "Surface form checker"){
+                $.blockUI({ message: null });
+                valid_CheckSurfaceForm(idv);
                 $.unblockUI();
             }
         }
@@ -5133,6 +5152,56 @@ $(document).ready(function() {
     //--
     valid_CheckSpelling = function(idv){
         alert("Not Yet xD");
+    }
+    
+    
+    ///----
+    
+    valid_CheckSurfaceForm = function(_idv){
+        var count_errors = 0;
+        
+        var overall = 0;
+        var sent_id = -1;
+        var sent_old = 0;
+        for (a_i in A){
+            var ann_ = A[a_i];
+            var sent = Sentences[ann_["id_sentence"]]["text"];
+            
+            if (sent_id!=ann_["id_sentence"]){
+                overall = overall + sent_old;
+                sent_old = sent.length + 1;
+                sent_id = ann_["id_sentence"];
+            }
+            
+            var subsent = sent.substring(parseInt(ann_["ini"])-overall, parseInt(ann_["fin"])-overall);
+            
+            if (ann_["label"] != subsent){
+                console.log(["ann:",ann_["label"],"   sent:",subsent]);
+                count_errors = count_errors +1;
+                var msg = "Mention <i>"+ann_["label"]+"</i> does not match with the corresponding substring in the text (<i>"+subsent+"</i>)";
+
+                V[_idv]["errors"].push({
+                    "status":"uncorrected",
+                    "position": count_errors,
+                    "idA" : a_i,
+                    "uridoc": ann_["uridoc"],
+                    "label":ann_["label"],
+                    "id_sentence": ann_["id_sentence"],
+                    "error_detail": msg
+                });
+            }
+        } 
+        
+        
+        //updating main table
+        V[_idv]["number_errors"] = count_errors;
+        V[_idv]["time"]= new Date().toLocaleTimeString();
+        V[_idv]["date"]= new Date().toLocaleDateString();
+        updateMainTableValidation();
+        
+        //displaying the content
+        valid_idvToShow = _idv;
+        valid_showContent();
     }
     
     
