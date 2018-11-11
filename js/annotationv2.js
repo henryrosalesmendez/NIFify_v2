@@ -2091,9 +2091,6 @@ $(document).ready(function() {
             }
             else { //end of the chunk
                 chunk = chunk + l;
-                //console.log("========================================");
-                //console.log(chunk);
-                //console.log(".........................");
                 
                 if (chunk.indexOf("@prefix")!=-1){
                     chunk = "";
@@ -2112,8 +2109,6 @@ $(document).ready(function() {
                 else if (p_ref!=-1  || p_bro!=-1 ){  // it is a Setence or an Annotation (nif:Phrase)
                     
                     if (chunk.indexOf("nif:Phrase")!=-1){  // It's an Annotation
-                        //console.log("--> ANN");
-                        //console.log(["id_s:",id_s]);
                         
                         // quizas luego se puede hacer algo de ver si es la sentenia anterior no vlver a buscar
                         var rr = parseURI(chunk);
@@ -2121,32 +2116,28 @@ $(document).ready(function() {
                         var _uriann = rr[1];
                         var _ini = rr[2]; if (_ini == ""){_ini = _inSentenceIni; _inSentenceIni = _inSentenceIni +1;}
                         var _fin = rr[3];
-                        //console.log(["rr:",rr,"    _uridoc:",_uridoc]);
                         
                         
                         // if the sentences appear in the annotation or not
                         var urisent = parser_NIF(chunk,"nif:referenceContext")[1];
-                        //console.log(["==>urisent:",urisent,"   _uridoc:",_uridoc]);
                         if (urisent == false){
                             // get the uri of the document
                             urisent = _uridoc;
                         }
                         else {
-                            //console.log(["Sentences:",Sentences]);
                             var p_sent = urisent2id(Sentences,urisent);
-                            //console.log(["MMMMMMMMMMMMMMM   p_sent:",p_sent]);
                             if ( p_sent == -1){
                                 sent = {"text":undefined, "uridoc":_uridoc, "id_sent":urisent};
-                                console.log(["sent:",sent]);
                                 Sentences.push(sent);
                             }
                         }
                         
+                        var startPosition = parser_NIF(chunk,"nif:beginIndex")[1];
+                        var endPosition = parser_NIF(chunk,"nif:endIndex")[1];
+                        if (startPosition != _ini || endPosition != _fin){
+                            addToValidLoad("Differences in the positions ("+startPosition+","+endPosition+") with the specified in the nif:Phrase "+_uriann);
+                        }
                         
-                        var startPosition = _ini;
-                        var endPosition   = _fin;
-                        //var startPosition = parser_NIF(chunk,"nif:beginIndex")[1];
-                        //var endPosition = parser_NIF(chunk,"nif:endIndex")[1];
                         var label = parser_NIF(chunk,"nif:anchorOf")[1];
                         var list_uri = [];
                         var uri = parser_NIF(chunk,"itsrdf:taIdentRef");
@@ -2197,13 +2188,6 @@ $(document).ready(function() {
                         if (comment != false){
                             ann["comment"] = comment[1];
                         }
-                        
-                        // Ojo, agregar estos campos
-                        /////////ann["idA"] = A.length;
-                        /////////ann["uridoc"] = Sentences[id_s_t]["uridoc"];
-                        //console.log(["ann:",ann]);
-                        //console.log(["Sentences:",Sentences]);
-                        
                         A.push(ann);
                     }
                     else{ // it's  Sentence
@@ -2312,7 +2296,7 @@ $(document).ready(function() {
         var pos = -1;
         for (_v_i in V){
             _v = V[_v_i];
-            if (_v == v["name"]){
+            if (_v["name"] == v["name"]){
                 pos = _v_i;
                 break;
             }
@@ -5163,9 +5147,16 @@ $(document).ready(function() {
         var overall = 0;
         var sent_id = -1;
         var sent_old = 0;
+        var uridoc = "";
         for (a_i in A){
             var ann_ = A[a_i];
             var sent = Sentences[ann_["id_sentence"]]["text"];
+            
+            if (ann_["uridoc"] != uridoc){
+                uridoc = ann_["uridoc"];
+                sent_old = 0;
+                sent_id = ann_["id_sentence"];
+            }
             
             if (sent_id!=ann_["id_sentence"]){
                 overall = overall + sent_old;
