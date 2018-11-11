@@ -1609,6 +1609,7 @@ $(document).ready(function() {
 
     //---- uploaddddddd
     $("#btn_upload").click(function(){
+        typeUpload = "main";
         $("#modalUpload").modal("show");
     });
 
@@ -1627,80 +1628,51 @@ $(document).ready(function() {
         showPreview: false,
         showUpload: false,
         elErrorContainer: '#kartik-file-errors',
-        allowedFileExtensions: ["ttl", "rdf"]
+        allowedFileExtensions: ["ttl", "rdf", "xml"]
         //uploadUrl: '/site/file-upload-single'
     });
 
     var upload = function() {
-		var photo = document.getElementById("fileNif");
-		return false;
-	};
+        var photo = document.getElementById("fileNif");
+        return false;
+    };
 
-    /*** probandoo
-    file_temp = undefined;
-    function ab2str(buf) {
-  return String.fromCharCode.apply(null, new Uint8Array(buf));
-}
-
-    function receivedText() {
-            showResult(fr, "Text");
-        }
-    function showResult(fr, label) {
-
-        var result = fr.result;
-	console.log(result);
-	textFromUpload = result;
-	CleanAnnotationDocument();
-	$("#btn_inputNIF").click();
-	//var htmle = Encoder.htmlEncode(result,true);
-	//$("#nifdoc").html("BBB-->"+htmle);
-	//textFromUpload = result;
-    }
-
-    function bodyAppend(tagName, innerHTML) {
-        var elm;
-
-        elm = document.createElement(tagName);
-        elm.innerHTML = innerHTML;
-        document.body.appendChild(elm);
-    }
-
-    
-    **/
-
-//e.target.
+ 
     //see https://www.html5rocks.com/en/tutorials/file/dndfiles/
-	function readBlob(opt_startByte, opt_stopByte) {
-		var files = document.getElementById('input-b9').files;
-		if (!files.length) {
-		  warning_alert('Please select a file!');
-		  return;
-		}
+    function readBlob(opt_startByte, opt_stopByte) {
+        var files = document.getElementById('input-b9').files;
+        if (!files.length) {
+            warning_alert('Please select a file!');
+            return;
+        }
 
-		var file = files[0];
-		
-		file_temp = file;		
-		fr = new FileReader();
-                //fr.onload = receivedText;
-		fr.onload = function(e){
-		    var result = e.target.result;
-		    //console.log(result);
-		    textFromUpload = e.target.result;
-		    CleanAnnotationDocument();
-		    $("#btn_inputNIF").click();
-		}
-                fr.readAsText(file);
-	  }
-	  
-	  $('#modalUpload_upload').click(function(evt) {
-         /*warning_alert("It's not working yet :(, you should try to copy/paste the nif content in the text area and apply the next button");
-		/**/if (evt.target.tagName.toLowerCase() == 'button') {
-		  var startByte = evt.target.getAttribute('data-startbyte');
-		  var endByte = evt.target.getAttribute('data-endbyte');
-		  readBlob(startByte, endByte);
-		}
-        $("#divShow").removeClass("hide");/**/
-	  });
+        var file = files[0];
+        
+        file_temp = file;
+        fr = new FileReader();
+        fr.onload = function(e){
+            var result = e.target.result;
+            textFromUpload = e.target.result;
+            if (typeUpload == "main"){
+                CleanAnnotationDocument();
+                $("#btn_inputNIF").click();                
+            }
+            else {
+                parseSystemsInput();
+            }
+        }
+        fr.readAsText(file);
+    }
+
+        
+    $('#modalUpload_upload').click(function(evt) {
+        if (evt.target.tagName.toLowerCase() == 'button') {
+            var startByte = evt.target.getAttribute('data-startbyte');
+            var endByte = evt.target.getAttribute('data-endbyte');
+            readBlob(startByte, endByte);
+        }
+        $("#divShow").removeClass("hide");
+    });
 
 
     //-------- download
@@ -4150,10 +4122,6 @@ $(document).ready(function() {
                 }
             }); 
         }
-        /*response = '{"response":[{"ini":0,"fin":11,"DBpediaURL":"http://dbpedia.org/resource/Barack_Obama","WikipediaURL":"https://en.wikipedia.org/wiki/Barack_Obama","BabelNetURL":"http://babelnet.org/rdf/s03330021n"},{"ini":7,"fin":11,"DBpediaURL":"http://dbpedia.org/resource/Barack_Obama","WikipediaURL":"https://en.wikipedia.org/wiki/Barack_Obama","BabelNetURL":"http://babelnet.org/rdf/s03330021n"},{"ini":17,"fin":28,"DBpediaURL":"http://dbpedia.org/resource/Donald_Trump","WikipediaURL":"https://en.wikipedia.org/wiki/Donald_Trump","BabelNetURL":"http://babelnet.org/rdf/s03259764n"},{"ini":37,"fin":48,"DBpediaURL":"http://dbpedia.org/resource/Brand_New_Sin","WikipediaURL":"https://en.wikipedia.org/wiki/Brand_New_Sin","BabelNetURL":"http://babelnet.org/rdf/s01725291n"},{"ini":37,"fin":59,"DBpediaURL":"http://dbpedia.org/resource/United_States","WikipediaURL":"https://en.wikipedia.org/wiki/United_States","BabelNetURL":"http://babelnet.org/rdf/s00003341n"}]}';
-        show_results(response);
-        //Barack Obama and Donald Trump in the United State of America.
-        */
     };
     
     
@@ -4368,7 +4336,7 @@ $(document).ready(function() {
         
         //$("#sys_DisplayBlock").html(wrapp_in_box(textOut));
         $("#sys_DisplayBlock").append(wrapp_in_box(textOut,iddoc));
-        $("#sys_urldoc_input").val("");
+        $("#sys_urldoc_input").val("https://example.org/doc"+sysD.length);
     }
     
     
@@ -5498,6 +5466,271 @@ $(document).ready(function() {
         $("#vald_firstRule").val("");
         $("#vald_SecondRule").val("");
     });
+    
+    
+    
+    
+    
+    ///--- download in the System tab
+    $("#sys_download_nif").click(function(){
+        if ('Blob' in window) {
+            BootstrapDialog.show({
+                message: '<label for="filename_input_sys_down" class="col-form-label">File Name:</label> ' +
+                        '<input type="text" class="form-control espacioAbajo" id="filename_input_sys_down" '+
+                        'placeholder="Name of the file">',
+                title: 'File Name Input',
+                buttons: [{
+                    label: 'Close',
+                    action: function(dialog) {
+                        dialog.close();
+                    }
+                }, {
+                    label: 'Ok',
+                    action: function(dialog) {
+                        var fileName = $("#filename_input_sys_down").val();
+                        if (fileName) {
+                            //var htmlText = $('#nifdoc').html();
+                            //htmlText = replaceAll(htmlText,"&nbsp;"," ");
+                            //var textToWrite = Encoder.htmlDecode(replaceAll(htmlText,"<br>","\n"));
+                            textToWrite = CreateEnvironmentSystem();
+                            var textFileAsBlob = new Blob([textToWrite], { type: 'text/plain' });
+                            if ('msSaveOrOpenBlob' in navigator) {
+                                navigator.msSaveOrOpenBlob(textFileAsBlob, fileName);
+                            } else {
+                                var downloadLink = document.createElement('a');
+                                downloadLink.download = fileName;
+                                downloadLink.innerHTML = 'Download File';
+                                if ('webkitURL' in window) {
+                                    // Chrome allows the link to be clicked without actually adding it to the DOM.
+                                    downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+                                } else {
+                                    // Firefox requires the link to be added to the DOM before it can be clicked.
+                                    downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+                                    downloadLink.onclick = function(){};
+                                    downloadLink.style.display = 'none';
+                                    document.body.appendChild(downloadLink);
+                                }
+                            downloadLink.click();
+                            }
+                        }
+                        dialog.close();
+                    }
+                }]
+            });
+        
+        } else {
+        alert('Your browser does not support the HTML5 Blob.');
+        }
+    });
+    
+    
+    CreateEnvironmentSystem = function(){
+        var doc = document.implementation.createDocument("", "", null);
+        var envElem = doc.createElement("environment");
+        
+        // docs
+        var docElem = doc.createElement("doc");
+        for (i in sysD){
+            var d = sysD[i];
+            console.log(d);
+            
+            var docItemElem = doc.createElement("docItem");
+            docItemElem.setAttribute("inDocCounter", d["inDocCounter"]);
+            docItemElem.setAttribute("uri", d["uri"]);
+            docElem.appendChild(docItemElem);
+        }        
+        envElem.appendChild(docElem);
+        
+        // sentences
+        var sentElem = doc.createElement("sentences");
+        for (i in sysSentences){
+            var sent = sysSentences[i];
+            console.log(sent);
+            
+            var sentItemElem = doc.createElement("sentenceItem");
+            var sent_ = replaceAll(sent["text"],'"',"'");
+            sentItemElem.setAttribute("text",   sent_);
+            sentItemElem.setAttribute("uridoc", sent["uridoc"]);
+            sentElem.appendChild(sentItemElem);
+        }        
+        envElem.appendChild(sentElem);
+        
+
+        // Annotations
+        var annElem = doc.createElement("annotations");
+        for (i in sysA){
+            var ann = sysA[i];
+            console.log(ann);
+            
+            var annItemElem = doc.createElement("annotationItem");
+            annItemElem.setAttribute("idA",   ann["idA"]);
+            annItemElem.setAttribute("uridoc", ann["uridoc"]);
+            annItemElem.setAttribute("id_sentence", ann["id_sentence"]);            
+            annItemElem.setAttribute("ini", ann["ini"]);   
+            annItemElem.setAttribute("fin", ann["fin"]);   
+            
+            
+            if ("tag" in ann){
+                var tagAnnElem = doc.createElement("tagAnnItem");  
+                for (j in ann["tag"]){
+                    var tt = ann["tag"][j];             
+                    var tagElement = doc.createElement("tagAnnItemElement");
+                    tagElement.setAttribute("tag", tt);
+                    tagAnnElem.appendChild(tagElement);
+                }
+                annItemElem.appendChild(tagAnnElem);
+                
+            }
+            
+            var uriAnnElem = doc.createElement("uriAnnItem");  
+            for (j in ann["uri"]){
+                var tt = ann["uri"][j];             
+                var uriElement = doc.createElement("uriAnnItemElement");
+                uriElement.setAttribute("uri", tt);
+                uriAnnElem.appendChild(uriElement);
+            }
+            annItemElem.appendChild(uriAnnElem);
+            annElem.appendChild(annItemElem);
+        }        
+        envElem.appendChild(annElem);
+        
+        
+        
+        
+        doc.appendChild(envElem);
+        
+        var xml_str = '<?xml version="1.0" encoding="UTF-8"?>';
+        var xml_body = new XMLSerializer().serializeToString(doc);
+        return xml_str + xml_body;
+    }
+    
+    
+    
+    ///--- upload in the System tab
+    typeUpload = "main";
+    $("#sys_upload_nif").click(function(){
+        typeUpload="sys";
+        $("#modalUpload").modal("show");
+    });
+    
+    
+    parseSystemsInput = function(){
+        console.log(["textFromUpload:",textFromUpload]);
+        D = {};
+        var text = undefined;
+        text = textFromUpload;
+        textFromUpload = undefined;
+        
+        parser = new DOMParser();
+        xmlDoc = parser.parseFromString(text,"text/xml");
+        
+        // docs
+        var docItem = xmlDoc.getElementsByTagName("docItem");
+        sysD = [];
+        console.log(["docItem.length:",docItem.length]);
+        for (var di = 0; di < docItem.length; di++){
+            var doc = docItem[di];
+            console.log("--- new doc ---");
+            
+            newDoc = {};
+            for (var j = 0; j < doc.attributes.length; j++) {
+                var attribute = doc.attributes.item(j);
+                newDoc[attribute.nodeName] = attribute.nodeValue;
+            }
+            sysD.push(newDoc);
+        } 
+        
+        
+        // sentences
+        var sentenceItem = xmlDoc.getElementsByTagName("sentenceItem");
+        sysSentences = [];
+        for (var di = 0; di < sentenceItem.length; di++){
+            var sent = sentenceItem[di];
+            console.log("--- new sentence ---");    
+            newSentence = {};
+            for (var j = 0; j < sent.attributes.length; j++) {
+                var attribute = sent.attributes.item(j);
+                newSentence[attribute.nodeName] = attribute.nodeValue;
+            }
+            sysSentences.push(newSentence);
+        }
+        
+        
+        // annotation
+        var annotationItem = xmlDoc.getElementsByTagName("annotationItem");
+        sysA = [];
+        for (var di = 0; di < annotationItem.length; di++){
+            var ann = annotationItem[di];
+            console.log("--- new annotation ---");    
+            newA = {};
+            for (var j = 0; j < ann.attributes.length; j++) {
+                var attribute = ann.attributes.item(j);
+                newA[attribute.nodeName] = attribute.nodeValue;
+            }
+            newA["ini"] = parseInt(newA["ini"]);
+            newA["fin"] = parseInt(newA["fin"]);
+            
+            console.log("............");
+            if (ann.hasChildNodes()) {
+                for(var i = 0; i < ann.childNodes.length; i++) {
+                    var item = ann.childNodes.item(i);
+                    var nodeName = item.nodeName;
+                    console.log(["nodeName:",nodeName]);
+                    if (nodeName == "tagAnnItem"){
+                        if (item.hasChildNodes()) {
+                            for(var k = 0; k < item.childNodes.length; k++) {
+                                var elem = item.childNodes.item(k);
+                                var nodeName = elem.nodeName;
+                                if (nodeName == "tagAnnItemElement"){
+                                    newTag = {};
+                                    for (var j = 0; j < elem.attributes.length; j++) {
+                                        var attribute = elem.attributes.item(j);
+                                        newTag[attribute.nodeName] = attribute.nodeValue;
+                                    }
+                                    
+                                    if (!("tag" in newA)){
+                                        newA["tag"] = [];
+                                    }
+                                    console.log(newTag);
+                                    newA["tag"].push(newTag["tag"]);
+                                }                    
+                            }                
+                        }
+                    }
+                    else if (nodeName == "uriAnnItem"){
+                        if (item.hasChildNodes()) {
+                            console.log(["cantUri:",item.childNodes.length]);
+                            for(var k = 0; k < item.childNodes.length; k++) {
+                                var elem = item.childNodes.item(k);
+                                var nodeName = elem.nodeName;
+                                console.log(["nameURI:",nodeName]);
+                                if (nodeName == "uriAnnItemElement"){
+                                    newUri = {};
+                                    for (var j = 0; j < elem.attributes.length; j++) {
+                                        var attribute = elem.attributes.item(j);
+                                        newUri[attribute.nodeName] = attribute.nodeValue;
+                                    }
+                                    
+                                    console.log(["uri",newUri]);
+                                    
+                                    if (!("uri" in newA)){
+                                        newA["uri"] = [];
+                                    }
+                                    newA["uri"].push(newUri["uri"]);
+                                }                    
+                            }                
+                        }
+                    }
+                }                
+            }
+            sysA.push(newA);
+        }
+        
+        for (iddoc in sysD){
+            add_annotations_to_display(iddoc);
+        }        
+    }
+   
    
     
 });

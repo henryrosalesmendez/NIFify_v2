@@ -369,14 +369,15 @@ Example:
                             <option value="1">Babelfyr</option>
                             <option value="2">DBpedia Spotlight</option> -->
                         </select>
-                        <input placeholder="URI of the document" style="width:100%!important;height:35px;padding: 5px;"  id="sys_urldoc_input" type="text">
+                        <input placeholder="URI of the document" style="height:35px;padding: 5px;"  id="sys_urldoc_input" type="text" value="https://example.org/doc0">
                         <button id="sys_annotate_sentence" type="button" class="btn btn-success"> <i class="fa fa-hand-pointer-o fa-lg"></i> Annotate Sent.</button> 
                         <button id="sys_annotate_document" type="button" class="btn btn-success"> <i class="fa fa-hand-pointer-o fa-lg"></i> Annotate Doc.</button> 
                         
                     </div>
                     <div style='float: right;'>
                         <button id="sys_split_sentence" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Split the text in sentences"> <i class="fa fa-bars fa-lg"></i></button>
-                        <!--<button id="bbb" type="button" class="btn btn-primary margin_right" data-toggle="tooltip" title="Show/Hide the NIF content"> <i class="fa fa-code fa-lg"></i></button>-->
+                        <button id="sys_upload_nif" type="button" class="btn btn-primary" data-toggle="tooltip" title="Upload a NIF file of these results"> <i class="glyphicon glyphicon-upload"></i></button>
+                        <button id="sys_download_nif" type="button" class="btn btn-primary margin_right" data-toggle="tooltip" title="Download a NIF file of these results"> <i class="glyphicon glyphicon-download"></i></button>
                     </div>
                 </div>
            </div>     
@@ -695,6 +696,7 @@ Example:
     </div>
     
 
+    
 
 </body>
 <!--
