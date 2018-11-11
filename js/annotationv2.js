@@ -3961,34 +3961,6 @@ $(document).ready(function() {
         }));
     }
     
-    /*
-    $("#sys_annotate").click(function(){
-        var ido = $("#sys_selector").val();
-
-        //console.log(["values:",systems[ido]]);
-        var text = $("#sys_inDoc").val();
-
-        if (text == undefined || text == ""){
-            warning_alert("You should specify some text as input!");
-            return false;
-        }
-        
-        
-        systems[ido]["text"] = text;
-        $.ajax({
-            //data:params,
-            data:{"values":systems[ido]},
-            url: 'elsystems.php',
-            type: 'POST',
-            dataType: "html",
-            beforeSend: function(){},
-            success: function(response){
-                show_results(response);
-            },
-            error: function(response){console.log(["Error:",response]);}
-        });
-    });
-    */
     
     //RR = [];
     current_iddoc = 0;
@@ -4071,7 +4043,6 @@ $(document).ready(function() {
             return false;
         }
         
-        console.log('uridoc2id(sysD,name_doc):',uridoc2id(sysD,name_doc) );
         if (uridoc2id(sysD,name_doc) != -1){
             warning_alert("You must specify a new name for this document, different from the ones that have already been added.");
             return false;
@@ -4143,7 +4114,6 @@ $(document).ready(function() {
     }*/
     show_results = function(resp){
         //alert(resp);
-        console.log(resp);
         var json_response = JSON.parse(resp);
         if ("error" in json_response){
             var json_response = JSON.parse(resp);
@@ -4153,7 +4123,6 @@ $(document).ready(function() {
         
         var text = $("#sys_inDoc").val();
         var json_sorted = getSortedAnnotations(json_response);
-        console.log(["json_sorted:",json_sorted]);
         var name_doc = $("#sys_urldoc_input").val();
         
         // Adding this document to the environment
@@ -4246,7 +4215,6 @@ $(document).ready(function() {
         var overall = 0;
         //var pos = 0;
         
-        console.log(["iddoc:",iddoc]);
         var inDocCounter = sysD[iddoc]["inDocCounter"];
         var urldoc = sysD[iddoc]["uri"];
       
@@ -4262,7 +4230,6 @@ $(document).ready(function() {
                 continue;
             }
             sent = sysSentences[i_s]["text"];
-            console.log("SSSEENNNTTT::",sysSentences[i_s]["text"]);
             var temp_i = parseInt(i_s);
 
             
@@ -4271,14 +4238,17 @@ $(document).ready(function() {
             for (index in sysA){
                 
                 var ann = sysA[index];
-                console.log(['ann["id_sentence"]:',ann["id_sentence"],"   i_s:",i_s]);
                 if (ann["id_sentence"]!=i_s){ //ann["uridoc"] != urldoc 
                     continue;
                 }
                 
-                ini = ann["ini"];
-                fin = ann["fin"]+1;
+                ini = parseInt(ann["ini"]);
+                fin = parseInt(ann["fin"])+1;
                 
+                if ("ini_no_overall" in ann){
+                    ini = parseInt(ann["ini_no_overall"]);
+                    fin = parseInt(ann["fin_no_overall"])+1;
+                }                
                 
                 
                 var indexpp = parseInt(index) +1 ;
@@ -4306,9 +4276,6 @@ $(document).ready(function() {
                 
                 //var label = text.substr(ini,fin-ini);
                 var label = sent.substring(ini,fin);
-                console.log("------------------");
-                console.log(["index:",index,"  ini:",ini,"   fin:",fin, "   pos:",pos]);
-                console.log(["label:",label]);
                 var httpAnnotation = '<span idesys="'+index+'" class="sysLabel" data-toggle="tooltip" title="'+ann["uri"].join()+'" '+st+'>'+label+'</span>';
                 //textOut = textOut + text.substring(pos,ini) + httpAnnotation;
                 textOut = textOut + sent.substring(pos,ini) + httpAnnotation;
@@ -4322,7 +4289,6 @@ $(document).ready(function() {
                 sysA[index]["fin"] = ann["fin"] + overall;
             }
             // the remain 
-            console.log(["pos:",pos]);
             textOut = textOut + sent.substr(pos)+"<br>&nbsp;";
             pos = 0;
 
@@ -5567,7 +5533,10 @@ $(document).ready(function() {
             annItemElem.setAttribute("uridoc", ann["uridoc"]);
             annItemElem.setAttribute("id_sentence", ann["id_sentence"]);            
             annItemElem.setAttribute("ini", ann["ini"]);   
-            annItemElem.setAttribute("fin", ann["fin"]);   
+            annItemElem.setAttribute("fin", ann["fin"]);  
+            annItemElem.setAttribute("ini_no_overall", ann["ini_no_overall"]); 
+            annItemElem.setAttribute("fin_no_overall", ann["fin_no_overall"]); 
+            
             
             
             if ("tag" in ann){
@@ -5615,7 +5584,6 @@ $(document).ready(function() {
     
     
     parseSystemsInput = function(){
-        console.log(["textFromUpload:",textFromUpload]);
         D = {};
         var text = undefined;
         text = textFromUpload;
@@ -5627,10 +5595,9 @@ $(document).ready(function() {
         // docs
         var docItem = xmlDoc.getElementsByTagName("docItem");
         sysD = [];
-        console.log(["docItem.length:",docItem.length]);
+
         for (var di = 0; di < docItem.length; di++){
             var doc = docItem[di];
-            console.log("--- new doc ---");
             
             newDoc = {};
             for (var j = 0; j < doc.attributes.length; j++) {
@@ -5646,7 +5613,7 @@ $(document).ready(function() {
         sysSentences = [];
         for (var di = 0; di < sentenceItem.length; di++){
             var sent = sentenceItem[di];
-            console.log("--- new sentence ---");    
+
             newSentence = {};
             for (var j = 0; j < sent.attributes.length; j++) {
                 var attribute = sent.attributes.item(j);
@@ -5661,21 +5628,20 @@ $(document).ready(function() {
         sysA = [];
         for (var di = 0; di < annotationItem.length; di++){
             var ann = annotationItem[di];
-            console.log("--- new annotation ---");    
+   
             newA = {};
             for (var j = 0; j < ann.attributes.length; j++) {
                 var attribute = ann.attributes.item(j);
                 newA[attribute.nodeName] = attribute.nodeValue;
             }
+            
             newA["ini"] = parseInt(newA["ini"]);
             newA["fin"] = parseInt(newA["fin"]);
             
-            console.log("............");
             if (ann.hasChildNodes()) {
                 for(var i = 0; i < ann.childNodes.length; i++) {
                     var item = ann.childNodes.item(i);
                     var nodeName = item.nodeName;
-                    console.log(["nodeName:",nodeName]);
                     if (nodeName == "tagAnnItem"){
                         if (item.hasChildNodes()) {
                             for(var k = 0; k < item.childNodes.length; k++) {
@@ -5691,7 +5657,6 @@ $(document).ready(function() {
                                     if (!("tag" in newA)){
                                         newA["tag"] = [];
                                     }
-                                    console.log(newTag);
                                     newA["tag"].push(newTag["tag"]);
                                 }                    
                             }                
@@ -5699,20 +5664,15 @@ $(document).ready(function() {
                     }
                     else if (nodeName == "uriAnnItem"){
                         if (item.hasChildNodes()) {
-                            console.log(["cantUri:",item.childNodes.length]);
                             for(var k = 0; k < item.childNodes.length; k++) {
                                 var elem = item.childNodes.item(k);
                                 var nodeName = elem.nodeName;
-                                console.log(["nameURI:",nodeName]);
                                 if (nodeName == "uriAnnItemElement"){
                                     newUri = {};
                                     for (var j = 0; j < elem.attributes.length; j++) {
                                         var attribute = elem.attributes.item(j);
                                         newUri[attribute.nodeName] = attribute.nodeValue;
                                     }
-                                    
-                                    console.log(["uri",newUri]);
-                                    
                                     if (!("uri" in newA)){
                                         newA["uri"] = [];
                                     }
