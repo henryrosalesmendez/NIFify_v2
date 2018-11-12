@@ -376,8 +376,14 @@ Example:
                     </div>
                     <div style='float: right;'>
                         <button id="sys_split_sentence" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Split the text in sentences"> <i class="fa fa-bars fa-lg"></i></button>
+                        
                         <button id="sys_upload_nif" type="button" class="btn btn-primary" data-toggle="tooltip" title="Upload a XML file of these results"> <i class="glyphicon glyphicon-upload"></i></button>
-                        <button id="sys_download_nif" type="button" class="btn btn-primary margin_right" data-toggle="tooltip" title="Download a XML file of these results"> <i class="glyphicon glyphicon-download"></i></button>
+                        
+                        <button id="sys_download_nif" type="button" class="btn btn-primary" data-toggle="tooltip" title="Download a XML file of these results"> <i class="glyphicon glyphicon-download"></i></button>
+                        
+                        <button id="sys_run_with_main_sentenes" type="button" class="btn btn-success" data-toggle="tooltip" title="Run the selected system over the sentences of the main tab"> <i class="glyphicon glyphicon-th"></i></button>
+                        
+                        <button id="sys_run_with_main_docs" type="button" class="btn btn-success margin_right" data-toggle="tooltip" title="Run the selected system over the documents of the main tab"> <i class="glyphicon glyphicon-th-large"></i></button>
                     </div>
                 </div>
            </div>     
@@ -684,6 +690,7 @@ Example:
            <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
               <h4 class="modal-title"><b>Summary</b></h4>
+              <div id="modalSummary-title-desc"></div>
            </div>
            <div id="modalSummary-body" class="modal-body form-group">           
                <table id="sry_table" class="table table-striped"></table>

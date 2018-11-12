@@ -777,7 +777,7 @@ $(document).ready(function() {
        
        
        
-       //preparo el proximo documento..   
+       //preparo el proximo documento.. 
        D.push({"uri":urldoc, "inDocCounter":inDocCounter})
        dicc_uri2inDocCounter[urldoc] = inDocCounter;
        inDocCounter = inDocCounter + 1;
@@ -3841,7 +3841,7 @@ $(document).ready(function() {
         //$("#sry_table").append('<tr><th scope="row">1</th><td>Documentos</td><td>0</td><td>-</td></tr>');
         
         
-        
+        $('#modalSummary-title-desc').html("");
         $('#modalSummary').modal("show");
     });
     
@@ -3985,8 +3985,8 @@ $(document).ready(function() {
                     var name_doc = $("#sys_urldoc_input").val();
                     var _json_response = JSON.parse(response);
                     var _json_sorted = getSortedAnnotations(_json_response);
-                    console.log(["_json_response:",_json_response]);
-                    console.log(["_json_sorted:",_json_sorted]);
+                    //console.log(["_json_response:",_json_response]);
+                    //console.log(["_json_sorted:",_json_sorted]);
                     
                     for (r in _json_sorted){
                         var ann = _json_sorted[r];
@@ -3994,12 +3994,12 @@ $(document).ready(function() {
                             "uridoc": name_doc,
                             "id_sentence":pSent,
                             "idA" : sysA.length,
-                            "ini": ann["ini"],
-                            "fin": ann["fin"],
+                            "ini": parseInt(ann["ini"]),
+                            "fin": parseInt(ann["fin"])+1,
                             "uri": ann["uri"],
                         });
                     }
-                    console.log(["pSent+1:",pSent+1,"   ido_system:",ido_system]);
+                    //console.log(["pSent+1:",pSent+1,"   ido_system:",ido_system]);
                     sincronism_ajax(pSent+1,ido_system);
                     //RR.push(response.substr(13,response.length - 15 ));
                 },
@@ -4055,6 +4055,8 @@ $(document).ready(function() {
             sysD.push({
                 "uri":name_doc,
                 "inDocCounter": iddoc,
+                "granularity": "sent",
+                "system": systems[ido]["name"]
             });
             
             var ini_Sent = sysSentences.length;
@@ -4126,10 +4128,13 @@ $(document).ready(function() {
         var name_doc = $("#sys_urldoc_input").val();
         
         // Adding this document to the environment
+        var ido = $("#sys_selector").val();
         var iddoc = sysD.length;
         sysD.push({
             "uri":name_doc,
             "inDocCounter": iddoc,
+            "granularity": "doc",
+            "system": systems[ido]["name"]
         });
         
         
@@ -4171,12 +4176,12 @@ $(document).ready(function() {
     wrapp_in_box = function(_html,_iddoc){
         var _ido = $("#sys_selector").val();
         var ttype_ann = "by Sentences";
-        if (sysEvaluationBySentence == false){
+        if (sysD[_iddoc]["granularity"] == "sent"){
             ttype_ann = "by Document";
         }
         var labels_html = '<span class="label label-info">#'+_iddoc+'</span>&nbsp;' +
             '<span class="label label-info">Type of annotation: '+ttype_ann+'</span>&nbsp;' +
-            '<span class="label label-info">Annotator: '+systems[_ido]["name"]+'</span>';
+            '<span class="label label-info">Annotator: '+sysD[_iddoc]["system"]+'</span>';
         return ''+
         '<div id="sys_doc'+_iddoc+'" class="col-lg-12 row parent_show drop-shadow" style="margin-left:5px!important;">  '+      
             '<div class="row">'+
@@ -4243,12 +4248,12 @@ $(document).ready(function() {
                 }
                 
                 ini = parseInt(ann["ini"]);
-                fin = parseInt(ann["fin"])+1;
+                fin = parseInt(ann["fin"]);
                 
-                if ("ini_no_overall" in ann){
+                /*if ("ini_no_overall" in ann){
                     ini = parseInt(ann["ini_no_overall"]);
                     fin = parseInt(ann["fin_no_overall"])+1;
-                }                
+                }*/                
                 
                 
                 var indexpp = parseInt(index) +1 ;
@@ -4282,11 +4287,11 @@ $(document).ready(function() {
                 pos = fin;
                 
                 //standarizing 
-                sysA[index]["ini_no_overall"] = ann["ini"];
+                /*sysA[index]["ini_no_overall"] = ann["ini"];
                 sysA[index]["fin_no_overall"] = ann["fin"];
                 
                 sysA[index]["ini"] = ann["ini"] + overall;
-                sysA[index]["fin"] = ann["fin"] + overall;
+                sysA[index]["fin"] = ann["fin"] + overall;*/
             }
             // the remain 
             textOut = textOut + sent.substr(pos)+"<br>&nbsp;";
@@ -4431,6 +4436,32 @@ $(document).ready(function() {
             $("#sry_table").append('<tr><th scope="row">'+pos.toString()+'</th><td>'+ll+'</td>'+llink+'</tr>');
             pos = pos + 1;
         }
+        
+        // getting the label
+        var ids = sysA[ide]["id_sentence"];
+        /*for (hi in sysSentences){
+            if (ids == hi){
+                break;
+            }
+            console.log(["Set_hi:",sysSentences[hi]["uridoc"],"  Sent_si:",sysSentences[ids]["uridoc"]]);
+            if (sysSentences[hi]["uridoc"] == sysSentences[ids]["uridoc"]){
+                overall = overall + sysSentences[hi]["text"].length + 1;
+            }
+        }*/
+        
+        var _ini = parseInt(sysA[ide]["ini"]);
+        var _fin = parseInt(sysA[ide]["fin"]);
+        var sentence_text = sysSentences[ids]["text"];
+        var label = sentence_text.substring(_ini,_fin);
+        var nk = 10;
+        if (_ini-nk > 0 && _fin+nk<sentence_text.length){
+            txt = sentence_text.substring(_ini-nk,_fin+nk);
+            txt = replaceAll(txt,label,"<i><b>"+label+"</b></i>");
+        }
+        else {
+            txt = label;
+        }
+        $("#modalSummary-title-desc").html(txt);
         $('#modalSummary').modal("show");
         
     });
@@ -5503,6 +5534,8 @@ $(document).ready(function() {
             var docItemElem = doc.createElement("docItem");
             docItemElem.setAttribute("inDocCounter", d["inDocCounter"]);
             docItemElem.setAttribute("uri", d["uri"]);
+            docItemElem.setAttribute("granularity", d["granularity"]);
+            docItemElem.setAttribute("system", d["system"]);
             docElem.appendChild(docItemElem);
         }        
         envElem.appendChild(docElem);
@@ -5534,8 +5567,8 @@ $(document).ready(function() {
             annItemElem.setAttribute("id_sentence", ann["id_sentence"]);            
             annItemElem.setAttribute("ini", ann["ini"]);   
             annItemElem.setAttribute("fin", ann["fin"]);  
-            annItemElem.setAttribute("ini_no_overall", ann["ini_no_overall"]); 
-            annItemElem.setAttribute("fin_no_overall", ann["fin_no_overall"]); 
+            //annItemElem.setAttribute("ini_no_overall", ann["ini_no_overall"]); 
+            //annItemElem.setAttribute("fin_no_overall", ann["fin_no_overall"]); 
             
             
             
@@ -5584,7 +5617,6 @@ $(document).ready(function() {
     
     
     parseSystemsInput = function(){
-        D = {};
         var text = undefined;
         text = textFromUpload;
         textFromUpload = undefined;
@@ -5685,13 +5717,201 @@ $(document).ready(function() {
             }
             sysA.push(newA);
         }
-        
+        add_all_sysD();
+              
+    }
+    
+    
+    //-
+    add_all_sysD = function(){
+        $("#sys_DisplayBlock").html("");
         for (iddoc in sysD){
             add_annotations_to_display(iddoc);
-        }        
+        }  
     }
+    
+    /// --- System Evaluation
+    $("#sys_run_with_main_sentenes").click(function(){
+        sysEvaluationBySentence = true;
+        var ido = $("#sys_selector").val();
+        sysD = [];
+        sysSentences = [];
+        sysA = [];
+        
+        $.blockUI( {
+                message: '<div id="sys_disamb">Progress: 0%</div>',
+                css: { 
+                    border: 'none', 
+                    padding: '15px', 
+                    backgroundColor: '#000', 
+                    '-webkit-border-radius': '10px', 
+                    '-moz-border-radius': '10px', 
+                    opacity: .5, 
+                    color: '#fff' 
+                }
+            }
+        );
+        
+        syncronic_get_document_from_main_and_evaluate(0,0,ido);
+    });
    
+   $("#sys_run_with_main_docs").click(function(){
+        sysEvaluationBySentence = false;
+        var ido = $("#sys_selector").val();
+        sysD = [];
+        sysSentences = [];
+        sysA = [];
+        
+        $.blockUI( {
+                message: '<div id="sys_disamb">Progress: 0%</div>',
+                css: { 
+                    border: 'none', 
+                    padding: '15px', 
+                    backgroundColor: '#000', 
+                    '-webkit-border-radius': '10px', 
+                    '-moz-border-radius': '10px', 
+                    opacity: .5, 
+                    color: '#fff' 
+                }
+            }
+        );
+        
+        syncronic_get_document_from_main_and_evaluate(0,0,ido);
+    });
    
+
+   syncronic_get_document_from_main_and_evaluate = function(_iddoc,_idsent,ido_system){
+        if (sysEvaluationBySentence == true) {
+            if (_idsent == Sentences.length){
+                // end of the recurtion
+                add_all_sysD();
+                $.unblockUI();
+            }
+            else{
+                systems[ido_system]["text"] = Sentences[_idsent]["text"];
+                update_block_caption('sys_disamb',_idsent,Sentences.length);
+                $.ajax({
+                    //data:params,
+                    data:{"values":systems[ido_system]},
+                    url: 'elsystems.php',
+                    type: 'POST',
+                    dataType: "html",
+                    beforeSend: function(){},
+                    success: function(response){
+                        var name_doc = Sentences[_idsent]["uridoc"];
+                        var _json_response = JSON.parse(response);
+                        var _json_sorted = getSortedAnnotations(_json_response);
+                        
+                        //did we already added the doc?
+                        if (uridoc2id(sysD,name_doc) == -1){
+                            sysD.push({
+                                "uri":name_doc,
+                                "inDocCounter": sysD.length,
+                                "granularity": "doc",
+                                "system": systems[ido_system]["name"]
+                            });
+                        }
+                        
+                        //did we already added the sentence?
+                        if (urisent2id(sysSentences,Sentences[_idsent]["id_sent"]) == -1){
+                            sysSentences.push({
+                                "text":  Sentences[_idsent]["text"],
+                                "uridoc": Sentences[_idsent]["uridoc"],
+                                "id_sent":Sentences[_idsent]["id_sent"]
+                            });
+                        }
+                        
+                        // Annotations
+                        for (r in _json_sorted){
+                            var ann = _json_sorted[r];
+                            sysA.push({
+                                "uridoc": Sentences[_idsent]["uridoc"],
+                                "id_sentence":_idsent,
+                                "idA" : sysA.length,
+                                "ini": parseInt(ann["ini"]),
+                                "fin": parseInt(ann["fin"])+1,
+                                "uri": ann["uri"],
+                            });
+                        }
+                        syncronic_get_document_from_main_and_evaluate(_iddoc,_idsent+1,ido_system);
+                    },
+                    error: function(response){
+                        syncronic_get_document_from_main_and_evaluate(_iddoc,_idsent+1,ido_system);
+                        return false;
+                    }
+                }); 
+            }
+        }
+        else { // byDocument
+            if (_iddoc == D.length){
+                // end of the recurtion
+                add_all_sysD();
+                $.unblockUI();
+            }
+            else{
+                var list_sentences = sortSentencesOfDoc(_iddoc);
+                console.log(["list_sentences:",list_sentences]);
+                var _sentences = "";
+                for (l_si in list_sentences){
+                    var ls = list_sentences[l_si];
+                    _sentences = _sentences + ls["text"] + " ";
+                } 
+                
+                systems[ido_system]["text"] = _sentences;
+                update_block_caption('sys_disamb',_iddoc,D.length);
+                $.ajax({
+                    //data:params,
+                    data:{"values":systems[ido_system]},
+                    url: 'elsystems.php',
+                    type: 'POST',
+                    dataType: "html",
+                    beforeSend: function(){},
+                    success: function(response){
+                        var _json_response = JSON.parse(response);
+                        var _json_sorted = getSortedAnnotations(_json_response);
+                        
+
+
+                        sysD.push({
+                            "uri":D[_iddoc]["uri"],
+                            "inDocCounter": sysD.length,
+                            "granularity": "sent",
+                            "system": systems[ido_system]["name"]
+                        });
+
+                        
+                        _idsent = sysSentences.length;
+                        sysSentences.push({
+                            "text":  _sentences,
+                            "uridoc": D[_iddoc]["uri"],
+                            "id_sent":_idsent
+                        });
+
+                        
+                        // Annotations
+                        for (r in _json_sorted){
+                            var ann = _json_sorted[r];
+                            sysA.push({
+                                "uridoc": Sentences[_idsent]["uridoc"],
+                                "id_sentence":_idsent,
+                                "idA" : sysA.length,
+                                "ini": parseInt(ann["ini"]),
+                                "fin": parseInt(ann["fin"])+1,
+                                "uri": ann["uri"],
+                            });
+                        }
+                        syncronic_get_document_from_main_and_evaluate(_iddoc+1,_idsent,ido_system);
+                        //RR.push(response.substr(13,response.length - 15 ));
+                    },
+                    error: function(response){
+                        syncronic_get_document_from_main_and_evaluate(_iddoc+1,_idsent,ido_system);
+                        return false;
+                    }
+                }); 
+            }
+        }
+                
+    }
     
 });
 
