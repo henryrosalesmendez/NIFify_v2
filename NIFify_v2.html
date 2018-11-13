@@ -20,10 +20,17 @@
 <script type="text/javascript" src="js/jquery.blockUI.js"></script>
 
 
- <script src="js/annotationv2.js"></script>
- <script src="js/dict.js"></script>
- <script type="text/javascript" src="js/encoder.js"></script>
- </head>
+<script src="js/annotationv2.js"></script>
+<script src="js/measures.js"></script>
+<script src="js/dict.js"></script>
+<script type="text/javascript" src="js/encoder.js"></script>
+ 
+ 
+<style>
+  
+</style>
+ 
+</head>
 
 <body>
     
@@ -377,17 +384,27 @@ Example:
                     <div style='float: right;'>
                         <button id="sys_split_sentence" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Split the text in sentences"> <i class="fa fa-bars fa-lg"></i></button>
                         
+                        <button id="sys_replicate" type="button" class="btn btn-primary" data-toggle="tooltip" title="Replicate the main tab data"> <i class="glyphicon glyphicon-circle-arrow-right"></i></button>
+                        
                         <button id="sys_upload_nif" type="button" class="btn btn-primary" data-toggle="tooltip" title="Upload a XML file of these results"> <i class="glyphicon glyphicon-upload"></i></button>
                         
                         <button id="sys_download_nif" type="button" class="btn btn-primary" data-toggle="tooltip" title="Download a XML file of these results"> <i class="glyphicon glyphicon-download"></i></button>
                         
                         <button id="sys_run_with_main_sentenes" type="button" class="btn btn-success" data-toggle="tooltip" title="Run the selected system over the sentences of the main tab"> <i class="glyphicon glyphicon-th"></i></button>
                         
-                        <button id="sys_run_with_main_docs" type="button" class="btn btn-success margin_right" data-toggle="tooltip" title="Run the selected system over the documents of the main tab"> <i class="glyphicon glyphicon-th-large"></i></button>
+                        <button id="sys_run_with_main_docs" type="button" class="btn btn-success" data-toggle="tooltip" title="Run the selected system over the documents of the main tab"> <i class="glyphicon glyphicon-th-large"></i></button>
+                        
+                        <button id="sys_benckmark" type="button" class="btn btn-primary margin_right" data-toggle="tooltip" title="Evaluate the current results versus the annotations of the main tab."> <i class="glyphicon glyphicon-equalizer"></i></button>
                     </div>
                 </div>
            </div>     
        </div> 
+       <!--- -->
+       <div id="_benchmark_div" class="row padd1" style="margin: 30px 20px 0px 20px;">
+            <div id="benchmark_tabs" class="tab">
+            </div>
+       </div>
+       <!--- -->
        <div class="row padd1"> 
             <br>
             <div id="sys_DisplayBlock" class="col-lg-12"></div>

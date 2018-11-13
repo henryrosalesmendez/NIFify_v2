@@ -5913,6 +5913,204 @@ $(document).ready(function() {
                 
     }
     
+    //-----------------------------------------------------------------
+    //---- Benckmark ---------------------
+    benckmark = []; // [{    finals_scores:{1:{name:F1, score:0.05}, 2:{name:Precision, score:0.3}}, 
+                    //       versions:{name:relax, documents: {
+                    //                                  indexdoc:1, uri: ---, score : 0.1 , details: [{label:--,score---},{}]
+                    //                                        }
+                    //                }   
+                    //  }, ...]
+    openTabMeasure = function (evt, identifier) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(identifier).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+    
+    // This funtion return a unifies object for both (D,Sentences,A) and (sysD,sysSentences,sysA). with the 
+    // flag "flag_main" I make the distintions between both data. The difference is tha values of "ini" and "fin" 
+    // in the annotations.
+    // Here I gather all the annotations information by document, I delete the sense of Sentence.
+    // _O = {"http://uridoc/doc0":[{ini:0,fin:5,uri:Set(uri1,uri2)}, ....]}
+    getUnifiedObject = function(_D,_Sentences,_A,_flag_main){
+        var _O = {};
+        for (var d_i in _D){
+            var _d = _D[d_i];
+            _O[_d["uri"]] = [];
+            console.log(["_d:",_d["uri"]]);
+            
+            var _overall = 0;
+            for (var s_i in _Sentences){
+                var _sent = _Sentences[s_i];
+                var _sent_text = _sent["text"];
+                console.log(["id_sentence:",s_i]); 
+                
+                if (_sent["uridoc"] == _d["uri"]){
+                    for (var a_i in _A){
+                        _ann = _A[a_i];
+                        if (_ann["id_sentence"] == s_i){
+                            console.log(["ini",_ann["ini"],"  fin:",_ann["fin"],"  ann:",_ann]);
+                            var _o = {};
+                            if (_flag_main == true){
+                                _o = {
+                                    "idA":_ann["idA"],
+                                    "id_sentence" : _ann["id_sentence"],
+                                    "ini": _ann["ini"] - _overall,
+                                    "fin": _ann["fin"] - _overall,
+                                    "uri": new Set()
+                                };
+                            }
+                            else {
+                                _o = {
+                                    "idA":_ann["idA"],
+                                    "id_sentence" : _ann["id_sentence"],
+                                    "ini": _ann["ini"],
+                                    "fin": _ann["fin"],
+                                    "uri": new Set()
+                                };
+                            }
+                            
+                            for (u_i in _ann["uri"]){
+                                _o["uri"].add(_ann["uri"][u_i]);
+                            }
+                            
+                            _O[_d["uri"]].push(_o);
+                        }
+                    }
+                }
+                _overall = _overall + _sent_text.length + 1;
+            }
+        }
+        return _O;
+    }
+    
+    
+    wrappen_benchmark_content = function(res){
+        var _html= '<div id="benchmark_tab_'+res["name"]+'" class="bechmark_content tabcontent">';
+        
+        for (k in res["finals_scores"]){
+            _html = _html + '<b>'+res["finals_scores"][k]["name"]+'</b>: '+res["finals_scores"][k]["score"]+'<br>';
+        }
+        _html =  _html + '<div style="padding:30px;" id="benchmark_details_'+res["name"]+'">';
+        
+        for (k in res["versions"]){
+            var version = res["versions"][k];
+            _html = _html + '<div class="row">';
+            
+            _html = _html + '<div class="row head_valid_details">' +
+                     '<div class="col-lg-5" style="text-align:center;">Candidate</div>' +
+                     '<div class="col-lg-2" style="text-align:center;">'+version["name"]+'</div>' +
+                     '<div class="col-lg-5" style="text-align:center;">Gold</div>' +
+                 '</div>';
+            
+            for (var d_i in version["documents"]){
+                _html = _html + '<div class="col-lg-12" style="text-align:left;"> document: '+version["documents"][d_i]["uri"]+'</div></div>';
+                for (var u_i in version["documents"][d_i]["details"]){
+                    var u = version["documents"][d_i]["details"][u_i];
+                    _html = _html + '<div class="row item_valid_details">'+ 
+                        '<div class="col-lg-5" style="text-align:center;">'+u["cand"]+'</div>' +
+                        '<div class="col-lg-2" style="text-align:center;">'+u["score"]+'</div>'+
+                        '<div class="col-lg-5" style="text-align:center;">'+u["gold"]+'</div>'+ 
+                    '</div>';
+                }
+            } 
+        }
+        return _html + '</div></div>';
+    }
+    
+    
+    $("#sys_benckmark").click(function(){
+        G = getUnifiedObject(D,Sentences,A,true);        
+        console.log(["G:",G]);
+        console.log("------------");
+        C = getUnifiedObject(sysD,sysSentences,sysA,false);
+        console.log(["C:",C]);
+        
+        //
+        $("#benchmark_tabs").html(""); 
+        $('.benchmark_content').each(function() {
+            $(this).remove();
+        });
+        
+        //
+        var List_measures = [
+            {"function":microF1Measure},
+            {"function":macroF1Measure},
+            {"function":microF1Measure_two_way},            
+        ];        
+        for (var l_i in List_measures){
+            var measure = List_measures[l_i];
+            var L_result = measure["function"](C,G);
+            console.log(["result:",L_result]);
+            
+            for (rr in L_result){
+                var result = L_result[rr];
+                // add tab with this result
+                $("#benchmark_tabs").append('<button class="tablinks" onclick="openTabMeasure(event, \'benchmark_tab_'+result["name"]+'\')">'+result["name"]+'</button>');
+                console.log(["wrap:",wrappen_benchmark_content(result)]);
+                $("#_benchmark_div").append(wrappen_benchmark_content(result));
+                
+            }
+        }
+        
+        
+    });
+    
+    
+    
+    
+    
+    
+    
+    
+    //-- replicate
+    $("#sys_replicate").click(function(){
+        //
+        sysD = [];
+        for (i in D){
+           sysD.push(D[i]);    
+        }
+        
+        //
+        sysSentences = [];
+        var idsentToOverall = {};
+        var overall = 0;
+        
+        oldDocOfSentence = -1;
+        for (i in Sentences){
+            var sent = Sentences[i];
+            sysSentences.push(sent);
+            
+            if (oldDocOfSentence != sent["uridoc"]){
+                oldDocOfSentence = sent["uridoc"];
+                overall = 0;
+            }
+            
+            idsentToOverall[i] = overall;
+            overall = overall + sent["text"].length + 1;
+        }
+        
+        //
+        sysA = [];
+        for (i in A){
+            var ann = A[i];
+            var overall = idsentToOverall[ann["id_sentence"]];
+            ann["ini"] = ann["ini"] - overall;
+            ann["fin"] = ann["fin"] - overall;
+            sysA.push(ann);    
+        }
+        add_all_sysD();
+    });
+    
+    
 });
 
 
