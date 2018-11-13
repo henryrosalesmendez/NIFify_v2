@@ -2525,7 +2525,7 @@ $(document).ready(function() {
     restar_idA_in_Annotations = function(){
       for (i in A){
             a = A[i];
-            a["idA"] = i;
+            A[i]["idA"] = i;
         }
     }
 
@@ -4279,9 +4279,19 @@ $(document).ready(function() {
                     ann["overlap"] = false;
                 }
                 
-                //var label = text.substr(ini,fin-ini);
+                var html_tag = "";
+                if (current_measure != "" && "measures" in ann){
+                    if (current_measure in ann["measures"]){
+                        if (ann["measures"][current_measure].indexOf("tax:tp") != -1){
+                            html_tag = '<i class="glyphicon glyphicon-ok-sign"></i>&nbsp;';
+                        }
+                        else if (ann["measures"][current_measure].indexOf("tax:fp") != -1){
+                            html_tag = '<i class="glyphicon glyphicon-remove-sign"></i>&nbsp;';
+                        }
+                    }                    
+                }
                 var label = sent.substring(ini,fin);
-                var httpAnnotation = '<span idesys="'+index+'" class="sysLabel" data-toggle="tooltip" title="'+ann["uri"].join()+'" '+st+'>'+label+'</span>';
+                var httpAnnotation = '<span idesys="'+index+'" class="sysLabel" data-toggle="tooltip" title="'+ann["uri"].join()+'" '+st+'>'+html_tag+label+'</span>';
                 //textOut = textOut + text.substring(pos,ini) + httpAnnotation;
                 textOut = textOut + sent.substring(pos,ini) + httpAnnotation;
                 pos = fin;
@@ -5921,7 +5931,8 @@ $(document).ready(function() {
                     //                                        }
                     //                }   
                     //  }, ...]
-    openTabMeasure = function (evt, identifier) {
+    current_measure = "";
+    openTabMeasure = function (evt, identifier, measure_nm) {
         var i, tabcontent, tablinks;
         tabcontent = document.getElementsByClassName("tabcontent");
         for (i = 0; i < tabcontent.length; i++) {
@@ -5931,8 +5942,10 @@ $(document).ready(function() {
         for (i = 0; i < tablinks.length; i++) {
             tablinks[i].className = tablinks[i].className.replace(" active", "");
         }
+        current_measure = measure_nm;
         document.getElementById(identifier).style.display = "block";
         evt.currentTarget.className += " active";
+        add_all_sysD();
     }
     
     // This funtion return a unifies object for both (D,Sentences,A) and (sysD,sysSentences,sysA). with the 
@@ -5945,19 +5958,19 @@ $(document).ready(function() {
         for (var d_i in _D){
             var _d = _D[d_i];
             _O[_d["uri"]] = [];
-            console.log(["_d:",_d["uri"]]);
+            //console.log(["_d:",_d["uri"]]);
             
             var _overall = 0;
             for (var s_i in _Sentences){
                 var _sent = _Sentences[s_i];
                 var _sent_text = _sent["text"];
-                console.log(["id_sentence:",s_i]); 
+                //console.log(["id_sentence:",s_i]); 
                 
                 if (_sent["uridoc"] == _d["uri"]){
                     for (var a_i in _A){
                         _ann = _A[a_i];
                         if (_ann["id_sentence"] == s_i){
-                            console.log(["ini",_ann["ini"],"  fin:",_ann["fin"],"  ann:",_ann]);
+                            //console.log(["ini",_ann["ini"],"  fin:",_ann["fin"],"  ann:",_ann]);
                             var _o = {};
                             if (_flag_main == true){
                                 _o = {
@@ -6028,11 +6041,12 @@ $(document).ready(function() {
     
     
     $("#sys_benckmark").click(function(){
+        //restar_idA_in_Annotations();
         G = getUnifiedObject(D,Sentences,A,true);        
-        console.log(["G:",G]);
-        console.log("------------");
+        //console.log(["G:",G]);
+        //console.log("------------");
         C = getUnifiedObject(sysD,sysSentences,sysA,false);
-        console.log(["C:",C]);
+        //console.log(["C:",C]);
         
         //
         $("#benchmark_tabs").html(""); 
@@ -6049,19 +6063,16 @@ $(document).ready(function() {
         for (var l_i in List_measures){
             var measure = List_measures[l_i];
             var L_result = measure["function"](C,G);
-            console.log(["result:",L_result]);
             
             for (rr in L_result){
                 var result = L_result[rr];
                 // add tab with this result
-                $("#benchmark_tabs").append('<button class="tablinks" onclick="openTabMeasure(event, \'benchmark_tab_'+result["name"]+'\')">'+result["name"]+'</button>');
-                console.log(["wrap:",wrappen_benchmark_content(result)]);
+                $("#benchmark_tabs").append('<button class="tablinks" onclick="openTabMeasure(event, \'benchmark_tab_'+result["name"]+'\',\''+result["name"]+'\')">'+result["name"]+'</button>');
                 $("#_benchmark_div").append(wrappen_benchmark_content(result));
-                
             }
         }
         
-        
+        add_all_sysD();
     });
     
     
