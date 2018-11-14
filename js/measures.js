@@ -143,7 +143,7 @@ contingencyTable_strict = function(cand,gold,name_measure){
                 
                 if (atLeastOneUri(candd,gg) == false){
                     var ll = array = Array.from(gg["uri"]);
-                    tagErr(candidate,fp_i,"(fp) Does not with the uris: "+ll.join(),name_measure);
+                    tagErr(candidate,fp_i,"(fp) Does not with the uris: "+ll.join(", "),name_measure);
                     break;
                 }
                 else if (isItProperName(gg) == false){
