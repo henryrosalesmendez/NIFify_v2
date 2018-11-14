@@ -17,7 +17,9 @@ findbyUriDoc = function(uri,B){
 findIn = function(a,B){
     for (a_i_ in B){
         var a_ = B[a_i_];
-        if (a_["ini"] == a["ini"] && a_["fin"] == a["fin"] && (setIntersection(a_["uri"],a["uri"])).size != 0){
+        var samep = samePositions(a_,a);
+        var oneUri = atLeastOneUri(a_,a);
+        if ( samep && oneUri){
             return a_i_;
         }
     }
@@ -29,10 +31,23 @@ isItProperName = function(_a_){
     if (!("tag" in annot)){
         return false;
     }
-
     
-    return ( annot["tag"].indexOf("mnt:FullMentionPN")!=-1 || annot["tag"].indexOf("mnt:ShortMentionPN")!=-1 || annot["tag"].indexOf("mnt:ExtendedMentionPN")!=-1);
+    if ( annot["tag"].indexOf("mnt:FullMentionPN")!=-1 || annot["tag"].indexOf("mnt:ShortMentionPN")!=-1 || annot["tag"].indexOf("mnt:ExtendedMentionPN")!=-1) {
+        return true;
+    }
+    
+    return false;
 }
+
+
+samePositions = function(a1,a2){
+    return a1["ini"] == a2["ini"] && a1["fin"] == a2["fin"];
+}
+
+atLeastOneUri = function(a1,a2){
+    return (setIntersection(a1["uri"],a2["uri"])).size != 0;    
+}
+
 
 findIn_strict = function(a,B){
     var bTags = isItProperName(a);
@@ -41,8 +56,9 @@ findIn_strict = function(a,B){
     }
     for (a_index in B){
         var a_A = B[a_index];
-        if (a_A["ini"] == a["ini"] && a_A["fin"] == a["fin"]  && 
-            (setIntersection(a_A["uri"],a["uri"])).size != 0){
+        var samep = samePositions(a_A,a);
+        var oneUri = atLeastOneUri(a_A,a);
+        if ( samep && oneUri){
             return a_index;
         }
     }
@@ -72,6 +88,21 @@ tagAnn = function(cand,p,type_a,name_measure){
 }
 
 
+tagErr = function(cand,p,msg,name_measure){
+    var idA = cand[p]["idA"];
+    
+    if (!("errors" in sysA[idA])){
+        sysA[idA]["errors"] = {};
+    }
+    
+    for (nm_i in name_measure){
+        var nm = name_measure[nm_i];
+        sysA[idA]["errors"][nm] = msg;
+
+    }    
+}
+
+
 contingencyTable_strict = function(cand,gold,name_measure){
     var tp = 0;
     var fp = 0;
@@ -91,13 +122,41 @@ contingencyTable_strict = function(cand,gold,name_measure){
         else{
             tp = tp + 1;
             tagAnn(candidate,p,"tax:tp",name_measure);
+            tagErr(candidate,p,"",name_measure);
             candidate.splice(p,1);
         }
     }
     fp = candidate.length; // because I was erase the tp of candidate, this is |cand| - tp
     
+    // just for tags and error message
     for (var fp_i in candidate){
+        //tags
+        var candd = candidate[fp_i];
         tagAnn(candidate,fp_i,"tax:fp",name_measure);
+        
+        //errors
+        var found = false;
+        for (gg_i in gold){
+            var gg = gold[gg_i];
+            if (samePositions(candd,gg)==true){
+                found = true;
+                
+                if (atLeastOneUri(candd,gg) == false){
+                    var ll = array = Array.from(gg["uri"]);
+                    tagErr(candidate,fp_i,"(fp) Does not with the uris: "+ll.join(),name_measure);
+                    break;
+                }
+                else if (isItProperName(gg) == false){
+                    tagErr(candidate,fp_i,"(fp) its not a proper name",name_measure);
+                    break;
+                }
+            }
+        }
+        
+        if (!found){
+            tagErr(candidate,fp_i,"(fp) This annotation is not in the gold standard.",name_measure);    
+        }
+        
     }
     
     return {"tp":tp,"fp":fp, "fn":fn};

@@ -2493,7 +2493,6 @@ $(document).ready(function() {
             $("#taxonomyMod").select2('data',ids);
         }
         else{
-            console.log("Nothing!!");
             $('#taxonomyMod').val('').trigger("change");
         }
         
@@ -4447,18 +4446,14 @@ $(document).ready(function() {
             pos = pos + 1;
         }
         
-        // getting the label
-        var ids = sysA[ide]["id_sentence"];
-        /*for (hi in sysSentences){
-            if (ids == hi){
-                break;
+        if (current_measure!="" && "errors" in sysA[ide]){
+            if (sysA[ide]["errors"][current_measure] != undefined){
+                $("#sry_table").append('<th colspan="3">'+sysA[ide]["errors"][current_measure]+'</th>');    
             }
-            console.log(["Set_hi:",sysSentences[hi]["uridoc"],"  Sent_si:",sysSentences[ids]["uridoc"]]);
-            if (sysSentences[hi]["uridoc"] == sysSentences[ids]["uridoc"]){
-                overall = overall + sysSentences[hi]["text"].length + 1;
-            }
-        }*/
+        }
         
+        // getting the label
+        var ids = sysA[ide]["id_sentence"];        
         var _ini = parseInt(sysA[ide]["ini"]);
         var _fin = parseInt(sysA[ide]["fin"]);
         var sentence_text = sysSentences[ids]["text"];
@@ -4471,6 +4466,7 @@ $(document).ready(function() {
         else {
             txt = label;
         }
+        
         $("#modalSummary-title-desc").html(txt);
         $('#modalSummary').modal("show");
         
@@ -6007,7 +6003,7 @@ $(document).ready(function() {
     
     
     wrappen_benchmark_content = function(res){
-        var _html= '<div id="benchmark_tab_'+res["name"]+'" class="bechmark_content tabcontent">';
+        var _html= '<div id="benchmark_tab_'+res["name"]+'" class="benchmark_content tabcontent">';
         
         for (k in res["finals_scores"]){
             _html = _html + '<b>'+res["finals_scores"][k]["name"]+'</b>: '+res["finals_scores"][k]["score"]+'<br>';
@@ -6041,12 +6037,8 @@ $(document).ready(function() {
     
     
     $("#sys_benckmark").click(function(){
-        //restar_idA_in_Annotations();
         G = getUnifiedObject(D,Sentences,A,true);        
-        //console.log(["G:",G]);
-        //console.log("------------");
         C = getUnifiedObject(sysD,sysSentences,sysA,false);
-        //console.log(["C:",C]);
         
         //
         $("#benchmark_tabs").html(""); 
@@ -6066,6 +6058,7 @@ $(document).ready(function() {
             
             for (rr in L_result){
                 var result = L_result[rr];
+                
                 // add tab with this result
                 $("#benchmark_tabs").append('<button class="tablinks" onclick="openTabMeasure(event, \'benchmark_tab_'+result["name"]+'\',\''+result["name"]+'\')">'+result["name"]+'</button>');
                 $("#_benchmark_div").append(wrappen_benchmark_content(result));
