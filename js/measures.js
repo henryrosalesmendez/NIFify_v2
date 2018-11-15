@@ -5,8 +5,7 @@ setIntersection = function(s1,s2){
 
 findbyUriDoc = function(uri,B){
     for (_a_i in B){
-        var _a = B[_a_i];
-        if (_a["uri"] == uri){
+        if (_a_i == uri){
             return _a_i;
         }
     }
@@ -116,6 +115,7 @@ contingencyTable_strict = function(cand,gold,name_measure){
     for (var g_i in gold){
         var g = gold[g_i];
         var p = findIn_strict(g,candidate);
+        //console.log(["STRICT label:",A[g["idA"]]["label"],"  g:",g,"  ini:",g["ini"],"  fin:",g["fin"],"  p:",p]);
         if (p == -1){
             fn = fn + 1;            
         }
@@ -143,7 +143,7 @@ contingencyTable_strict = function(cand,gold,name_measure){
                 
                 if (atLeastOneUri(candd,gg) == false){
                     var ll = array = Array.from(gg["uri"]);
-                    tagErr(candidate,fp_i,"(fp) Does not with the uris: "+ll.join(", "),name_measure);
+                    tagErr(candidate,fp_i,"(fp) Should have the uri: "+ll.join(", "),name_measure);
                     break;
                 }
                 else if (isItProperName(gg) == false){
@@ -175,21 +175,49 @@ contingencyTable = function(cand,gold,name_measure){
     
     for (var g_i in gold){
         var g = gold[g_i];
-    
+        
         var p = findIn(g,candidate);
+        //console.log(["RELAX label:",A[g["idA"]]["label"],"  g:",g,"  ini:",g["ini"],"  fin:",g["fin"],"  p:",p]);
         if (p == -1){
             fn = fn + 1;
         }
         else{
             tp = tp + 1;
             tagAnn(candidate,p,"tax:tp",name_measure);
+            tagErr(candidate,p,"",name_measure);
             candidate.splice(p,1);
         }
     }
     fp = candidate.length; // because I was erase the tp of candidate, this is |cand| - tp
     
-    for (var fp_i in candidate){
+    /*for (var fp_i in candidate){
         tagAnn(candidate,fp_i,"tax:fp",name_measure);
+    }*/
+    // just for tags and error message
+    for (var fp_i in candidate){
+        //tags
+        var candd = candidate[fp_i];
+        tagAnn(candidate,fp_i,"tax:fp",name_measure);
+        
+        //errors
+        var found = false;
+        for (gg_i in gold){
+            var gg = gold[gg_i];
+            if (samePositions(candd,gg)==true){
+                found = true;
+                
+                if (atLeastOneUri(candd,gg) == false){
+                    var ll = array = Array.from(gg["uri"]);
+                    tagErr(candidate,fp_i,"(fp) Should have the uri: "+ll.join(", "),name_measure);
+                    break;
+                }
+            }
+        }
+        
+        if (!found){
+            tagErr(candidate,fp_i,"(fp) This annotation is not in the gold standard.",name_measure);    
+        }
+        
     }
     
     return {"tp":tp,"fp":fp, "fn":fn};
@@ -219,7 +247,7 @@ microF1Measure = function(candidate, gold){
     
     for (var c_i_ in candidate){
         var c_ = candidate[c_i_];
-        var pg = findbyUriDoc(c_["uri"],gold);
+        var pg = findbyUriDoc(c_i_,gold);
         if ( pg!=-1){
             var g_ = gold[pg];
             var ct = contingencyTable(c_,g_,["microF1"]);
@@ -255,10 +283,10 @@ microF1Measure_two_way = function(candidate, gold){
     
     for (var c_i_ in candidate){
         var c_ = candidate[c_i_];
-        var pg = findbyUriDoc(c_["uri"],gold);
+        var pg = findbyUriDoc(c_i_,gold);
         if ( pg!=-1){
             var g_ = gold[pg];
-            var ct = contingencyTable(c_,g_,["microF1Measure_p_rel__r_stc","microF1Measure_p_stc__r_rel"]);
+            var ct = contingencyTable(c_,g_,["microF1_p_rel__r_stc","microF1_p_stc__r_rel"]);
 
             sum_tp_r = sum_tp_r + ct["tp"];
             sum_fp_r = sum_fp_r + ct["fp"];
@@ -278,10 +306,10 @@ microF1Measure_two_way = function(candidate, gold){
     
     for (var c_i_ in candidate){
         var c_ = candidate[c_i_];
-        var pg = findbyUriDoc(c_["uri"],gold);
+        var pg = findbyUriDoc(c_i_,gold);
         if ( pg!=-1){
             var g_ = gold[pg];
-            var ct = contingencyTable_strict(c_,g_,["microF1Measure_p_rel__r_stc","microF1Measure_p_stc__r_rel"]);
+            var ct = contingencyTable_strict(c_,g_,["microF1_p_rel__r_stc","microF1_p_stc__r_rel"]);
             sum_tp_s = sum_tp_s + ct["tp"];
             sum_fp_s = sum_fp_s + ct["fp"];
             sum_fn_s = sum_fn_s + ct["fn"];
@@ -297,13 +325,13 @@ microF1Measure_two_way = function(candidate, gold){
     var f_p_stc__r_rel = harmonicMean(p_s,r_r);
     return [
     
-    {"name":"microF1Measure_p_rel__r_stc",
-            "finals_scores":{1:{"name":"microF1Measure_p_rel__r_stc", "score":parseFloat(f_p_rel__r_stc).toFixed(2)}, 
+    {"name":"microF1_p_rel__r_stc",
+            "finals_scores":{1:{"name":"microF1_p_rel__r_stc", "score":parseFloat(f_p_rel__r_stc).toFixed(2)}, 
                              2:{"name":"microPrecision_relax", "score":parseFloat(p_r).toFixed(2)},
                              3:{"name":"microRecall_strict", "score":parseFloat(r_s).toFixed(2)}
                             }},                            
-    {"name":"microF1Measure_p_stc__r_rel",
-            "finals_scores":{1:{"name":"microF1Measure_p_stc__r_rel", "score":parseFloat(f_p_stc__r_rel).toFixed(2)}, 
+    {"name":"microF1_p_stc__r_rel",
+            "finals_scores":{1:{"name":"microF1_p_stc__r_rel", "score":parseFloat(f_p_stc__r_rel).toFixed(2)}, 
                              2:{"name":"microPrecision_strict", "score":parseFloat(p_s).toFixed(2)},
                              3:{"name":"microRecall_relax", "score":parseFloat(r_r).toFixed(2)}
                             }},
@@ -319,7 +347,7 @@ macroF1Measure = function(candidate, gold){
     
     for (var c_i_ in candidate){
         var c_ = candidate[c_i_];
-        var pg = findbyUriDoc(c_["uri"],gold);
+        var pg = findbyUriDoc(c_i_,gold);
         if ( pg!=-1){
             var g_ = gold[pg];
             var ct = contingencyTable(c_,g_,["macroF1"]);

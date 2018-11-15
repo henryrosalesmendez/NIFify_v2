@@ -5675,6 +5675,7 @@ $(document).ready(function() {
             
             newA["ini"] = parseInt(newA["ini"]);
             newA["fin"] = parseInt(newA["fin"]);
+            newA["idA"] = parseInt(newA["idA"]);
             
             if (ann.hasChildNodes()) {
                 for(var i = 0; i < ann.childNodes.length; i++) {
@@ -5951,29 +5952,31 @@ $(document).ready(function() {
     // _O = {"http://uridoc/doc0":[{ini:0,fin:5,uri:Set(uri1,uri2)}, ....]}
     getUnifiedObject = function(_D,_Sentences,_A,_flag_main){
         var _O = {};
+        var _overall = 0;
         for (var d_i in _D){
             var _d = _D[d_i];
             _O[_d["uri"]] = [];
-            //console.log(["_d:",_d["uri"]]);
+            console.log(".....");
+            console.log(["_d:",_d["uri"],"  overall:",_overall]);
             
-            var _overall = 0;
+            _overall = 0;
             for (var s_i in _Sentences){
                 var _sent = _Sentences[s_i];
                 var _sent_text = _sent["text"];
-                //console.log(["id_sentence:",s_i]); 
+                console.log(["id_sentence:",s_i]); 
                 
                 if (_sent["uridoc"] == _d["uri"]){
                     for (var a_i in _A){
                         _ann = _A[a_i];
                         if (_ann["id_sentence"] == s_i){
-                            //console.log(["ini",_ann["ini"],"  fin:",_ann["fin"],"  ann:",_ann]);
+                            console.log(["ini",_ann["ini"],"  fin:",_ann["fin"],"  ann:",_ann, "  overall:",_overall]);
                             var _o = {};
                             if (_flag_main == true){
                                 _o = {
-                                    "idA":_ann["idA"],
+                                    "idA":parseInt(_ann["idA"]),
                                     "id_sentence" : _ann["id_sentence"],
-                                    "ini": _ann["ini"] - _overall,
-                                    "fin": _ann["fin"] - _overall,
+                                    "ini": parseInt(_ann["ini"]),
+                                    "fin": parseInt(_ann["fin"]),
                                     "uri": new Set()
                                 };
                             }
@@ -5981,8 +5984,8 @@ $(document).ready(function() {
                                 _o = {
                                     "idA":_ann["idA"],
                                     "id_sentence" : _ann["id_sentence"],
-                                    "ini": _ann["ini"],
-                                    "fin": _ann["fin"],
+                                    "ini": parseInt(_ann["ini"]) + _overall,
+                                    "fin": parseInt(_ann["fin"]) + _overall,
                                     "uri": new Set()
                                 };
                             }
@@ -5992,10 +5995,12 @@ $(document).ready(function() {
                             }
                             
                             _O[_d["uri"]].push(_o);
+                            console.log(["---> final  ini:",_o["ini"],"  fin:",_o["fin"]]);
                         }
                     }
+                    _overall = _overall + _sent_text.length + 1;
                 }
-                _overall = _overall + _sent_text.length + 1;
+                
             }
         }
         return _O;
@@ -6037,9 +6042,12 @@ $(document).ready(function() {
     
     
     $("#sys_benckmark").click(function(){
-        G = getUnifiedObject(D,Sentences,A,true);        
+        console.log("---------------G---------------");
+        G = getUnifiedObject(D,Sentences,A,true);      
+        console.log("---------------C---------------");
         C = getUnifiedObject(sysD,sysSentences,sysA,false);
-        
+        console.log(["G:",G]);
+        console.log(["C:",C]);
         //
         $("#benchmark_tabs").html(""); 
         $('.benchmark_content').each(function() {
@@ -6054,11 +6062,11 @@ $(document).ready(function() {
         ];        
         for (var l_i in List_measures){
             var measure = List_measures[l_i];
+            console.log("-----------------------------");
             var L_result = measure["function"](C,G);
             
             for (rr in L_result){
                 var result = L_result[rr];
-                
                 // add tab with this result
                 $("#benchmark_tabs").append('<button class="tablinks" onclick="openTabMeasure(event, \'benchmark_tab_'+result["name"]+'\',\''+result["name"]+'\')">'+result["name"]+'</button>');
                 $("#_benchmark_div").append(wrappen_benchmark_content(result));
@@ -6107,9 +6115,13 @@ $(document).ready(function() {
         for (i in A){
             var ann = A[i];
             var overall = idsentToOverall[ann["id_sentence"]];
-            ann["ini"] = ann["ini"] - overall;
-            ann["fin"] = ann["fin"] - overall;
-            sysA.push(ann);    
+            sysA.push({
+                "ini": ann["ini"] - overall,
+                "fin": ann["fin"] - overall,
+                "idA": ann["idA"],
+                "uri": ann["uri"],
+                "id_sentence" : ann["id_sentence"]
+            });    
         }
         add_all_sysD();
     });
