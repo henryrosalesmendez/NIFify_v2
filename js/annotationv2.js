@@ -1504,61 +1504,30 @@ $(document).ready(function() {
 
    ///---------- select types (Select2) --------------------
 
-   /*$("#taxonomyInput").select2({
-    createSearchChoice:function(term, data) { 
-        if ($(data).filter(function() { 
-            return this.text.localeCompare(term)===0; 
-        }).length===0) 
-        {return {id:term, text:term};} 
-    },
-    multiple: true,
-    //data: [{id: 0, text: 'nerd:Organization'},{id: 1, text: 'dbpo:Company'},{id: 2, text: 'task'}]
-    data:[        
-        {id: 0, text: 'mnt:FullMentionPN'},
-		{id: 1, text: 'mnt:ShortMentionPN'},
-		{id: 2, text: 'mnt:ExtendedMentionPN'},
-		{id: 3, text: 'mnt:AliasPN'},
-        {id: 4, text: 'mnt:NumericTemporalPN'},
-        {id: 5, text: 'mnt:DescriptivePN'},
-        {id: 6, text: 'mnt:PronounPN'},
-		{id: 7, text: 'mnt:SingularNounPoS'},
-		{id: 8, text: 'mnt:PluralNounPoS'},
-		{id: 9, text: 'mnt:AdjectivePoS'},
-		{id: 10, text: 'mnt:VerbPoS'},
-		{id: 11, text: 'mnt:AntecedentR'},
-		{id: 12, text: 'mnt:CoreferenceR'},
-		{id: 13, text: 'mnt:Non-Overlapping'},
-		{id: 14, text: 'mnt:MaximalOverlap'},
-		{id: 15, text: 'mnt:MinimalOverlap'},
-		{id: 16, text: 'mnt:IntermediateOverlap'},
-		{id: 17, text: 'mnt:LiteralR'},
-		{id: 18, text: 'mnt:FigurativeR'},
-		{id: 19,text: 'tax:Ambiguous'},
-    ]
-    });*/
-   
    
    ListTaxonomy = [        
-        {id: 0, text: 'mnt:FullMentionPN'},
-		{id: 1, text: 'mnt:ShortMentionPN'},
-		{id: 2, text: 'mnt:ExtendedMentionPN'},
-		{id: 3, text: 'mnt:AliasPN'},
-        {id: 4, text: 'mnt:NumericTemporalPN'},
-        {id: 5, text: 'mnt:CommonFormPN'},
-        {id: 6, text: 'mnt:Pro-formPN'},
-		{id: 7, text: 'mnt:SingularNounPoS'},
-		{id: 8, text: 'mnt:PluralNounPoS'},
-		{id: 9, text: 'mnt:AdjectivePoS'},
-		{id: 10, text: 'mnt:VerbPoS'},
-		{id: 11, text: 'mnt:AntecedentRf'},
-		{id: 12, text: 'mnt:CoreferenceRf'},
-		{id: 13, text: 'mnt:Non-Overlapping'},
-		{id: 14, text: 'mnt:MaximalOverlap'},
-		{id: 15, text: 'mnt:MinimalOverlap'},
-		{id: 16, text: 'mnt:IntermediateOverlap'},
-		{id: 17, text: 'mnt:LiteralRh'},
-		{id: 18, text: 'mnt:FigurativeRh'},
-		{id: 19,text: 'tax:Ambiguous'},
+        {id: 0,  text: 'mnt:FullMentionPN'},
+        {id: 1,  text: 'mnt:ShortMentionPN'},
+        {id: 2,  text: 'mnt:ExtendedMentionPN'},
+        {id: 3,  text: 'mnt:AliasPN'},
+        {id: 4,  text: 'mnt:NumericTemporalPN'},
+        {id: 5,  text: 'mnt:CommonFormPN'},
+        {id: 6,  text: 'mnt:Pro-formPN'},
+        {id: 7,  text: 'mnt:SingularNounPoS'},
+        {id: 8,  text: 'mnt:PluralNounPoS'},
+        {id: 9,  text: 'mnt:AdjectivePoS'},
+        {id: 10, text: 'mnt:VerbPoS'},
+        {id: 11, text: 'mnt:AdverbPoS'},
+        {id: 12, text: 'mnt:AntecedentRf'},
+        {id: 13, text: 'mnt:CoreferenceRf'},
+        {id: 14, text: 'mnt:NonOverlapping'},
+        {id: 15, text: 'mnt:MaximalOverlap'},
+        {id: 16, text: 'mnt:MinimalOverlap'},
+        {id: 17, text: 'mnt:IntermediateOverlap'},
+        {id: 18, text: 'mnt:LiteralRh'},
+        {id: 19, text: 'mnt:FigurativeRh'},
+        {id: 20, text: 'tax:Ambiguous'},
+        
     ];
     
     tax2id = {
@@ -1573,15 +1542,17 @@ $(document).ready(function() {
         'mnt:PluralNounPoS'     :8,
         'mnt:AdjectivePoS'      :9,
         'mnt:VerbPoS'           :10,
-        'mnt:AntecedentRf'       :11,
-        'mnt:CoreferenceRf'      :12,
-        'mnt:Non-Overlapping'   :13,
-        'mnt:MaximalOverlap'    :14,
-        'mnt:MinimalOverlap'    :15,
-        'mnt:IntermediateOverlap':16,
-        'mnt:LiteralRh'          :17,
-        'mnt:FigurativeRh'       :18,
-        'tax:Ambiguous'         :19,
+        'mnt:AdverbPoS'         :11,
+        'mnt:AntecedentRf'       :12,
+        'mnt:CoreferenceRf'      :13,
+        //'mnt:Non-Overlapping'   :14,
+        'mnt:NonOverlapping'    :14,
+        'mnt:MaximalOverlap'    :15,
+        'mnt:MinimalOverlap'    :16,
+        'mnt:IntermediateOverlap':17,
+        'mnt:LiteralRh'          :18,
+        'mnt:FigurativeRh'       :19,
+        'tax:Ambiguous'         :20,
     }
    
    
@@ -3552,7 +3523,7 @@ $(document).ready(function() {
                                 "fin":fin, 
                                 "uri":["https://en.wikipedia.org/wiki/NotInLexico"], 
                                 "id_sentence": ids,
-                                "tag": ["mnt:Pro-formPN", plurality, "mnt:CoreferenceRf", "mnt:Non-Overlapping", "mnt:LiteralRh","tax:Ambiguous"],
+                                "tag": ["mnt:Pro-formPN", plurality, "mnt:CoreferenceRf", "mnt:NonOverlapping", "mnt:LiteralRh","tax:Ambiguous"],
                                 "uridoc":doc["uri"],
                                 //"uridoc": Sentences[ids]["uridoc"],
                                 "label":t
@@ -3736,7 +3707,7 @@ $(document).ready(function() {
                         "fin":p_n["fin"],//fin, 
                         "uri":["https://en.wikipedia.org/wiki/"+p_n["label"]],//NotInLexico"], 
                         "id_sentence": ids,
-                        "tag": ["mnt:NumericTemporalPN", plurality, "mnt:AntecedentRf", "mnt:Non-Overlapping", "mnt:LiteralRh","tax:Ambiguous"],
+                        "tag": ["mnt:NumericTemporalPN", plurality, "mnt:AntecedentRf", "mnt:NonOverlapping", "mnt:LiteralRh","tax:Ambiguous"],
                         "uridoc":doc["uri"],
                         //"uridoc": Sentences[ids]["uridoc"],
                         "label":p_n["label"]
@@ -4960,7 +4931,7 @@ $(document).ready(function() {
         valid_overlap_tag = function(i){
             var ann = A[i];
             //console.log(["ann:",ann]);
-            if (ann == undefined){return "mnt:Non-Overlapping";}
+            if (ann == undefined){return "mnt:NonOverlapping";}
             
             var ini = ann["ini"];
             var fin = ann["fin"];
@@ -4971,7 +4942,7 @@ $(document).ready(function() {
             var b_ext = _result[1];
             var b_int = _result[2];
             
-            if (b_there_are_overlaps == false){return "mnt:Non-Overlapping";}
+            if (b_there_are_overlaps == false){return "mnt:NonOverlapping";}
             if (b_ext == true && b_int == false){return 'mnt:MinimalOverlap';}
             if (b_int == true && b_ext == false){return 'mnt:MaximalOverlap';}
             return 'mnt:IntermediateOverlap';
@@ -4979,7 +4950,7 @@ $(document).ready(function() {
 
 
     //--
-    tagOverlapList = ["mnt:Non-Overlapping","mnt:MinimalOverlap","mnt:MaximalOverlap","mnt:IntermediateOverlap"];
+    tagOverlapList = ["mnt:NonOverlapping","mnt:MinimalOverlap","mnt:MaximalOverlap","mnt:IntermediateOverlap"];
     valid_CheckOverlaps = function(_idv){
         var count_errors = 0;
         for (a_i in A){
