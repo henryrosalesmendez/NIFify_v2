@@ -5093,23 +5093,41 @@ $(document).ready(function() {
         for (a_i in A){
             var ann_ = A[a_i];
             var sent = Sentences[ann_["id_sentence"]]["text"];
+            if (sent_id == -1){
+                sent_id = ann_["id_sentence"];
+                sent_old = sent.length + 1;
+            }
             
             if (ann_["uridoc"] != uridoc){
                 uridoc = ann_["uridoc"];
-                sent_old = 0;
-                sent_id = ann_["id_sentence"];
+                if (overall != 0){
+                    sent_old = 0;
+                    overall = 0;   
+                }
             }
             
             if (sent_id!=ann_["id_sentence"]){
+                //--- checking missing sent
+                if (parseInt(sent_id) +1 != parseInt(ann_["id_sentence"])){
+                    for (var ik = parseInt(sent_id) +1; ik<parseInt(ann_["id_sentence"]);ik++){
+                        overall = overall + Sentences[ik]["text"].length +1;
+                    }
+                }
+                
+                
+                //---
                 overall = overall + sent_old;
                 sent_old = sent.length + 1;
                 sent_id = ann_["id_sentence"];
+                uridoc = ann_["uridoc"];
             }
             
+            //console.log([ann_["id_sentence"],"--> sent:",sent]);
+            //console.log(["overall:",overall, " ann_[ini]:",ann_["ini"],"  ann_[fin]:",ann_["fin"]]);
             var subsent = sent.substring(parseInt(ann_["ini"])-overall, parseInt(ann_["fin"])-overall);
             
             if (ann_["label"] != subsent){
-                console.log(["ann:",ann_["label"],"   sent:",subsent]);
+                //console.log(["==> ann:",ann_["label"],"   sent:",subsent]);
                 count_errors = count_errors +1;
                 var msg = "Mention <i>"+ann_["label"]+"</i> does not match with the corresponding substring in the text (<i>"+subsent+"</i>)";
 
