@@ -408,6 +408,17 @@ $(document).ready(function() {
         return -1;
     }
     
+    uridoc2id_2 = function(A,uridoc){
+        for (d in A){
+            doc = A[d];
+            if (doc["uri"] == uridoc || doc["urisent"] == uridoc){
+                var _inDocCounter = doc["inDocCounter"];
+                return _inDocCounter;
+            }
+        }
+        return -1;
+    }
+    
     
     urisent2id = function(A,uris){
         for (a_i in A){
@@ -1748,6 +1759,7 @@ $(document).ready(function() {
         //console.log(["p:",p,p != -1,p<text.lenth,text.length]);
         tt = "";
         p = p -1;
+        TT = [];
         //console.log("dentro");
         while (p<text.length){
             p = p +1;
@@ -1836,7 +1848,9 @@ $(document).ready(function() {
                     tt = tt + ch;
                 }
                 else {
-                    return [p,tt];
+                    //return [p,tt]; consume until < , . ;
+                    TT.push(tt);
+                    state = 110;
                 }
             }
             else if (state == 20){
@@ -1844,7 +1858,23 @@ $(document).ready(function() {
                     tt = tt + ch;
                 }
                 else {
-                    return [p,tt];
+                    return [p,[tt]];
+                }
+            }
+            else if (state == 110){
+                if (ch == ","){
+                    tt = "";
+                    state = 0;
+                }
+                else if (ch == ";" || ch == "."){
+                    return [p,TT];
+                }
+                else if (ch == " " || ch== "\n" || ch=="\t"){
+                    //nothing;
+                }
+                else {
+                    console.log("FALSE");
+                    return false;
                 }
             }
         }
@@ -1852,6 +1882,8 @@ $(document).ready(function() {
         //console.log("nada?");
         return false;
     }
+    
+    
     
     parseURI = function(text){
         var p = -1;
@@ -1946,10 +1978,11 @@ $(document).ready(function() {
     _inDocCounter = 0;
     _inSentenceIni= 0;
     reading_sentence = function(chunk){
-        //console.log(";)");
+        //console.log(chunk);
         var p_isString = chunk.indexOf("nif:isString");
         if (p_isString == -1){
-            console.log("--->> Error, there musts be a nif:isString triple (start)");
+            console.log("---> Error, there musts be a nif:isString triple (start) :(");
+            console.log(chunk);
             return false;
         }
         //console.log("B)");
@@ -1959,6 +1992,14 @@ $(document).ready(function() {
         var sent_text = parser_NIF(chunk,"nif:isString")[1];
         //console.log(":P");
         var rr = parseURI(chunk);
+        //console.log(".........................");
+        //console.log(rr)
+        
+        if (rr == undefined){
+            console.log("-->  undefined");
+            console.log(chunk);
+            return false;
+        }
         var _uridoc = rr[0];
         var _urisent = rr[1]; if (_urisent == ""){_urisent = _uridoc;}
         var _ini = rr[2]; if (_ini == ""){_ini = _inSentenceIni; _inSentenceIni = _inSentenceIni +1;}
@@ -1966,39 +2007,45 @@ $(document).ready(function() {
         //console.log(["rr",rr,"uridoc:",_uridoc]);
         //console.log(["Sentences:",Sentences]);
         //console.log(["_urisent:",_urisent]);
-        
+        //console.log(["-->",_urisent]);
+        //console.log("---");
         
         //
         if (uridoc2id(D,_uridoc) == -1){            
             D.push({"uri":_uridoc, "inDocCounter":_inDocCounter});
             dicc_uri2inDocCounter[_uridoc] = _inDocCounter;
             _inDocCounter = _inDocCounter +1;
-        }  
+        }
         
         
         //
         var p_sent = urisent2id(Sentences,_urisent);
+        //console.log(["p_sent:",p_sent]);
         if (p_sent == -1){
             var sent = {"text":sent_text, "uridoc":_uridoc, "id_sent":_urisent, "ini":parseInt(_ini), "fin":parseInt(_fin)};
             Sentences.push(sent);
-            //console.log(":(");
+            //console.log(";)");
+            //console.log(sent);
             return sent;
-        }
-        
+        }        
         else if (Sentences[p_sent]["text"] == undefined){
             //console.log(["--text:",sent_text]);
             Sentences[p_sent]["text"] = sent_text;
             Sentences[p_sent]["ini"] = parseInt(_ini);
             Sentences[p_sent]["fin"] = parseInt(_fin);
+            //console.log(":(");
+            //console.log(Sentences[p_sent]);
         }
         //console.log("xD");
         //console.log(["p_sent:",p_sent,"   Sentences[p_sent]:",Sentences[p_sent]]);
         return Sentences[p_sent];
     }
     
-    
+    hasContentSentence2doc = []; // dbs that contains nif:hasContext identifiers
+    dictHasContentSentence2doc = {};
     $("#btn_inputNIF").click(function(){   // que no necesite estar ordenado el fichero
         //$(".parent_div_show").remove();
+        hasContentSentence2doc = [];
         CleanAnnotationDocument();
         var text = undefined;
         if (textFromUpload == undefined){
@@ -2034,6 +2081,9 @@ $(document).ready(function() {
             }
             else { //end of the chunk
                 chunk = chunk + l;
+                //console.log("---------------------");
+                //console.log(chunk);
+                //console.log(".....................");
                 
                 if (chunk.indexOf("@prefix")!=-1){
                     chunk = "";
@@ -2046,13 +2096,55 @@ $(document).ready(function() {
                 
                 if (chunk.indexOf("nif:sourceUrl")!=-1){ // Document
                     //console.log("--> DOC");
+                    
+                    // Some dbs spot the labels from documents
+                    var rr = parseURI(chunk);                    
+                    if (rr != undefined){
+                        var _uridoc = rr[0];
+                        var _urisent = rr[1];
+                        
+                        var text_ = parser_NIF(chunk,"nif:isString");
+                        //console.log(["text_:",text_]);
+                        if (text_!=false){                            
+                            if (uridoc2id(D,_uridoc) == -1){            
+                                D.push({"uri":_uridoc, "urisent":_urisent, "inDocCounter":_inDocCounter, "text":text_[1]});
+                                //console.log(["->",{"uri":_uridoc, "inDocCounter":_inDocCounter, "text":text_[1]}]);
+                                dicc_uri2inDocCounter[_uridoc] = _inDocCounter;
+                                _inDocCounter = _inDocCounter +1;
+                            }                            
+                        }
+                    }
+                    
+                    //--
                     chunk = "";
                     continue;
                 }
+                else if (chunk.indexOf("nif:ContextCollection")!=-1) {
+                    /*
+                    //console.log("=============================");
+                    var iddoc = parseURI(chunk);
+                    //console.log("iddoc:",iddoc);
+                    if (iddoc != false && iddoc != undefined){
+                        iddoc = iddoc[0];
+                        var uri = parser_NIF(chunk,"nif:hasContext");
+                        console.log(["OJOO===> uri:",uri]);
+                        var r_text = chunk.substring(uri[0],chunk.length);
+                        while(uri != false){
+                            for (ui in uri[1]){
+                                var u = uri[1][ui];
+                                //console.log(["u:",u]);
+                                hasContentSentence2doc.push({"idoc":iddoc, "isent":u}); 
+                                dictHasContentSentence2doc[u] = iddoc;
+                            }
+                            
+                            uri = parser_NIF(r_text,"nif:hasContext");
+                            r_text = r_text.substring(uri[0],r_text.length);
+                        }
+                    }
+                    */
+                }
                 else if (p_ref!=-1  || p_bro!=-1 ){  // it is a Setence or an Annotation (nif:Phrase)
-                    
-                    if (chunk.indexOf("nif:Phrase")!=-1){  // It's an Annotation
-                        
+                    if (chunk.indexOf("nif:Phrase")!=-1 || chunk.indexOf("anchorOf")!=-1){  // It's an Annotation
                         // quizas luego se puede hacer algo de ver si es la sentenia anterior no vlver a buscar
                         var rr = parseURI(chunk);
                         var _uridoc = rr[0];
@@ -2062,7 +2154,7 @@ $(document).ready(function() {
                         
                         
                         // if the sentences appear in the annotation or not
-                        var urisent = parser_NIF(chunk,"nif:referenceContext")[1];
+                        var urisent = parser_NIF(chunk,"nif:referenceContext")[1][0];
                         if (urisent == false){
                             // get the uri of the document
                             urisent = _uridoc;
@@ -2081,15 +2173,29 @@ $(document).ready(function() {
                             addToValidLoad("Differences in the positions ("+startPosition+","+endPosition+") with the specified in the nif:Phrase "+_uriann);
                         }
                         
+                        //console.log("------------------------");
+                        //console.log(label);
                         var label = parser_NIF(chunk,"nif:anchorOf")[1];
                         var list_uri = [];
                         var uri = parser_NIF(chunk,"itsrdf:taIdentRef");
+                        //console.log(["--> uri:",uri]);
                         var r_text = chunk.substring(uri[0],chunk.length);
                         while(uri != false){
-                            list_uri.push(uri[1]);
-                            if (uri[1].indexOf("mnt:entityType")!=-1){
+                            var mntentitytype = false;
+                            for (ui in uri[1]){
+                                var u = uri[1][ui];
+                                //console.log(["u:",u]);
+                                list_uri.push(u);
+                                if (u.indexOf("mnt:entityType")!=-1){
+                                    mntentitytype = true;
+                                    break;
+                                }    
+                            }
+                            
+                            if (mntentitytype == true){
                                 break;
                             }
+                            
                             uri = parser_NIF(r_text,"itsrdf:taIdentRef");
                             r_text = r_text.substring(uri[0],r_text.length);
                         }
@@ -2136,7 +2242,9 @@ $(document).ready(function() {
                     else{ // it's  Sentence
                         //console.log("--> SENT");
                         if (reading_sentence(chunk) == false){
-                            return false;                        
+                            //return false;
+                            console.log("continuing..");
+                            //continue;
                         }
                     }
                 }
@@ -2156,8 +2264,9 @@ $(document).ready(function() {
                     if (chunk.indexOf("@prefix")==-1){
                         // sentence               
                         if (reading_sentence(chunk) == false){
-                            return false;                        
-                        }                      
+                            //continue;
+                            //return false;                        
+                        }           
                     }
                 }
                 chunk = "";
@@ -2165,6 +2274,15 @@ $(document).ready(function() {
         }
 
         // Display the sentences in the text area
+        
+
+       // enable/disable buttons
+        $("#divShow").removeClass("hide");
+
+        //fitContextCollection();
+        sortValues_Sentences_A();
+        
+        
         var text = "";
         for (i in Sentences){
             s = Sentences[i]["text"];
@@ -2172,14 +2290,81 @@ $(document).ready(function() {
         }
         n = text.length;
         $("#inDoc").val(text);
-
-       // enable/disable buttons
-        $("#divShow").removeClass("hide");
-
-        sortValues_Sentences_A();
+        
+        
        //Update show-divs
        buildNIFCorpora();     
     });
+    
+   
+    
+    fitContextCollection = function(){
+
+        // 
+        var sDoc = {};
+        
+        //
+        for (idc in D){
+            var doc = D[idc];
+            sDoc[doc["uri"]] = 1; // just to search easy after
+        }
+        //console.log(sDoc);
+        
+        // Here I'm going to include in the same document all the sentences gathered with nif:hasContext
+        for (v_i in hasContentSentence2doc){
+            var v = hasContentSentence2doc[v_i];
+            
+            iddoc = v["idoc"];
+            idsent = v["isent"];
+            
+            if (!(iddoc in sDoc)){
+                D.push({"uri":iddoc, "inDocCounter":_inDocCounter});
+                _inDocCounter = _inDocCounter + 1;
+                sDoc[iddoc] = 1;
+                //console.log(["adding",iddoc]);
+            } 
+            
+        }
+        
+        //console.log(dictHasContentSentence2doc);
+        // Delete isolate documents from sDoc
+        //
+        //  (1) first, Im going to keep only the isolated documents in sDoc
+        for (s_i in Sentences){
+            var s = Sentences[s_i];
+            var idsent = s["id_sent"];
+            //console.log(idsent);
+            
+            if (idsent in dictHasContentSentence2doc){
+                var newuridoc = dictHasContentSentence2doc[idsent];
+                //console.log(["newuridoc:",newuridoc]);
+                Sentences[s_i]["uridoc"] = newuridoc;
+                if (newuridoc in sDoc){
+                    delete sDoc[newuridoc];
+                }
+                //console.log(["deleting 1",idsent]);
+            }
+            else if (s["uridoc"] in sDoc){
+                delete sDoc[s["uridoc"]];
+                //console.log(["deleting 2",idsent]);
+            }
+        }
+        
+        // (2) second, I delete those document that are in sDoc
+        for (du_i in sDoc){
+            for (d_i in D){
+                if (D[d_i]["uri"] == du_i){
+                    D.splice(d_i,1);
+                    break;
+                }
+            }
+        }
+        
+        // reenumerate docs
+        for (d_i in D){
+            D[d_i]["inDocCounter"] = parseInt(d_i)+1;
+        } 
+    }
     
     
     sortSentencesOfDoc = function(index){
@@ -2279,7 +2464,9 @@ $(document).ready(function() {
     
     
     sortValues_Sentences_A = function(){
+        
         // searching for sentences without definition
+        var findingS = {}; // just for search
         var toDel = [];
         for (var ind_s in Sentences){
             var sent_ind = Sentences[ind_s];
@@ -2287,12 +2474,67 @@ $(document).ready(function() {
                 addToValidLoad("Error loading sentence <i>"+sent_ind["id_sent"]+"</i> from document <i>"+sent_ind["uridoc"]+"</i>.");
                 toDel.unshift(ind_s);
             }
+            else{
+                findingS[sent_ind["id_sent"]] = 1;
+                //console.log(sent_ind["id_sent"]);
+            }
         }
         
+        //
         for (del_i in toDel){
            Sentences.splice(toDel[del_i],1); 
         }
         
+        
+        // finding missing sentences (sentences as documents)
+        //console.log("Begining......");
+        //console.log(findingS);
+        for (aa_i in A){
+            var aa = A[aa_i];
+            var ids = aa["urisent"];
+            //console.log("-----");
+            //console.log(["aa_i:",aa_i]);
+            //console.log(["aa:",aa]);
+            //console.log(aa["urisent"]);
+            
+            if (!(ids in findingS)){
+                var pdoc = uridoc2id_2(D,ids);
+                
+                //console.log(["ids:",ids]);
+                //urisent2id(Sentences,urisent);
+                //console.log(["pdoc:",pdoc]);
+                if (pdoc != -1){
+                    
+                    if (!("text" in D[pdoc])){
+                        console.log("Should have a text filed");
+                    }
+                    else {
+                        var ntext = D[pdoc]["text"].length;
+                        var _uridoc = D[pdoc]["uri"];
+                        var _urisent = D[pdoc]["uri"];
+                        if (_uridoc.indexOf("#")==-1){
+                            _urisent = _uridoc + "#char=0," + ntext.toString();
+                            
+                            // change all idsent in all the  annotations of this sentence
+                            for (bb_i in A){
+                                if (A[bb_i]["urisent"] == ids){
+                                    A[bb_i]["urisent"] = _urisent;
+                                }                            
+                            }
+                        }
+                        else {
+                            _uridoc = _uridoc.split("#")[0];
+                            D[pdoc]["uri"] = _uridoc;
+                        }
+                        
+                        var sent = {"text":D[pdoc]["text"], "uridoc":_uridoc, "id_sent":_urisent, "ini":0, "fin":ntext};
+                        Sentences.push(sent);
+                        findingS[_urisent] = 1;
+                    }
+                }
+            }
+        }
+         
         
         
         // sorting sentences
@@ -2303,7 +2545,8 @@ $(document).ready(function() {
                 temp_Sentences.push(oS[oi]);
             }
         }
-        Sentences = temp_Sentences;        
+        
+        Sentences = temp_Sentences;
         
         // sorting annotations
         for (_j in A){
