@@ -4783,7 +4783,7 @@ $(document).ready(function() {
         "name":"Surface form checker",
         "date":"-",
         "time":"-",
-        "description":"We check here if the label of the annotations match with their correspondig sbstrings.",
+        "description":"(Format Error Type 2) We check here if the label of the annotations match with their correspondig substrings.",
         "number_errors":"-",
         "errors":[],
         "type":"static"
@@ -5319,8 +5319,54 @@ $(document).ready(function() {
     
     
     //--
-    valid_CheckSpelling = function(idv){
-        alert("Not Yet xD");
+    valid_spelling = function(a_index){
+        var _ann = A[a_index];    
+        //var text = Sentences[_ann["id_sentence"]]["text"]+".";
+        var text = id2text(D[uridoc2id(D,_ann["uridoc"])]["inDocCounter"])+".";
+        
+        Dir = [parseInt(_ann["ini"])-1/* looking before*/,  parseInt(_ann["fin"])/* looking after*/];
+        for (d_i in Dir){
+            var d = Dir[d_i];
+            if (d<0){continue;}
+            //console.log(["text:",text]);
+            //console.log(["label:",_ann["label"]," dir:",d," char:",text[d]]);
+            if ("\\'\".:,;-_¿?~·@¬<>!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°".indexOf(text[d]) == -1){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    //-- HERE Im
+    valid_CheckSpelling = function(_idv){
+        var count_errors = 0;
+        for (a_i in A){
+            var ann_ = A[a_i];
+            var correctSpelling = valid_spelling(a_i);
+            
+            if (correctSpelling != false){
+                count_errors = count_errors +1;
+                V[_idv]["errors"].push({
+                    "status":"uncorrected",
+                    "position": count_errors,
+                    "idA" : a_i,
+                    "uridoc": ann_["uridoc"],
+                    "label":ann_["label"],
+                    "id_sentence": ann_["id_sentence"],
+                    "error_detail": "Mention <i>"+ann_["label"]+"</i> is a substring of other word",
+                });
+            }
+        } 
+        
+        //updating main table
+        V[_idv]["number_errors"] = count_errors;
+        V[_idv]["time"]= new Date().toLocaleTimeString();
+        V[_idv]["date"]= new Date().toLocaleDateString();
+        updateMainTableValidation();
+        
+        //displaying the content
+        valid_idvToShow = _idv;
+        valid_showContent();
     }
     
     
@@ -5410,6 +5456,8 @@ $(document).ready(function() {
         //console.log(["sent:",sent]);
         //console.log(["uridoc:",uridoc,"   uridoc2id(uridoc)",uridoc2id(D,uridoc)]);
         var txt = id2text(uridoc2id(D,uridoc));
+        console.log(["uridoc:",uridoc]);
+        console.log(["txt:",txt]);
         var overall = txt.indexOf(sent);
         for (j in SentencesAnnotations){                     
                 var index = parseInt(j);
