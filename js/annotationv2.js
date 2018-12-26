@@ -5382,27 +5382,43 @@ $(document).ready(function() {
         for (a_i in A){
             var ann_ = A[a_i];
             var sent = Sentences[ann_["id_sentence"]]["text"];
-            if (sent_id == -1){
-                sent_id = ann_["id_sentence"];
-                sent_old = sent.length + 1;
+            
+            if (ann_["label"]=="Santa Baby"){
+                var a = 1;
             }
             
+            var bnewdoc = false;
             if (ann_["uridoc"] != uridoc){
+                bnewdoc = true;
                 uridoc = ann_["uridoc"];
-                if (overall != 0){
-                    sent_old = 0;
-                    overall = 0;   
+
+                overall = 0; 
+                sent_old = sent.length + 1;
+                
+                // first sentence in this doc
+                var id_sent_temp = 0;
+                for (var iy in Sentences){
+                    if (Sentences[iy]["uridoc"] == uridoc){
+                        id_sent_temp = iy;
+                        break;
+                    }
                 }
+                
+                if (parseInt(id_sent_temp)!=parseInt(ann_["id_sentence"])){                    
+                    for (var ik = parseInt(id_sent_temp); ik<parseInt(ann_["id_sentence"]);ik++){
+                        overall = overall + Sentences[ik]["text"].length +1;
+                    }   
+                }
+                sent_id = ann_["id_sentence"];
             }
             
             if (sent_id!=ann_["id_sentence"]){
                 //--- checking missing sent
-                if (parseInt(sent_id) +1 != parseInt(ann_["id_sentence"])){
+                if  (parseInt(sent_id) +1 != parseInt(ann_["id_sentence"])){
                     for (var ik = parseInt(sent_id) +1; ik<parseInt(ann_["id_sentence"]);ik++){
                         overall = overall + Sentences[ik]["text"].length +1;
                     }
                 }
-                
                 
                 //---
                 overall = overall + sent_old;
@@ -5412,7 +5428,7 @@ $(document).ready(function() {
             }
             
             //console.log([ann_["id_sentence"],"--> sent:",sent]);
-            //console.log(["overall:",overall, " ann_[ini]:",ann_["ini"],"  ann_[fin]:",ann_["fin"]]);
+            //console.log(["overall:",overall, " ann_[ini]:",ann_["ini"],"  ann_[fin]:",ann_["fin"]]);                
             var subsent = sent.substring(parseInt(ann_["ini"])-overall, parseInt(ann_["fin"])-overall);
             
             if (ann_["label"] != subsent){
@@ -5456,8 +5472,8 @@ $(document).ready(function() {
         //console.log(["sent:",sent]);
         //console.log(["uridoc:",uridoc,"   uridoc2id(uridoc)",uridoc2id(D,uridoc)]);
         var txt = id2text(uridoc2id(D,uridoc));
-        console.log(["uridoc:",uridoc]);
-        console.log(["txt:",txt]);
+        //console.log(["uridoc:",uridoc]);
+        //console.log(["txt:",txt]);
         var overall = txt.indexOf(sent);
         for (j in SentencesAnnotations){                     
                 var index = parseInt(j);
