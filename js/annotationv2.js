@@ -799,11 +799,11 @@ $(document).ready(function() {
     onkeyup_check = function(e){
       var charCode = (typeof e.which == "number")? e.which : e.keyCode;
       if (charCode == 65){
-          console.log(";)");
+          //console.log(";)");
           var _id = document.activeElement.id;
-          console.log(_id);
+          //console.log(_id);
           var _inDocCounter=_id.substring(5,_id.length);
-          console.log(_inDocCounter);
+          //console.log(_inDocCounter);
           $("#btn_3_annotation"+_inDocCounter).click();
       }
     }
@@ -829,6 +829,7 @@ $(document).ready(function() {
                    }
                }
            }
+           text = replaceAll(text,"\n"," ");
            /////$("#inDoc"+inDocCounter).val(text);
            //$("#inDoc"+inDocCounter).html(text);
            
@@ -2823,6 +2824,7 @@ $(document).ready(function() {
             if (lastDoc != "" && lastDoc!=Sentences[i]["uridoc"]){
                 inDocCounter = uri2inDocCounter(lastDoc);
                 //console.log("1-->"+inDocCounter);
+                //text = replaceAll(text,"\n"," ");
                 $("#inDoc"+inDocCounter).val(text);
                 text = "";
             }
@@ -2835,6 +2837,7 @@ $(document).ready(function() {
         /////$("#inDoc").val(text);
         inDocCounter = uri2inDocCounter(lastDoc);
         //console.log("2-->"+inDocCounter);
+        //text = replaceAll(text,"\n"," ");
         $("#inDoc"+inDocCounter).val(text);
     }
     
