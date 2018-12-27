@@ -1802,9 +1802,10 @@ $(document).ready(function() {
         var p = 0;
         if (tag!=false){
             p = text.indexOf(tag);
+            //console.log(p);
             if (p == -1) {return false;} 
         }
-        //console.log(["p:",p,p != -1,p<text.lenth,text.length]);
+
         tt = "";
         p = p -1;
         TT = [];
@@ -1829,12 +1830,15 @@ $(document).ready(function() {
                 if (ch == '"'){
                     state = 3;
                 }
+                else if (ch == '\\'){
+                    state = 6;
+                }
                 else{
                     tt = tt + ch;
                     state = 2; // simple
                 }
             }
-            else if (state == 2){ // consume until simple
+            else if (state == 2){ // consume until simple 
                 if (ch == '"'){
                     return [p,tt];
                 }
@@ -1927,7 +1931,6 @@ $(document).ready(function() {
             }
         }
 
-        //console.log("nada?");
         return false;
     }
     
@@ -5382,16 +5385,16 @@ $(document).ready(function() {
         for (d_i in Dir){
             var d = Dir[d_i];
             if (d<0){continue;}
-            if (("\\'\".:,;-_¿?~·@¬<>»«!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°".indexOf(text[d]) == -1)){
+            /*if (("\\'\".:,;-_¿?~·@¬<>»«!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°–".indexOf(text[d]) == -1)){
                 console.log("-----------");
                 console.log(["text:",text]);
                 console.log(["label:",_ann["label"]," dir:",d," char:",text[d]]);                
                 console.log(text[d]==" ");
                 console.log(["ord( ):"," ".charCodeAt(0)]);
                 console.log(["ord(ch):",text[d].charCodeAt(0)]);
-            }
+            }*/
             
-            var NoLetter = "\\'\".:,;-_¿?~·@¬<>»«!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°";
+            var NoLetter = "\\'\".:,;-_¿?~·@¬<>»«!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°–";
             NoLetter = NoLetter + String.fromCharCode(160);
             if (NoLetter.indexOf(text[d]) == -1){
                 return true;
