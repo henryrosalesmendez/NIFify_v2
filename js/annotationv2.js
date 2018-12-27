@@ -432,7 +432,27 @@ $(document).ready(function() {
 
 
     id2text = function(_inDocCounter){
-        var text = $("#inDoc"+_inDocCounter).val();
+        //var text = $("#inDoc"+_inDocCounter).val();
+        var ppos = -1;
+        for (pi in D){
+            if (D[pi]["inDocCounter"] == _inDocCounter){
+                ppos = pi;
+                break;
+            }
+        }
+        
+        if (ppos == -1){
+            console.log("Big Error here");
+            return "";
+        }
+        
+        var text = "";
+        for (var io in Sentences){
+            if (Sentences[io]["uridoc"] == D[ppos]["uri"]){
+                if (text != ""){text = text + "\n";}
+                text = text + Sentences[io]["text"];
+            }
+        }
         return text;
     }
     
@@ -782,7 +802,10 @@ $(document).ready(function() {
        S = text.split("\n");
        for (i in S){
            sent = S[i];
-           Sentences.push({"text":sent, "uridoc":urldoc});
+           if (sent.trim() != ""){
+               Sentences.push({"text":sent, "uridoc":urldoc});
+           }
+           
        }
        n = text.length;
        
@@ -807,6 +830,26 @@ $(document).ready(function() {
           $("#btn_3_annotation"+_inDocCounter).click();
       }
     }
+    
+    
+    replaceFirstCharactersNLbySpace = function(text){
+        var t = "";
+        var notYet = true;
+        for (ti=0; ti<text.length; ti++){            
+            var ch = text[ti];
+            //console.log(ch);
+            if (notYet==true && ch == "\n"){
+                //t = t + "&nbsp;";
+                t = t + " ";
+            }
+            else {
+                notYet = false;
+                t = t + ch;
+            }
+        }
+        //console.log(["t:",t]);
+        return t;
+    }
 
 
     // crea el NIF del documento: header y context
@@ -829,7 +872,10 @@ $(document).ready(function() {
                    }
                }
            }
-           text = replaceAll(text,"\n"," ");
+           //console.log(["text:",text]);
+           text = replaceFirstCharactersNLbySpace(text);
+           //console.log(["-->",text]);
+           //text = replaceAll(text,"\n","<br>");
            /////$("#inDoc"+inDocCounter).val(text);
            //$("#inDoc"+inDocCounter).html(text);
            
@@ -1264,7 +1310,8 @@ $(document).ready(function() {
         var urldoc = doc["uri"];
 
         var res = "";
-        var text = $("#inDoc"+inDocCounter).val();
+        //var text = $("#inDoc"+inDocCounter).val();
+        var text = id2text(inDocCounter);
         text = replaceAll(text,"\n"," ");
         /////var urldoc = $("#inIdDoc").val();
         ///if (!urldoc){
@@ -3121,7 +3168,8 @@ $(document).ready(function() {
      for (d in D){
       doc = D[d];
       _inDocCounter = doc["inDocCounter"];
-      var text = $("#inDoc"+_inDocCounter).val();
+      ////var text = $("#inDoc"+_inDocCounter).val();
+      var text = id2text(_inDocCounter);
       //console.log(text)
       
       for(i in Dictionary){
@@ -3742,7 +3790,8 @@ $(document).ready(function() {
         for (d in D){
             doc = D[d];
             _inDocCounter = doc["inDocCounter"];
-            var text = $("#inDoc"+_inDocCounter).val();
+            //////var text = $("#inDoc"+_inDocCounter).val();
+            var text = id2text(_inDocCounter);
             //console.log(text)
             
             for(i in both){
@@ -3934,7 +3983,8 @@ $(document).ready(function() {
         for (d in D){
             doc = D[d];
             _inDocCounter = doc["inDocCounter"];
-            var text = $("#inDoc"+_inDocCounter).val();
+            /////var text = $("#inDoc"+_inDocCounter).val();
+            var text = id2text(_inDocCounter);
             
             
             while ((match = re.exec(text)) != null) {
@@ -5332,9 +5382,18 @@ $(document).ready(function() {
         for (d_i in Dir){
             var d = Dir[d_i];
             if (d<0){continue;}
-            //console.log(["text:",text]);
-            //console.log(["label:",_ann["label"]," dir:",d," char:",text[d]]);
-            if ("\\'\".:,;-_¿?~·@¬<>!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°".indexOf(text[d]) == -1){
+            if (("\\'\".:,;-_¿?~·@¬<>»«!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°".indexOf(text[d]) == -1)){
+                console.log("-----------");
+                console.log(["text:",text]);
+                console.log(["label:",_ann["label"]," dir:",d," char:",text[d]]);                
+                console.log(text[d]==" ");
+                console.log(["ord( ):"," ".charCodeAt(0)]);
+                console.log(["ord(ch):",text[d].charCodeAt(0)]);
+            }
+            
+            var NoLetter = "\\'\".:,;-_¿?~·@¬<>»«!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°";
+            NoLetter = NoLetter + String.fromCharCode(160);
+            if (NoLetter.indexOf(text[d]) == -1){
                 return true;
             }
         }
