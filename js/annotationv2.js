@@ -5385,18 +5385,19 @@ $(document).ready(function() {
         for (d_i in Dir){
             var d = Dir[d_i];
             if (d<0){continue;}
-            /*if (("\\'\".:,;-_¿?~·@¬<>»«!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°–".indexOf(text[d]) == -1)){
+            if (("\\'\".:,;-_¿?~·@¬<>»«!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°–".indexOf(text[d]) == -1)){
                 console.log("-----------");
                 console.log(["text:",text]);
                 console.log(["label:",_ann["label"]," dir:",d," char:",text[d]]);                
                 console.log(text[d]==" ");
                 console.log(["ord( ):"," ".charCodeAt(0)]);
                 console.log(["ord(ch):",text[d].charCodeAt(0)]);
-            }*/
+            }
             
-            var NoLetter = "\\'\".:,;-_¿?~·@¬<>»«!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°–";
-            NoLetter = NoLetter + String.fromCharCode(160);
-            if (NoLetter.indexOf(text[d]) == -1){
+            var NoLetter = "\\'\".:,;-_¿?~·@¬<>»«!¡`“”’/'‘ \n\t*+}]{[^=#$%&()|°–„“";
+            // Adding weird characters
+            NoLetter = NoLetter + String.fromCharCode(160) + String.fromCharCode(8203) + String.fromCharCode(115);
+            if (text[d].charCodeAt(0) < 8000 && NoLetter.indexOf(text[d]) == -1){
                 return true;
             }
         }
