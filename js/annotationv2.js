@@ -2070,12 +2070,13 @@ $(document).ready(function() {
         for (i in L){
             //console.log(i);
             var l_raw = L[i];
-            var l = l_raw.trim();
-            if (l.length == 0){
+            var lt = l_raw.trim();
+            if (lt.length == 0){
                continue;
             }
+            l = l_raw+"\n";
             
-            if (l[l.length-1]!="."){
+            if (lt[lt.length-1]!="."){
                 // add to chunck
                 chunk = chunk + l;
             }
