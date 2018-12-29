@@ -1974,8 +1974,8 @@ $(document).ready(function() {
                 if (ch == ">"){
                     return [uri_doc,tt,"",""]
                 }
-                else if (ch == "="){
-                    tt = tt + "=";
+                else if (ch == "=" || ch == "_"){
+                    tt = tt + ch;
                     state = 3;
                 }
                 else{
@@ -1987,7 +1987,7 @@ $(document).ready(function() {
                     tt = tt + ch;
                     ini_sent = ini_sent + ch;                    
                 }
-                else if (ch == ","){
+                else if (ch == "," || ch == "_"){
                     state = 4;
                     tt = tt + ch;
                 }
