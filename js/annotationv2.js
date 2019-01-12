@@ -2523,7 +2523,8 @@ $(document).ready(function() {
         for (var ind_s in Sentences){
             var sent_ind = Sentences[ind_s];
             if (sent_ind["text"] == undefined){
-                addToValidLoad("Error loading sentence <i>"+sent_ind["id_sent"]+"</i> from document <i>"+sent_ind["uridoc"]+"</i>.");
+                // ---------------------------------------------------- Here
+                //addToValidLoad("Error loading sentence <i>"+sent_ind["id_sent"]+"</i> from document <i>"+sent_ind["uridoc"]+"</i>.");
                 toDel.unshift(ind_s);
             }
             else{
@@ -5067,98 +5068,110 @@ $(document).ready(function() {
             var ann_ = A[_a_i];                    
             var uri = ann_["uri"][_a_j];
             //console.log(["uri:",uri]);
-            $.ajax({
-                //data:params,
-                data:{"values":{"uri":uri}},
-                url: 'elvalidation.php',
-                type: 'POST',
-                dataType: "html",
-                beforeSend: function(){},
-                success: function(response){
-                    //console.log(["response:",response]);
-                    var json_response = "";
-                    try {
-                        json_response = JSON.parse(trim_1(response));
-                    }
-                    catch(err) {
-                        console.log(["-> error:",err]);
+            
+            if (uri.indexOf("NotInLexico")!=-1){
+                console.log("--> NotInLexico");
+                var next_aj = _a_j + 1;
+                if (next_aj == ann_["uri"].length){
+                    _a_i = _a_i +1;
+                    next_aj = 0;
+                } 
+                sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
+            }
+            else {
+                $.ajax({
+                    //data:params,
+                    data:{"values":{"uri":uri}},
+                    url: 'elvalidation.php',
+                    type: 'POST',
+                    dataType: "html",
+                    beforeSend: function(){},
+                    success: function(response){
+                        //console.log(["response:",response]);
+                        var json_response = "";
+                        try {
+                            json_response = JSON.parse(trim_1(response));
+                        }
+                        catch(err) {
+                            console.log(["-> error:",err]);
+                            var next_aj = _a_j + 1;
+                            if (next_aj == ann_["uri"].length){
+                                _a_i = _a_i +1;
+                                next_aj = 0;
+                            } 
+                            sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
+                            return true;
+                        }
+                        
+                        var resp =  json_response;                    
+                        if ("response" in resp){
+                            if (resp["response"]["valid"] == false){
+                                unambiguousErrors = unambiguousErrors +1;
+                                valid_valLinks = valid_valLinks +1;
+                                
+                                V[_idv_]["errors"].push({
+                                    "status":"uncorrected",
+                                    "position": unambiguousErrors,
+                                    "idA" : _a_i,
+                                    "uridoc": ann_["uridoc"],
+                                    "label":ann_["label"],
+                                    "id_sentence": ann_["id_sentence"],
+                                    "error_detail": "The uri <a href="+uri+">"+uri+"</a> of the mention <i>"+ann_["label"]+"</i> is not a valid link.",
+                                    //"automatic_expresion": "["+correctOverlapTag+"]("+tagOverlapList.join()+")"
+                                });
+                            } 
+                            else if (resp["response"]["redirect"] == true){
+                                unambiguousErrors = unambiguousErrors +1;
+                                valid_refLinks = valid_refLinks +1;
+                                
+                                V[_idv_]["errors"].push({
+                                    "status":"uncorrected",
+                                    "position": unambiguousErrors,
+                                    "idA" : _a_i,
+                                    "uridoc": ann_["uridoc"],
+                                    "label":ann_["label"],
+                                    "id_sentence": ann_["id_sentence"],
+                                    "error_detail": "The uri <a href="+uri+">"+uri+"</a> of the mention <i>"+ann_["label"]+"</i> is a redirect page.",
+                                    //"automatic_expresion": "["+correctOverlapTag+"]("+tagOverlapList.join()+")"
+                                });
+                            } 
+                            else if (resp["response"]["disambiguation"] == true){
+                                unambiguousErrors = unambiguousErrors +1;
+                                valid_disLinks = valid_disLinks +1;
+                                
+                                V[_idv_]["errors"].push({
+                                    "status":"uncorrected",
+                                    "position": unambiguousErrors,
+                                    "idA" : _a_i,
+                                    "uridoc": ann_["uridoc"],
+                                    "label":ann_["label"],
+                                    "id_sentence": ann_["id_sentence"],
+                                    "error_detail": "The uri <a href="+uri+">"+uri+"</a> of the mention <i>"+ann_["label"]+"</i> is a disambiguation page.",
+                                    //"automatic_expresion": "["+correctOverlapTag+"]("+tagOverlapList.join()+")"
+                                });
+                            }
+                        }                  
+                        
+                        
                         var next_aj = _a_j + 1;
                         if (next_aj == ann_["uri"].length){
                             _a_i = _a_i +1;
                             next_aj = 0;
-                        } 
-                        sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
-                        return true;
-                    }
-                    
-                    var resp =  json_response;                    
-                    if ("response" in resp){
-                        if (resp["response"]["valid"] == false){
-                            unambiguousErrors = unambiguousErrors +1;
-                            valid_valLinks = valid_valLinks +1;
-                            
-                            V[_idv_]["errors"].push({
-                                "status":"uncorrected",
-                                "position": unambiguousErrors,
-                                "idA" : _a_i,
-                                "uridoc": ann_["uridoc"],
-                                "label":ann_["label"],
-                                "id_sentence": ann_["id_sentence"],
-                                "error_detail": "The uri <a href="+uri+">"+uri+"</a> of the mention <i>"+ann_["label"]+"</i> is not a valid link.",
-                                //"automatic_expresion": "["+correctOverlapTag+"]("+tagOverlapList.join()+")"
-                            });
-                        } 
-                        else if (resp["response"]["redirect"] == true){
-                            unambiguousErrors = unambiguousErrors +1;
-                            valid_refLinks = valid_refLinks +1;
-                            
-                            V[_idv_]["errors"].push({
-                                "status":"uncorrected",
-                                "position": unambiguousErrors,
-                                "idA" : _a_i,
-                                "uridoc": ann_["uridoc"],
-                                "label":ann_["label"],
-                                "id_sentence": ann_["id_sentence"],
-                                "error_detail": "The uri <a href="+uri+">"+uri+"</a> of the mention <i>"+ann_["label"]+"</i> is a redirect page.",
-                                //"automatic_expresion": "["+correctOverlapTag+"]("+tagOverlapList.join()+")"
-                            });
-                        } 
-                        else if (resp["response"]["disambiguation"] == true){
-                            unambiguousErrors = unambiguousErrors +1;
-                            valid_disLinks = valid_disLinks +1;
-                            
-                            V[_idv_]["errors"].push({
-                                "status":"uncorrected",
-                                "position": unambiguousErrors,
-                                "idA" : _a_i,
-                                "uridoc": ann_["uridoc"],
-                                "label":ann_["label"],
-                                "id_sentence": ann_["id_sentence"],
-                                "error_detail": "The uri <a href="+uri+">"+uri+"</a> of the mention <i>"+ann_["label"]+"</i> is a disambiguation page.",
-                                //"automatic_expresion": "["+correctOverlapTag+"]("+tagOverlapList.join()+")"
-                            });
                         }
-                    }                  
-                    
-                    
-                    var next_aj = _a_j + 1;
-                    if (next_aj == ann_["uri"].length){
-                        _a_i = _a_i +1;
-                        next_aj = 0;
+                        sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
+                        
+                    },
+                    error: function(response){
+                        console.log(["error:",response]);
+                        var next_aj = _a_j + 1;
+                        if (next_aj == ann_["uri"].length){
+                            _a_i = _a_i +1;
+                            next_aj = 0;
+                        }
+                        sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
                     }
-                    sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
-                    
-                },
-                error: function(response){
-                    console.log(["error:",response]);
-                    var next_aj = _a_j + 1;
-                    if (next_aj == ann_["uri"].length){
-                        _a_i = _a_i +1;
-                        next_aj = 0;
-                    }
-                    sincronism_redirect_disamb_Links(_a_i,next_aj,_idv_);
-                }
-            });
+                });
+            }
             
         }        
     }
