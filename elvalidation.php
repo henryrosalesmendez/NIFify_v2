@@ -125,7 +125,11 @@ function isValid($link){
 
     curl_close($ch);
     //echo $content;
-    $start = strpos($content, '<b>Wikipedia does not have an article with this exact name.</b>');
+    $start = strpos($content, 'id="noarticletext"'); // Wikipedia
+    if ($start == false){
+        $start = strpos($content, '<p>No further information is available. (The requested entity is unknown)</p>'); // DBpedia
+    }
+    
     if ($start != false){
         return "false";
     }
