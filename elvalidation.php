@@ -73,8 +73,21 @@ function isRedirect($link){
     }
 
     curl_close($ch);
-    //echo $content;
-    $start = strpos($content, '<span id="redirectsub">');
+    $start = false;
+    if (strpos($link, 'wikipedia.org/') != false){
+        $start = strpos($content, '<span id="redirectsub">'); // Wikipedia
+    }
+    
+    if ($start == false && strpos($link, 'dbpedia.org/') != false){ // DBpedia
+        $uri_ttl = $link;
+        if (strpos($link, '/page/') != false){
+            $uri_ttl = str_replace('/page/',"/data/",$link).".ttl";
+        }
+ 
+        if( strpos($content, $uri_ttl) != false ){ 
+            return "false";
+        }
+    }
     if ($start != false){
         return "true";
     }
@@ -143,6 +156,11 @@ if (is_ajax()) {
         if (isset($_POST["values"]) && !empty($_POST["values"])) { //Checks if data value exists
             $data = $_POST["values"];
             $uri = $data["uri"]; 
+            
+            if (strpos($uri, 'dbpedia.org/resource/') != false){
+                $uri = str_replace('/resource/','/page/',$uri);
+            }
+            
             
             $v = isValid($uri);
             if ($v != false){
