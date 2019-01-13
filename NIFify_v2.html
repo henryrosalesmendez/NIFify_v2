@@ -23,6 +23,7 @@
 <script src="js/measures.js"></script>
 <script src="js/dict.js"></script>
 <script type="text/javascript" src="js/encoder.js"></script>
+<script type="text/javascript" src="js/jscolor.js"></script>
  
  
 <style>
@@ -78,6 +79,7 @@
         </div>
         <div class="col-lg-12">
            <textarea class="form-control" id="inDoc" rows="3" style="min-height:300px;" placeholder="Enter the document in plain text"></textarea>
+           <!--<input class="jscolor" value="ab2567"> -->
         </div>
         <br>
         <div class='bothside'>
@@ -111,6 +113,22 @@
                     <a class="dropdown-item" href="javascript:dropdown_main('Mix');"><i class="glyphicon glyphicon-random"></i> Mix</a>
                 </div>
               </div> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              
+              
+              <div class="input-group-btn " style="float:left!important; margin: 0 0 0 50px!important;"> 
+              <button id="btn_color_group" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="glyphicon glyphicon-object-align-bottom"></i></button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="javascript:dropdown_group_color('0');">-default-</a>
+                    <a class="dropdown-item" href="javascript:dropdown_group_color('1');">Base Form</a>
+                    <a class="dropdown-item" href="javascript:dropdown_group_color('2');">Part Of Speech</a>
+                    <a class="dropdown-item" href="javascript:dropdown_group_color('3');">Referenece</a>
+                    <a class="dropdown-item" href="javascript:dropdown_group_color('4');">Overlap</a>
+                    <a class="dropdown-item" href="javascript:dropdown_group_color('5');">Rhetoric</a>
+                    <a class="dropdown-item" href="javascript:dropdown_group_color('6');"><i class="glyphicon glyphicon-option-horizontal"></i> Settings</a>
+                    
+                </div>
+              </div> 
+              
               
               <button id="btn_summary" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="Show a summary of the documents."> <i class="fa fa-bar-chart fa-lg"></i></button>
               <button id="btn_stress_numbers" type="button" class="btn btn-primary margin_buttons" data-toggle="tooltip" title="stress the pronouns of the text."> <i class="fa fa-hashtag fa-lg"></i></button>
@@ -719,6 +737,60 @@ Example:
     </div>
     
 
+    <!--Color modal -->
+    <div id="modalColor" tabindex="-1" class="modal fade">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+           <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title"><b>Color Selection</b></h4>
+              <div id="modalColor-title-desc"></div>
+           </div>
+           <div id="modalColor-body" class="modal-body form-group">  
+               <div id="div_color" class="row">
+                   <div class="col-lg-12"><h3>Base Form</h3><hr>
+                      <i>mnt:FullMentionPN  &nbsp;&nbsp;</i><input id="clr:mnt:FullMentionPN" class="jscolor" value="ab2567"><br>
+                      <i>mnt:ShortMentionPN  &nbsp;&nbsp;</i><input id="clr:mnt:ShortMentionPN" class="jscolor" value="ab2567"><br>
+                      <i>mnt:ExtendedMentionPN &nbsp;&nbsp;</i><input id="clr:mnt:ExtendedMentionPN" class="jscolor" value="ab2567"><br>
+                      <i>mnt:AliasPN &nbsp;&nbsp;</i><input id="clr:mnt:AliasPN" class="jscolor" value="ab2567"><br>
+                      <i>mnt:NumericTemporalPN &nbsp;&nbsp;</i><input id="clr:mnt:NumericTemporalPN" class="jscolor" value="ab2567"><br>
+                      <i>mnt:CommonFormPN &nbsp;&nbsp;</i><input id="clr:mnt:CommonFormPN" class="jscolor" value="ab2567"><br>
+                      <i>mnt:Pro-formPN &nbsp;&nbsp;</i><input id="clr:mnt:Pro-formPN" class="jscolor" value="ab2567"><br>
+                   </div>
+
+                   <div class="col-lg-12"><h3>Part of speech</h3><hr>
+                      <i>mnt:SingularNounPoS  &nbsp;&nbsp;</i><input id="clr:mnt:SingularNounPoS" class="jscolor" value="ab2567"><br>
+                      <i>mnt:PluralNounPoS  &nbsp;&nbsp;</i><input id="clr:mnt:PluralNounPoS" class="jscolor" value="ab2567"><br>
+                      <i>mnt:AdjectivePoS &nbsp;&nbsp;</i><input id="clr:mnt:AdjectivePoS" class="jscolor" value="ab2567"><br>
+                      <i>mnt:VerbPoS &nbsp;&nbsp;</i><input id="clr:mnt:VerbPoS" class="jscolor" value="ab2567"><br>
+                      <i>mnt:AdverbPoS &nbsp;&nbsp;</i><input id="clr:mnt:AdverbPoS" class="jscolor" value="ab2567"><br>
+                   </div>
+                   
+                   <div class="col-lg-12"><h3>Referenece</h3><hr>
+                      <i>mnt:AntecedentRf  &nbsp;&nbsp;</i><input id="clr:mnt:AntecedentRf" class="jscolor" value="ab2567"><br>
+                      <i>mnt:CoreferenceRf  &nbsp;&nbsp;</i><input id="clr:mnt:CoreferenceRf" class="jscolor" value="ab2567"><br>
+                   </div>
+                   
+                   <div class="col-lg-12"><h3>Overlap</h3><hr>
+                      <i>mnt:NonOverlapping  &nbsp;&nbsp;</i><input id="clr:mnt:NonOverlapping" class="jscolor" value="ab2567"><br>
+                      <i>mnt:MaximalOverlap  &nbsp;&nbsp;</i><input id="clr:mnt:MaximalOverlap" class="jscolor" value="ab2567"><br>
+                      <i>mnt:MinimalOverlap  &nbsp;&nbsp;</i><input id="clr:mnt:MinimalOverlap" class="jscolor" value="ab2567"><br>
+                      <i>mnt:IntermediateOverlap  &nbsp;&nbsp;</i><input id="clr:mnt:IntermediateOverlap" class="jscolor" value="ab2567"><br>
+                   </div>
+                   
+                   <div class="col-lg-12"><h3>Rhetoric</h3><hr>
+                      <i>mnt:LiteralRh  &nbsp;&nbsp;</i><input id="clr:mnt:LiteralRh" class="jscolor" value="ab2567"><br>
+                      <i>mnt:FigurativeRh  &nbsp;&nbsp;</i><input id="clr:mnt:FigurativeRh" class="jscolor" value="ab2567"><br>
+                   </div>
+               </div>
+           </div>
+           <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button id="btn_colors_modify" ide="-1" surfaceform="text" type="button" data-dismiss="modal" class="btn btn-primary">Modify</button>
+           </div>
+         </div>
+       </div>
+    </div>
     
 
 </body>

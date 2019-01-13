@@ -1146,6 +1146,24 @@ $(document).ready(function() {
         "mnt:Miscellany":"MISC"
     };
     
+    
+    getStyleFromGroupOfColor = function(aa){
+        if ((aa == undefined) || !("tag" in aa) ){
+            return 'style="background-color: '+clr_black+';"';
+        }
+        //console.log(["tax2groupColor[currentGroupOfColor]:",tax2groupColor[currentGroupOfColor]]);
+        for (ii in tax2groupColor[currentGroupOfColor]){
+            var t_ = tax2groupColor[currentGroupOfColor][ii];
+            if (aa["tag"].indexOf(t_) != -1){
+                //console.log("AQUIIIIII  "+t_+"   "+tax2color[t_]);
+                return 'style="background-color: '+tax2color[t_]+';"';
+            }
+        }        
+        return 'style="background-color: '+clr_black+';"';
+    };
+    
+    
+    
     updateAnnotatedSentHTML = function(idd){
          //console.log("updateAnnotatedSentHTML..");
          var doc = D[idd];
@@ -1214,17 +1232,24 @@ $(document).ready(function() {
                      label = sent.substring(ini, fin);
 
                      var st = "";
-                     if ("tag" in ann){
-                         if (ann["tag"].indexOf("tax:Ambiguous")>-1){
-                             st = 'style="background-color: #5cb85c;"';
-                         }
+                     
+                     if (currentGroupOfColor == 0){
+                        if ("tag" in ann){
+                            if (ann["tag"].indexOf("tax:Ambiguous")>-1){
+                                st = 'style="background-color: #5cb85c;"';
+                            }
+                        }
+                        if ("overlap" in ann){
+                            if (ann["overlap"] == true){
+                                st = 'style="background-color: #88783a;"';
+                            }
+                            ann["overlap"] = false;
+                        }
                      }
-                     if ("overlap" in ann){
-                         if (ann["overlap"] == true){
-                             st = 'style="background-color: #88783a;"';
-                         }
-                         ann["overlap"] = false;
+                     else {
+                         st = getStyleFromGroupOfColor(ann);    
                      }
+                     
                      //--
                      var mentionType = "";
                      var ttype = typeOfAnn(ann["uri"]); // como cada anotacion puede tener mas de un enlace entonces aqui devuelvo el tipo del enlace, dando preferencia a [PERSON, ORG, PLACE] sobre MISC, si no hay enlace devuelvo undefined
@@ -1359,11 +1384,11 @@ $(document).ready(function() {
                          var commonValues = _filter.filter(function(value) { 
                             return ann["tag"].indexOf(value) > -1;
                          });
-                         console.log("...>>");
+                         /*console.log("...>>");
                          console.log(commonValues);
                          console.log(commonValues.length);
                          console.log(_filter);
-                         console.log(ann["tag"]);
+                         console.log(ann["tag"]);*/
                          if (commonValues.length == 0){continue;}
                      }
                      //console.log("-->",ann);
@@ -1604,7 +1629,6 @@ $(document).ready(function() {
         'mnt:AdverbPoS'         :11,
         'mnt:AntecedentRf'       :12,
         'mnt:CoreferenceRf'      :13,
-        //'mnt:Non-Overlapping'   :14,
         'mnt:NonOverlapping'    :14,
         'mnt:MaximalOverlap'    :15,
         'mnt:MinimalOverlap'    :16,
@@ -1613,6 +1637,79 @@ $(document).ready(function() {
         'mnt:FigurativeRh'       :19,
         'tax:Ambiguous'         :20,
     }
+    
+    
+    clr_green = "#5cb85c";
+    clr_brown = "#88783a";
+    clr_blue = "#337ab7";
+    clr_light_blue = "#5bc0de";
+    clr_gray = "#9e9e9e";
+    clr_black = "#000000";
+    clr_red = "#773333";
+    clr_pink = "#d484c6";
+    tax2color = {        
+        'mnt:FullMentionPN'     :clr_blue,
+        'mnt:ShortMentionPN'    :clr_green,
+        'mnt:ExtendedMentionPN' :clr_gray,
+        'mnt:AliasPN'           :clr_pink,
+        'mnt:NumericTemporalPN' :clr_red,
+        'mnt:CommonFormPN'      :clr_light_blue,
+        'mnt:Pro-formPN'        :clr_brown,
+        'mnt:SingularNounPoS'   :clr_blue,
+        'mnt:PluralNounPoS'     :clr_green,
+        'mnt:AdjectivePoS'      :clr_gray,
+        'mnt:VerbPoS'           :clr_light_blue,
+        'mnt:AdverbPoS'         :clr_brown,
+        'mnt:AntecedentRf'       :clr_blue,
+        'mnt:CoreferenceRf'      :clr_green,
+        'mnt:NonOverlapping'    :clr_blue,
+        'mnt:MaximalOverlap'    :clr_green,
+        'mnt:MinimalOverlap'    :clr_brown,
+        'mnt:IntermediateOverlap':clr_light_blue,
+        'mnt:LiteralRh'          :clr_blue,
+        'mnt:FigurativeRh'       :clr_green
+    };
+    
+    tax2groupColor = {        
+        'mnt:FullMentionPN'     :1,
+        'mnt:ShortMentionPN'    :1,
+        'mnt:ExtendedMentionPN' :1,
+        'mnt:AliasPN'           :1,
+        'mnt:NumericTemporalPN' :1,
+        'mnt:CommonFormPN'      :1,
+        'mnt:Pro-formPN'        :1,
+        'mnt:SingularNounPoS'   :2,
+        'mnt:PluralNounPoS'     :2,
+        'mnt:AdjectivePoS'      :2,
+        'mnt:VerbPoS'           :2,
+        'mnt:AdverbPoS'         :2,
+        'mnt:AntecedentRf'       :3,
+        'mnt:CoreferenceRf'      :3,
+        'mnt:NonOverlapping'    :4,
+        'mnt:MaximalOverlap'    :4,
+        'mnt:MinimalOverlap'    :4,
+        'mnt:IntermediateOverlap':4,
+        'mnt:LiteralRh'          :5,
+        'mnt:FigurativeRh'       :5
+    };
+    
+    tax2groupColor = {        
+        1: ['mnt:FullMentionPN','mnt:ShortMentionPN','mnt:ExtendedMentionPN','mnt:AliasPN','mnt:NumericTemporalPN','mnt:CommonFormPN','mnt:Pro-formPN'],
+        2: ['mnt:SingularNounPoS','mnt:PluralNounPoS','mnt:AdjectivePoS','mnt:VerbPoS', 'mnt:AdverbPoS'],
+        3: ['mnt:AntecedentRf','mnt:CoreferenceRf'],
+        4: ['mnt:NonOverlapping','mnt:MaximalOverlap','mnt:MinimalOverlap','mnt:IntermediateOverlap'],
+        5: ['mnt:LiteralRh','mnt:FigurativeRh']
+    };
+    
+    tax2namegroup = {
+        1 : "Base Form",
+        2 : "Part of speech",
+        3 : "Referenece",
+        4 : "Overlap",
+        5 : "Rhetoric"
+    }
+    
+    currentGroupOfColor = 0;//0;
    
    
    $(".taxonomyInputClass").select2({
@@ -3756,6 +3853,30 @@ $(document).ready(function() {
         buildNIFCorpora();
         
     };
+    
+    
+    dropdown_group_color = function(param){
+        if (param == '6'){            
+            
+            for (index in tax2color){
+                document.getElementById("clr:"+index).jscolor.fromString(tax2color[index]);
+            }            
+            
+            $("#modalColor").modal("show");
+        }
+        else {
+            currentGroupOfColor = parseInt(param);
+            buildNIFCorpora();
+        }        
+    };
+    
+    
+    $("#btn_colors_modify").click(function(){
+        for (index in tax2color){
+            tax2color[index] = document.getElementById("clr:"+index).value;
+        }
+        buildNIFCorpora();
+    });
     
     
     
