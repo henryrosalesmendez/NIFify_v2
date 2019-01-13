@@ -2334,6 +2334,9 @@ $(document).ready(function() {
                             for (ui in uri[1]){
                                 var u = uri[1][ui];
                                 //console.log(["u:",u]);
+                                if (u.indexOf("notInWiki")!=-1){
+                                    u = "https://en.wikipedia.org/wiki/NotInLexico";
+                                }
                                 list_uri.push(u);
                                 if (u.indexOf("mnt:entityType")!=-1){
                                     mntentitytype = true;
@@ -5191,7 +5194,7 @@ $(document).ready(function() {
             //console.log(["uri:",uri]);
             
             if (uri.indexOf("NotInLexico")!=-1){
-                console.log("--> NotInLexico");
+                //console.log("--> NotInLexico");
                 var next_aj = _a_j + 1;
                 if (next_aj == ann_["uri"].length){
                     _a_i = _a_i +1;
