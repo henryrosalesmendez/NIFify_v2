@@ -29,6 +29,17 @@ function encode_uri($link){
     return implode("/",$line);
 }
 
+function dencode_uri($link){
+    if (strpos($link, '%') != false){
+        return $link;
+    }
+    $line = explode("/", $link);
+    $n = sizeof($line)-1;
+    $line[$n] = rawurldecode($line[$n]);
+    return implode("/",$line);
+}
+
+
 
 //equal to the previous function, but, taking into account the second search starting in the end of the first.
 function get_between($tt, $t1, $t2){
@@ -69,77 +80,14 @@ function toWikipedia($uri){
 }
 
 
-function isRedirect($link){
+function analyze_wiki($link){
     $ch = curl_init();
 
     // Set query data here with the URL
-    curl_setopt($ch, CURLOPT_URL, redirect_link(toWikipedia($link))); 
+    curl_setopt($ch, CURLOPT_URL, redirect_link($link)); 
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 100);
-    $content = trim(curl_exec($ch));
-    if (curl_errno($ch)) {
-        //echo '{"error":"'.curl_error($ch).'"}';
-        return false;
-    }
-
-    curl_close($ch);
-    $start = false;
-    if (strpos($link, 'wikipedia.org/') != false){
-        $start = strpos($content, '<span id="redirectsub">'); // Wikipedia
-    }
-    
-    if ($start == false && strpos($link, 'dbpedia.org/') != false){ // DBpedia
-        $uri_ttl = $link;
-        if (strpos($link, '/page/') != false){
-            $uri_ttl = str_replace('/page/',"/data/",$link).".ttl";
-        }
- 
-        if( strpos($content, $uri_ttl) != false ){ 
-            return "false";
-        }
-    }
-    if ($start != false){
-        return "true";
-    }
-    return "false";
-}
-
-
-
-function isDisambiguation($link){
-    $ch = curl_init();
-
-    // Set query data here with the URL
-    curl_setopt($ch, CURLOPT_URL, toWikipedia($link)); 
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 100);
-    $content = trim(curl_exec($ch));
-    if (curl_errno($ch)) {
-        //echo '{"error":"'.curl_error($ch).'"}';
-        return false;
-    }
-
-    curl_close($ch);
-    //echo $content;
-    $start = strpos($content, 'title="Category:Disambiguation pages"');
-    if ($start != false){
-        return "true";
-    }
-    return "false";    
-}
-
-
-
-function isValid($link){
-    $ch = curl_init();
-
-    // Set query data here with the URL
-    curl_setopt($ch, CURLOPT_URL, $link); 
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 100);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 50);
     $content = trim(curl_exec($ch));
     if (curl_errno($ch)) {
         //echo '{"error":"'.curl_error($ch).'"}';
@@ -149,18 +97,89 @@ function isValid($link){
 
     curl_close($ch);
     //echo $content;
-    $start = strpos($content, 'id="noarticletext"'); // Wikipedia
-    if ($start == false){
-        $start = strpos($content, '<p>No further information is available. (The requested entity is unknown)</p>'); // DBpedia
-    }
     
+    //valid
+    $start = strpos($content, 'id="noarticletext"'); // Wikipedia
     if ($start != false){
+        echo trim('{"response":{"valid": false,"redirect":false, "disambiguation":false}}');
+        return "false";
+    }    
+    
+    //redirect
+    $start = strpos($content, '<span id="redirectsub">'); // Wikipedia
+    if ($start != false){
+        echo trim('{"response":{"valid": true,"redirect":true, "disambiguation":false}}');
         return "false";
     }
+    
+    
+    //disambiguation
+    $start = strpos($content, 'title="Category:Disambiguation pages"');
+    if ($start != false){
+        echo trim('{"response":{"valid": true,"redirect":false, "disambiguation":true}}');
+        return "false";
+    }
+    
+    //
+    echo trim('{"response":{"valid": true,"redirect":false, "disambiguation":false}}');
     return "true";
+
 }
 
+
+
+function analyze_db($link){
+    $ch = curl_init();
+
+    // Set query data here with the URL
+    curl_setopt($ch, CURLOPT_URL, $link); 
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+    $content = trim(curl_exec($ch));
+    if (curl_errno($ch)) {
+        //echo '{"error":"'.curl_error($ch).'"}';
+        echo trim('{"response":{"valid": false,"redirect":false, "disambiguation":false}}');
+        return false;
+    }
+
+    curl_close($ch);
+    //echo $content;
     
+    //valid
+    $start = strpos($content, '<p>No further information is available. (The requested entity is unknown)</p>');
+    if ($start != false){
+        echo trim('{"response":{"valid": false,"redirect":false, "disambiguation":false}}');
+        return "false";
+    }    
+    
+    //redirect
+    $uri_ttl = $link;
+    if (strpos($link, '/page/') != false){
+        $uri_ttl = str_replace('/page/',"/data/",$link);
+    }
+    $uri_ttl = $uri_ttl.".ttl";
+    //echo "encode:".$uri_ttl."\n";
+    //echo "decode:".rawurldecode($uri_ttl)."\n";
+    if( strpos($content, rawurldecode($uri_ttl)) == false ){ 
+        echo trim('{"response":{"valid": true,"redirect":true, "disambiguation":false}}');
+        return "false";
+    }
+        
+    
+    //disambiguation
+    $start = strpos($content, 'rel="dbo:wikiPageDisambiguates"');
+    if ($start != false){
+        echo trim('{"response":{"valid": true,"redirect":false, "disambiguation":true}}');
+        return "false";
+    }
+    
+    //
+    echo trim('{"response":{"valid": true,"redirect":false, "disambiguation":false}}');
+    return "true";
+
+}
+
 
 if (is_ajax()) {
     try {
@@ -168,26 +187,20 @@ if (is_ajax()) {
             $data = $_POST["values"];
             $uri = $data["uri"]; 
             
-            if (strpos($uri, 'dbpedia.org/resource/') != false){
-                $uri = str_replace('/resource/','/page/',$uri);
+            if (strpos($uri, 'dbpedia.org/') != false){
+                //echo "db\n";
+                if (strpos($uri, 'dbpedia.org/resource/') != false){
+                    $uri = str_replace('/resource/','/page/',$uri);
+                }
+                $uri = encode_uri($uri);
+                $v = analyze_db($uri); 
             }
             
-            $uri = encode_uri($uri);
-            $v = isValid($uri);
-            if ($v != false){
-                if ($v == "false"){
-                    echo trim('{"response":{"valid": false,"redirect":false, "disambiguation":false}}');
-                }
-                else{
-                    $d = isDisambiguation($uri);
-                    if ($d != false){
-                        $r = isRedirect($uri);                    
-                        if ($r != false){
-                            echo trim('{"response":{"valid":'.$v.',"redirect":'.$r.', "disambiguation":'.$d.'}}');
-                        }
-                    }
-                }                
-            }            
+            if (strpos($uri, 'wikipedia.org/') != false){
+                //echo "wiki\n";
+                $uri = encode_uri($uri);
+                $v = analyze_wiki($uri); 
+            }         
         }
     } catch (Exception $e) {
         echo '{"error":'.$e->getMessage().'}';
