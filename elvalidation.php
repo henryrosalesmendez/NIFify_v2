@@ -19,6 +19,17 @@ function db2wiki($uriDBpedia, $lang){
 }
 
 
+function encode_uri($link){
+    if (strpos($link, '%') != false){
+        return $link;
+    }
+    $line = explode("/", $link);
+    $n = sizeof($line)-1;
+    $line[$n] = rawurlencode($line[$n]);
+    return implode("/",$line);
+}
+
+
 //equal to the previous function, but, taking into account the second search starting in the end of the first.
 function get_between($tt, $t1, $t2){
 
@@ -65,10 +76,10 @@ function isRedirect($link){
     curl_setopt($ch, CURLOPT_URL, redirect_link(toWikipedia($link))); 
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 100);
     $content = trim(curl_exec($ch));
     if (curl_errno($ch)) {
-        echo '{"error":"'.curl_error($ch).'"}';
+        //echo '{"error":"'.curl_error($ch).'"}';
         return false;
     }
 
@@ -103,10 +114,10 @@ function isDisambiguation($link){
     curl_setopt($ch, CURLOPT_URL, toWikipedia($link)); 
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 100);
     $content = trim(curl_exec($ch));
     if (curl_errno($ch)) {
-        echo '{"error":"'.curl_error($ch).'"}';
+        //echo '{"error":"'.curl_error($ch).'"}';
         return false;
     }
 
@@ -128,7 +139,7 @@ function isValid($link){
     curl_setopt($ch, CURLOPT_URL, $link); 
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 100);
     $content = trim(curl_exec($ch));
     if (curl_errno($ch)) {
         //echo '{"error":"'.curl_error($ch).'"}';
@@ -161,7 +172,7 @@ if (is_ajax()) {
                 $uri = str_replace('/resource/','/page/',$uri);
             }
             
-            
+            $uri = encode_uri($uri);
             $v = isValid($uri);
             if ($v != false){
                 if ($v == "false"){
