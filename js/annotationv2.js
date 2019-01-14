@@ -2567,7 +2567,7 @@ $(document).ready(function() {
             "name":"Loading errors",
             "date":"-",
             "time":"-",
-            "description":"Here we show the errors from the loading process.",
+            "description":"(Format Error Type 1) Here we show the errors from the loading process.",
             "number_errors":"-",
             "errors":[],
             "type":"dinamic"
