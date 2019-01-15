@@ -20,6 +20,7 @@ function db2wiki($uriDBpedia, $lang){
 
 
 function encode_uri($link){
+    $link = str_replace("’","'",$link);
     if (strpos($link, '%') != false){
         return $link;
     }
@@ -87,7 +88,7 @@ function analyze_wiki($link){
     curl_setopt($ch, CURLOPT_URL, redirect_link($link)); 
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 100);
     $content = trim(curl_exec($ch));
     if (curl_errno($ch)) {
         //echo '{"error":"'.curl_error($ch).'"}';
@@ -135,7 +136,7 @@ function analyze_db($link){
     curl_setopt($ch, CURLOPT_URL, $link); 
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 100);
     $content = trim(curl_exec($ch));
     if (curl_errno($ch)) {
         //echo '{"error":"'.curl_error($ch).'"}';
@@ -159,9 +160,14 @@ function analyze_db($link){
         $uri_ttl = str_replace('/page/',"/data/",$link);
     }
     $uri_ttl = $uri_ttl.".ttl";
+    $uri2 = str_replace("%27","&#39;",$uri_ttl);
+    
     //echo "encode:".$uri_ttl."\n";
     //echo "decode:".rawurldecode($uri_ttl)."\n";
-    if( strpos($content, rawurldecode($uri_ttl)) == false ){ 
+    //echo "uri2:".$uri2;
+
+    
+    if( strpos($content, rawurldecode($uri_ttl)) == false && strpos($content, $uri_ttl) == false && strpos($content, $uri2) == false){ 
         echo trim('{"response":{"valid": true,"redirect":true, "disambiguation":false}}');
         return "false";
     }
@@ -180,7 +186,7 @@ function analyze_db($link){
 
 }
 
-
+//$uri = "http://dbpedia.org/resource/Alzheimer’s_disease";
 if (is_ajax()) {
     try {
         if (isset($_POST["values"]) && !empty($_POST["values"])) { //Checks if data value exists
