@@ -161,16 +161,41 @@ function analyze_db($link){
     }
     $uri_ttl = $uri_ttl.".ttl";
     $uri2 = str_replace("%27","&#39;",$uri_ttl);
+    $uri2 = str_replace("%26","&amp;",$uri_ttl);
     
-    //echo "encode:".$uri_ttl."\n";
-    //echo "decode:".rawurldecode($uri_ttl)."\n";
-    //echo "uri2:".$uri2;
+    $val1 = get_between($content,'<link rel="alternate" type="text/turtle"',".ttl");
+    $uri_from_source = false;
+    if ($val1!=false){
+        $uri_from_source_raw = get_between($val1,'href="',false);
+        $uri_from_source = html_entity_decode($uri_from_source_raw, ENT_QUOTES).".ttl";
+    }
+    
+    $uri_decoded = rawurldecode($uri_ttl);
+    
+    /*echo "--> ".$uri_from_source."\n";    
+    echo "==> ".html_entity_decode($uri_from_source, ENT_QUOTES)."\n";
+    echo "encode:".$uri_ttl."\n";
+    echo "decode:".rawurldecode($uri_ttl)."\n";
+    echo "uri2:".$uri2;*/
+
+    if ($uri_from_source != false){
+        if ($uri_from_source != $uri_decoded){
+            echo trim('{"response":{"valid": true,"redirect":true, "disambiguation":false}}');
+            return "false";
+        }
+    }
+    else{
+        if( strpos($content, $uri_decoded) == false && strpos($content, $uri_ttl) == false && strpos($content, $uri2) == false){ 
+            echo trim('{"response":{"valid": true,"redirect":true, "disambiguation":false}}');
+            return "false";
+        }
+    }
+    
+    
 
     
-    if( strpos($content, rawurldecode($uri_ttl)) == false && strpos($content, $uri_ttl) == false && strpos($content, $uri2) == false){ 
-        echo trim('{"response":{"valid": true,"redirect":true, "disambiguation":false}}');
-        return "false";
-    }
+    
+    
         
     
     //disambiguation
@@ -186,7 +211,7 @@ function analyze_db($link){
 
 }
 
-//$uri = "http://dbpedia.org/resource/Alzheimer’s_disease";
+//$uri = "http://dbpedia.org/resource/ASARCO";
 if (is_ajax()) {
     try {
         if (isset($_POST["values"]) && !empty($_POST["values"])) { //Checks if data value exists
@@ -194,7 +219,6 @@ if (is_ajax()) {
             $uri = $data["uri"]; 
             
             if (strpos($uri, 'dbpedia.org/') != false){
-                //echo "db\n";
                 if (strpos($uri, 'dbpedia.org/resource/') != false){
                     $uri = str_replace('/resource/','/page/',$uri);
                 }
@@ -203,7 +227,6 @@ if (is_ajax()) {
             }
             
             if (strpos($uri, 'wikipedia.org/') != false){
-                //echo "wiki\n";
                 $uri = encode_uri($uri);
                 $v = analyze_wiki($uri); 
             }         
