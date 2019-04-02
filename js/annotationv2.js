@@ -1803,6 +1803,7 @@ $(document).ready(function() {
 
 
     //-------- download
+    bCoNLLFormat = false;
     $("#btn_download").click(function(){
         /*BootstrapDialog.show({
             message: "It's not working yet :("
@@ -1825,6 +1826,11 @@ $(document).ready(function() {
                     var fileName = $("#filename_input").val();
                     if (fileName) {
                         var htmlText = $('#nifdoc').html();
+                        if (bCoNLLFormat){
+                            htmlText = CoNLL_Format();
+                        }
+                        bCoNLLFormat = false;
+
                         htmlText = replaceAll(htmlText,"&nbsp;"," ");
                         var textToWrite = Encoder.htmlDecode(replaceAll(htmlText,"<br>","\n"));
                         var textFileAsBlob = new Blob([textToWrite], { type: 'text/plain' });
@@ -1851,22 +1857,293 @@ $(document).ready(function() {
                 }
             }]
         });
-	  
-	} else {
-	  alert('Your browser does not support the HTML5 Blob.');
-	}
+    
+    } else {
+        alert('Your browser does not support the HTML5 Blob.');
+    }
 
     });
 
 
 
     if (!String.prototype.trim) {
-	  String.prototype.trim = function () {
-		return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-	  };
-	}
+        String.prototype.trim = function () {
+            return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+        };
+    }
 
 
+
+    //--- CoNLL 
+
+    $("#btn_CoNLL_download").click(function(){
+        bCoNLLFormat = true;
+        $("#btn_download").click();
+    });
+    
+
+    
+    getNameByUri = function(uri){
+        var L = uri.split("/");
+        return L[L.length-1].split("#")[0];
+    }
+    
+    
+    /*CoNLL_no_annotations = function(txt){
+        var s = "";
+        var L = txt.split(" ");
+        for (l_i in L){
+            var l = L[l_i];
+            console.log(["--->",l,l.length]);
+            if (l.length > 0){
+                s = s + l + " O\n";
+            }
+        }
+        return s;
+    }*/
+    
+    firstWord = function(txt){
+        var L = txt.split(" ");
+        for (l_i in L){
+            var l = L[l_i];
+            if (l.length > 0){
+                return l;
+            }
+        }
+        return false;
+    }
+    
+    // return the largest annotation starting in posit
+    SameIniPositionList = function(posit, ListAnn){
+        var listOrderedAnn = [];
+        for (var la_i in ListAnn){
+            var la = ListAnn[la_i];
+            if (la["ini"] == posit){
+                
+                if (listOrderedAnn.length == 0){
+                    listOrderedAnn.push(la);
+                }
+                else {
+                    var temp = [];
+                    var binserted = false;
+                    for (ilt_i in listOrderedAnn){
+                        var ilt = listOrderedAnn[ilt_i];
+                        if (parseInt(la["fin"])<parseInt(ilt["fin"])){
+                            temp.push(la);
+                            temp.push(ilt);
+                            binserted = true;
+                        }
+                        else{
+                            temp.push(ilt);
+                        }
+                    }
+                    
+                    if (binserted == false){
+                        temp.push(la);
+                    }
+                    
+                    listOrderedAnn = temp;
+                }               
+                
+            }
+        }
+        
+        if (listOrderedAnn.length>0){
+            return listOrderedAnn[listOrderedAnn.length-1];
+        }
+        
+        return false;
+    }
+    
+    isLetter = function(c) {
+        return c.toLowerCase() != c.toUpperCase();
+    }
+    
+    //
+    words_beggining = function(txt){
+        var Lpos = [];
+        var state = 0;
+        for (var i = 0; i < txt.length; i++) {
+            var ch = txt[i];
+            //console.log(ch,state)
+            if (state == 0){  // consuming spaces
+                if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t'){
+                    //pass
+                }
+                else if (isLetter(ch)){
+                    state = 1;
+                    Lpos.push(i);
+                }
+                else if (isNumber(ch)){
+                    state = 2;
+                    Lpos.push(i);
+                }
+                else{ // simbols
+                    Lpos.push(i);
+                }
+                 
+            }
+            
+            else if (state == 1){  // fr letters
+                if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t'){
+                    state = 0;
+                }
+                else if (!(isLetter(ch)||isNumber(ch))){ // simbols
+                    state = 0;
+                    Lpos.push(i);
+                }
+
+            }
+            
+            else if (state == 2){  // fr numbers
+                if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t'){
+                    state = 0;
+                }
+                else if ((ch == "." || ch==",") && (i+1<txt.length && isNumber(txt[i+1])) ){
+                    // pass 
+                }
+                else if (!(isLetter(ch)||isNumber(ch))){ // simbols
+                    state = 0;
+                    Lpos.push(i);
+                }
+
+            }
+        }
+        return Lpos;
+    }
+    
+    
+    
+    //    
+    strip_spaces_simbols = function(txt){
+        var st = "";
+        var state = 0;
+        for (var i = 0; i < txt.length; i++) {
+            var ch = txt[i];
+            //console.log(ch,state)
+            if (state == 0){  // consuming spaces
+                if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t'){
+                    //pass
+                }
+                else if (isLetter(ch)){
+                    st = ch;
+                    state = 1;
+                }
+                else if (isNumber(ch)){
+                    st = ch;
+                    state = 2;
+                }
+                else{ // simbols
+                    return ch;
+                }
+                 
+            }
+            
+            else if (state == 1){  // fw Letters
+                if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t'){
+                    return st;
+                }
+                else if (!(isLetter(ch)||isNumber(ch))){ // simbols
+                    return st;
+                }
+                else{
+                    st = st + ch;
+                }
+            }
+            
+            else if (state == 2){ // fw Numbers
+                if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t'){
+                    return st;
+                }
+                else if ((ch == "." || ch==",") && (i+1<txt.length && isNumber(txt[i+1])) ){
+                    st = st + ch;
+                }
+                else if (!(isLetter(ch)||isNumber(ch))){ // simbols
+                    return st;
+                }
+                
+                else{
+                    st = st + ch;
+                }
+            }
+        }
+        return st;
+    }
+
+
+    CoNLL_Format = function(){
+        var CoNLL = "";
+        for (d_i in D){
+           var dd = D[d_i];
+           var urldoc = dd["uri"];
+           var namedoc = getNameByUri(urldoc);
+           CoNLL = CoNLL + "-DOCSTART- "+namedoc+"\n";
+           
+           var overall = 0;
+           for (i in Sentences){
+             if (Sentences[i]["uridoc"] != urldoc){
+                 continue;
+             }
+             sent = Sentences[i]["text"];
+
+             var SentencesAnnotations = getSentencesAnnotations(i);
+             
+             var P = words_beggining(sent);
+             var lastFin = -1;
+             
+             for (p_i in P){
+                 var p = P[p_i];
+                 if (p<lastFin){continue;}
+        
+                 var samePosList = SameIniPositionList(p+overall, SentencesAnnotations); // largest annotation that start in this poition
+
+                 if (samePosList == false){
+                     var w_ = strip_spaces_simbols(sent.substring(p,sent.length));
+                     CoNLL = CoNLL + w_ + " O\n";
+                 }
+                 else{
+                     var ini_ = samePosList["ini"] - overall;
+                     var fin_ = samePosList["fin"] - overall;
+                     lastFin = fin_;
+                     
+                     label = sent.substring(ini_,fin_);
+                     
+                     var joined_ = "";
+                     for (var u_i = 0; u_i<label.length; u_i++){
+                         var u = label[u_i];
+                    
+                         if ( u == ' ' || u == '\r' || u == '\t' || u == '\n')  {
+                             joined_ = joined_ + "_";
+                         } 
+                         else{
+                             joined_ = joined_ + u;
+                        }
+                     }
+                     
+                     O = words_beggining(label);
+                     for (o_i in O){
+                         var o = O[o_i];
+                         var w_ = strip_spaces_simbols(label.substring(o,label.length));
+                         if (o == 0){
+                             CoNLL = CoNLL + w_ + " B " + joined_ + " "+ samePosList["uri"].join(" ") + "\n";
+                         }
+                         else{
+                             CoNLL = CoNLL + w_ + " I " + joined_ + " "+ samePosList["uri"].join(" ") + "\n";                          
+                         }
+                    }
+                }
+             }
+             overall = overall+sent.length+1;
+             CoNLL = CoNLL + "\n";
+             
+             
+           }
+           
+           
+           
+        }
+        return CoNLL;
+    }
 
     ///----
     trim_1 = function(txt){
@@ -1889,9 +2166,7 @@ $(document).ready(function() {
         return txt.substr(ini,fin-ini+1);
     }
     
-    
-    
-    
+        
     parser_NIF = function(text,tag){
         //console.log(["text:",text]);
         //console.log(["tag:",tag]);
